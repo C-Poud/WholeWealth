@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { KeyRound, Trash2 } from "lucide-react";
 
 export default function Settings() {
@@ -39,96 +37,100 @@ export default function Settings() {
   });
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-[900px]">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">
-          Integrations and market-data configuration. Owner/admin only.
+    <div className="p-6 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
+      {/* Header */}
+      <header>
+        <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+          Settings
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Integrations and market-data configuration.
+        </p>
+      </header>
+
+      <div className="panel-card p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <KeyRound className="h-4 w-4 text-primary" /> SnapTrade Integration
+          </span>
+          {isLoading ? (
+            <span className="text-xs text-muted-foreground font-mono">Loading…</span>
+          ) : data?.configured ? (
+            <span className="font-mono text-xs uppercase px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/30 font-bold">
+              Configured
+            </span>
+          ) : (
+            <span className="neon-badge">Demo mode</span>
+          )}
+        </div>
+
+        {data?.configured && (
+          <div className="p-4 rounded bg-white/[0.02] border border-white/5 font-mono text-xs text-muted-foreground space-y-1">
+            <div>
+              Client ID: <span className="text-white font-bold">{data.clientIdMasked}</span>
+            </div>
+            <div>
+              Source: <span className="text-white">{data.source}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="font-mono text-xs uppercase text-muted-foreground">
+              Client ID
+            </Label>
+            <Input
+              value={form.clientId}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, clientId: e.target.value }))
+              }
+              placeholder="YOUR-CLIENT-ID"
+              autoComplete="off"
+              className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="font-mono text-xs uppercase text-muted-foreground">
+              Consumer Key
+            </Label>
+            <Input
+              type="password"
+              value={form.consumerKey}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, consumerKey: e.target.value }))
+              }
+              placeholder="••••••••••••••••"
+              autoComplete="off"
+              className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <Button
+            className="font-mono text-xs font-bold bg-primary text-black hover:bg-primary/90 uppercase tracking-wider"
+            onClick={() => saveMut.mutate(form)}
+            disabled={!form.clientId || !form.consumerKey || saveMut.isPending}
+          >
+            {saveMut.isPending ? "Verifying…" : "Verify & Save"}
+          </Button>
+          {data?.configured && data.source === "settings" && (
+            <Button
+              variant="ghost"
+              className="font-mono text-xs text-destructive hover:bg-destructive/10"
+              onClick={() => clearMut.mutate()}
+              disabled={clearMut.isPending}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Remove
+            </Button>
+          )}
+        </div>
+
+        <p className="text-xs text-muted-foreground leading-relaxed font-mono pt-4 border-t border-white/5">
+          Credentials are verified against the SnapTrade API before saving, then stored securely in the app database. Without credentials the app runs on deterministic demo market data.
         </p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <KeyRound className="h-4 w-4 text-amber-300" /> SnapTrade integration
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : (
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-muted-foreground">Status:</span>
-              {data?.configured ? (
-                <>
-                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
-                    Configured
-                  </Badge>
-                  <span className="text-muted-foreground">
-                    Client ID {data.clientIdMasked} · source: {data.source}
-                  </span>
-                </>
-              ) : (
-                <Badge variant="outline" className="border-amber-400/60 text-amber-300">
-                  Not configured — demo mode
-                </Badge>
-              )}
-            </div>
-          )}
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label>Client ID</Label>
-              <Input
-                value={form.clientId}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, clientId: e.target.value }))
-                }
-                placeholder="YOUR-CLIENT-ID"
-                autoComplete="off"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Consumer Key</Label>
-              <Input
-                type="password"
-                value={form.consumerKey}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, consumerKey: e.target.value }))
-                }
-                placeholder="••••••••••••••••"
-                autoComplete="off"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              onClick={() => saveMut.mutate(form)}
-              disabled={!form.clientId || !form.consumerKey || saveMut.isPending}
-            >
-              {saveMut.isPending ? "Verifying…" : "Verify & save"}
-            </Button>
-            {data?.configured && data.source === "settings" && (
-              <Button
-                variant="ghost"
-                onClick={() => clearMut.mutate()}
-                disabled={clearMut.isPending}
-              >
-                <Trash2 className="h-4 w-4 mr-1" /> Remove
-              </Button>
-            )}
-          </div>
-
-          <p className="text-xs text-muted-foreground leading-5">
-            Credentials are verified against the SnapTrade API status endpoint
-            before saving, then stored server-side in the app database. Each
-            user connects their own brokerage through the SnapTrade Connection
-            Portal; positions sync read-only. Without credentials the app runs
-            on deterministic demo market data.
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }

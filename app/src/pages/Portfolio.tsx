@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,14 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { fmtDate, fmtMoney, fmtNum } from "@/lib/format";
 import {
   Link2,
@@ -42,16 +32,6 @@ export default function Portfolio() {
 
   const status = trpc.snaptrade.status.useQuery();
   const overview = trpc.portfolio.overview.useQuery();
-
-  const connected = searchParams.get("connected") === "1";
-  useEffect(() => {
-    if (connected) {
-      toast.success("Brokerage connected — syncing your accounts…");
-      setSearchParams({}, { replace: true });
-      syncMut.mutate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected]);
 
   const invalidateAll = async () => {
     await Promise.all([
@@ -85,6 +65,16 @@ export default function Portfolio() {
     },
     onError: (e) => toast.error(e.message),
   });
+
+  const connected = searchParams.get("connected") === "1";
+  useEffect(() => {
+    if (connected) {
+      toast.success("Brokerage connected — syncing your accounts…");
+      setSearchParams({}, { replace: true });
+      syncMut.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected]);
 
   const importMut = trpc.portfolio.importFile.useMutation({
     onSuccess: async (d) => {
@@ -150,24 +140,26 @@ export default function Portfolio() {
   const accounts = overview.data?.accounts ?? [];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-[1400px]">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Portfolio</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="p-6 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
+      {/* Header */}
+      <header>
+        <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+          Portfolio
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Connect a brokerage, import a broker export, or manage positions manually.
         </p>
-      </div>
+      </header>
 
       {/* Data sources */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Link2 className="h-4 w-4 text-amber-300" /> Brokerage connection
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-sm text-muted-foreground">
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Brokerage connection */}
+        <div className="panel-card p-6 flex flex-col justify-between space-y-4">
+          <div>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
+              <Link2 className="h-4 w-4 text-primary" /> Brokerage Connection
+            </span>
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {st?.configured ? (
                 st.registered ? (
                   <>
@@ -184,55 +176,61 @@ export default function Portfolio() {
                   "SnapTrade is configured — connect your first brokerage."
                 )
               ) : (
-                "SnapTrade is not configured. Add API keys in Settings (owner only) — until then the app runs on demo market data."
+                "SnapTrade is not configured. Add API keys in Settings — until then the app runs on demo market data."
               )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                onClick={() =>
-                  connectMut.mutate({ origin: window.location.origin })
-                }
-                disabled={!st?.configured || connectMut.isPending}
-              >
-                <Link2 className="h-4 w-4 mr-1" /> Connect brokerage
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => syncMut.mutate()}
-                disabled={!st?.registered || syncMut.isPending}
-              >
-                <RefreshCw
-                  className={`h-4 w-4 mr-1 ${syncMut.isPending ? "animate-spin" : ""}`}
-                />
-                Sync
-              </Button>
-              {st?.registered && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => disconnectMut.mutate()}
-                  disabled={disconnectMut.isPending}
-                >
-                  <Unlink className="h-4 w-4 mr-1" /> Disconnect
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Upload className="h-4 w-4 text-amber-300" /> Import positions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Upload an IBKR Activity/Open&nbsp;Positions CSV, or any Excel/CSV with
-              Symbol, Quantity and Cost&nbsp;Basis columns.
             </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+            <Button
+              size="sm"
+              className="font-mono text-xs font-bold bg-primary text-black hover:bg-primary/90"
+              onClick={() =>
+                connectMut.mutate({ origin: window.location.origin })
+              }
+              disabled={!st?.configured || connectMut.isPending}
+            >
+              <Link2 className="h-3.5 w-3.5 mr-1" /> Connect
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="font-mono text-xs border-white/10 hover:bg-white/5"
+              onClick={() => syncMut.mutate()}
+              disabled={!st?.registered || syncMut.isPending}
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 mr-1 ${syncMut.isPending ? "animate-spin" : ""}`}
+              />
+              Sync
+            </Button>
+            {st?.registered && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="font-mono text-xs text-destructive hover:bg-destructive/10"
+                onClick={() => disconnectMut.mutate()}
+                disabled={disconnectMut.isPending}
+              >
+                <Unlink className="h-3.5 w-3.5 mr-1" /> Disconnect
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Import positions */}
+        <div className="panel-card p-6 flex flex-col justify-between space-y-4">
+          <div>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
+              <Upload className="h-4 w-4 text-primary" /> Import Positions
+            </span>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Upload an IBKR Activity/Open Positions CSV, or any CSV/Excel spreadsheet with
+              Symbol, Quantity and Cost Basis columns.
+            </p>
+          </div>
+
+          <div className="pt-2 border-t border-white/5">
             <input
               ref={fileRef}
               type="file"
@@ -246,209 +244,229 @@ export default function Portfolio() {
             />
             <Button
               size="sm"
-              variant="secondary"
+              variant="outline"
+              className="font-mono text-xs border-white/10 hover:bg-white/5"
               onClick={() => fileRef.current?.click()}
               disabled={importMut.isPending}
             >
-              <Upload className="h-4 w-4 mr-1" />
-              {importMut.isPending ? "Importing…" : "Upload file"}
+              <Upload className="h-3.5 w-3.5 mr-1" />
+              {importMut.isPending ? "Importing…" : "Upload File"}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Plus className="h-4 w-4 text-amber-300" /> Manual & demo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex flex-wrap gap-2">
-              <Dialog open={manualOpen} onOpenChange={setManualOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="secondary">
-                    <Plus className="h-4 w-4 mr-1" /> Add position
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add stock position</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-3 pt-2">
-                    <div className="space-y-1">
-                      <Label>Symbol</Label>
-                      <Input
-                        value={manual.symbol}
-                        onChange={(e) =>
-                          setManual((m) => ({ ...m, symbol: e.target.value }))
-                        }
-                        placeholder="AAPL"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Quantity</Label>
-                      <Input
-                        type="number"
-                        value={manual.quantity}
-                        onChange={(e) =>
-                          setManual((m) => ({ ...m, quantity: e.target.value }))
-                        }
-                        placeholder="100"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Cost basis (per share)</Label>
-                      <Input
-                        type="number"
-                        value={manual.costBasis}
-                        onChange={(e) =>
-                          setManual((m) => ({ ...m, costBasis: e.target.value }))
-                        }
-                        placeholder="150.00"
-                      />
-                    </div>
-                    <Button
-                      className="w-full"
-                      onClick={() =>
-                        addManualMut.mutate({
-                          symbol: manual.symbol,
-                          quantity: Number(manual.quantity),
-                          costBasis: manual.costBasis
-                            ? Number(manual.costBasis)
-                            : undefined,
-                        })
-                      }
-                      disabled={
-                        !manual.symbol ||
-                        !Number(manual.quantity) ||
-                        addManualMut.isPending
-                      }
-                    >
-                      Add
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => demoMut.mutate()}
-                disabled={demoMut.isPending}
-              >
-                <FlaskConical className="h-4 w-4 mr-1" /> Load demo
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => clearDemoMut.mutate()}
-                disabled={clearDemoMut.isPending}
-              >
-                Clear demo
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Demo mode uses synthetic quotes and option chains so every analytic
-              stays explorable without a live connection.
+        {/* Manual & Demo */}
+        <div className="panel-card p-6 flex flex-col justify-between space-y-4">
+          <div>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
+              <Plus className="h-4 w-4 text-primary" /> Manual & Demo
+            </span>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Demo mode includes pre-populated stocks and synthetic option chains so all features are explorable immediately.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+            <Dialog open={manualOpen} onOpenChange={setManualOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="font-mono text-xs border-white/10 hover:bg-white/5">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Position
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-[#141417] border-white/10 text-white">
+                <DialogHeader>
+                  <DialogTitle className="font-display font-bold text-xl">
+                    Add Stock Position
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-1.5">
+                    <Label className="font-mono text-xs uppercase text-muted-foreground">
+                      Symbol
+                    </Label>
+                    <Input
+                      value={manual.symbol}
+                      onChange={(e) =>
+                        setManual((m) => ({ ...m, symbol: e.target.value.toUpperCase() }))
+                      }
+                      placeholder="AAPL"
+                      className="bg-[#0c0c0e] border-white/10 font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-mono text-xs uppercase text-muted-foreground">
+                      Quantity (Shares)
+                    </Label>
+                    <Input
+                      type="number"
+                      value={manual.quantity}
+                      onChange={(e) =>
+                        setManual((m) => ({ ...m, quantity: e.target.value }))
+                      }
+                      placeholder="100"
+                      className="bg-[#0c0c0e] border-white/10 font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-mono text-xs uppercase text-muted-foreground">
+                      Cost Basis (Per Share)
+                    </Label>
+                    <Input
+                      type="number"
+                      value={manual.costBasis}
+                      onChange={(e) =>
+                        setManual((m) => ({ ...m, costBasis: e.target.value }))
+                      }
+                      placeholder="150.00"
+                      className="bg-[#0c0c0e] border-white/10 font-mono"
+                    />
+                  </div>
+                  <Button
+                    className="w-full font-mono text-xs font-bold bg-primary text-black hover:bg-primary/90 uppercase tracking-wider"
+                    onClick={() =>
+                      addManualMut.mutate({
+                        symbol: manual.symbol,
+                        quantity: Number(manual.quantity),
+                        costBasis: manual.costBasis
+                          ? Number(manual.costBasis)
+                          : undefined,
+                      })
+                    }
+                    disabled={
+                      !manual.symbol ||
+                      !Number(manual.quantity) ||
+                      addManualMut.isPending
+                    }
+                  >
+                    Save Position
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="font-mono text-xs border-primary/40 text-primary hover:bg-primary/10"
+              onClick={() => demoMut.mutate()}
+              disabled={demoMut.isPending}
+            >
+              <FlaskConical className="h-3.5 w-3.5 mr-1" /> Load Demo
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="font-mono text-xs text-muted-foreground hover:text-white"
+              onClick={() => clearDemoMut.mutate()}
+              disabled={clearDemoMut.isPending}
+            >
+              Clear Demo
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Accounts */}
       {accounts.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Accounts</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
+        <div className="panel-card p-6">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-4">
+            Connected Accounts
+          </span>
+          <div className="flex flex-wrap gap-3">
             {accounts.map((a) => (
               <div
                 key={a.id}
-                className="rounded-lg border px-4 py-2 text-sm flex items-center gap-3"
+                className="rounded border border-white/10 bg-white/[0.02] px-4 py-2.5 text-sm flex items-center gap-3 font-mono"
               >
-                <span className="font-medium">{a.name ?? "Account"}</span>
+                <span className="font-bold text-white">{a.name ?? "Account"}</span>
                 {a.institution && (
-                  <span className="text-muted-foreground">{a.institution}</span>
+                  <span className="text-muted-foreground text-xs">{a.institution}</span>
                 )}
                 {a.number && (
-                  <span className="text-muted-foreground font-mono text-xs">
+                  <span className="text-muted-foreground text-xs">
                     {a.number}
                   </span>
                 )}
-                <Badge variant="secondary" className="capitalize">
+                <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-white/5 text-primary border border-primary/20">
                   {a.source}
-                </Badge>
+                </span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
-      {/* Positions */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">
+      {/* Positions Table */}
+      <div className="panel-card p-6 overflow-hidden">
+        <div className="flex items-center justify-between mb-4">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Positions ({positions.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {positions.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              Nothing here yet — connect, import, or add a position above.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Symbol</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead className="text-right">Cost basis</TableHead>
-                  <TableHead className="text-right">Last price</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          </span>
+        </div>
+
+        {positions.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-10 text-center font-mono">
+            Nothing here yet — connect, import, or load demo positions above.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-muted-foreground text-xs font-normal">
+                  <th className="pb-3 font-normal">Symbol</th>
+                  <th className="pb-3 font-normal">Description</th>
+                  <th className="pb-3 font-normal">Type</th>
+                  <th className="pb-3 font-normal text-right">Qty</th>
+                  <th className="pb-3 font-normal text-right">Cost Basis</th>
+                  <th className="pb-3 font-normal text-right">Last Price</th>
+                  <th className="pb-3 font-normal text-right">Source</th>
+                  <th className="pb-3 font-normal text-right" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
                 {positions.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">
+                  <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3 font-mono font-bold text-white">
                       {p.assetType === "option"
                         ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${p.optionType === "put" ? "P" : "C"}`
                         : p.symbol}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground max-w-[220px] truncate">
+                    </td>
+                    <td className="py-3 text-muted-foreground max-w-[220px] truncate text-xs">
                       {p.description ?? "—"}
-                    </TableCell>
-                    <TableCell className="capitalize text-muted-foreground">
+                    </td>
+                    <td className="py-3 capitalize text-muted-foreground text-xs">
                       {p.assetType}
-                    </TableCell>
-                    <TableCell className="text-right">{fmtNum(p.quantity, 0)}</TableCell>
-                    <TableCell className="text-right">{fmtMoney(p.costBasis)}</TableCell>
-                    <TableCell className="text-right">{fmtMoney(p.price)}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
+                    </td>
+                    <td className="py-3 text-right font-mono text-muted-foreground">
+                      {fmtNum(p.quantity, 0)}
+                    </td>
+                    <td className="py-3 text-right font-mono text-muted-foreground">
+                      {fmtMoney(p.costBasis)}
+                    </td>
+                    <td className="py-3 text-right font-mono text-white">
+                      {fmtMoney(p.price)}
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-white/5 text-muted-foreground">
                         {p.source}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="icon"
-                        variant="ghost"
+                      </span>
+                    </td>
+                    <td className="py-3 text-right">
+                      <button
                         onClick={() => removeMut.mutate({ ids: [p.id] })}
+                        className="p-1 hover:text-destructive text-muted-foreground transition-colors cursor-pointer"
+                        title="Remove"
                       >
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

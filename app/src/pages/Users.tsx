@@ -1,17 +1,7 @@
 import { useEffect } from "react";
 import { trpc } from "@/providers/trpc";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Users as UsersIcon } from "lucide-react";
 
 function fmtDate(d: string | Date | null | undefined) {
@@ -34,83 +24,92 @@ export default function Users() {
   }, [error]);
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-[1100px]">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-        <p className="text-sm text-muted-foreground">
-          Everyone who has signed in with Google.
+    <div className="p-6 sm:p-10 space-y-8 max-w-[1200px] mx-auto">
+      {/* Header */}
+      <header>
+        <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+          Users
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Registered team accounts and permissions.
         </p>
-      </div>
+      </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+      <div className="panel-card p-6 overflow-hidden">
+        <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
             <UsersIcon className="h-4 w-4 text-primary" /> Signed-in users
-            {users && (
-              <Badge variant="secondary" className="ml-1">
-                {users.length}
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : !users || users.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No sign-ins yet. Once someone logs in with Google, their name and
-              email will appear here.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Last sign-in</TableHead>
-                  <TableHead>Joined</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          </span>
+          {users && (
+            <span className="font-mono text-xs bg-white/5 text-muted-foreground px-2 py-0.5 rounded">
+              {users.length} total
+            </span>
+          )}
+        </div>
+
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground font-mono py-6">Loading…</p>
+        ) : !users || users.length === 0 ? (
+          <p className="text-sm text-muted-foreground font-mono py-6 text-center">
+            No sign-ins yet. Once someone logs in with Google, their name and email will appear here.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-muted-foreground text-xs font-normal">
+                  <th className="pb-3 font-normal">User</th>
+                  <th className="pb-3 font-normal">Email</th>
+                  <th className="pb-3 font-normal">Role</th>
+                  <th className="pb-3 font-normal">Last sign-in</th>
+                  <th className="pb-3 font-normal">Joined</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04] text-xs font-mono">
                 {users.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell>
+                  <tr key={u.id} className="hover:bg-white/[0.02]">
+                    <td className="py-3">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8 border shrink-0">
+                        <Avatar className="h-7 w-7 border border-white/10 shrink-0">
                           {u.avatar ? (
                             <AvatarImage src={u.avatar} alt={u.name ?? ""} />
                           ) : null}
-                          <AvatarFallback className="text-xs">
+                          <AvatarFallback className="text-xs bg-primary text-black font-bold">
                             {(u.name ?? u.email ?? "?").charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{u.name ?? "—"}</span>
+                        <span className="font-sans font-medium text-sm text-white">
+                          {u.name ?? "—"}
+                        </span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    </td>
+                    <td className="py-3 text-muted-foreground">
                       {u.email ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={u.role === "admin" ? "default" : "secondary"}
+                    </td>
+                    <td className="py-3">
+                      <span
+                        className={`text-[10px] uppercase px-2 py-0.5 rounded font-bold ${
+                          u.role === "admin"
+                            ? "bg-primary/20 text-primary border border-primary/30"
+                            : "bg-white/5 text-muted-foreground"
+                        }`}
                       >
                         {u.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      </span>
+                    </td>
+                    <td className="py-3 text-muted-foreground whitespace-nowrap">
                       {fmtDate(u.lastSignInAt)}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                    </td>
+                    <td className="py-3 text-muted-foreground whitespace-nowrap">
                       {fmtDate(u.createdAt)}
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

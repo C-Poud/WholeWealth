@@ -188,10 +188,10 @@ function AuthLayoutContent({
 
         >
           <SidebarHeader className="h-16 justify-center">
-            <div className="flex items-center gap-3 px-2 transition-all w-full">
+            <div className="flex items-center gap-3 px-2 transition-all w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
               <button
                 onClick={toggleSidebar}
-                className="h-9 w-9 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
                 aria-label="Toggle navigation"
               >
                 <PanelLeft className="h-5 w-5 text-muted-foreground" />
@@ -207,7 +207,7 @@ function AuthLayoutContent({
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
-            <SidebarMenu className="px-2 py-1">
+            <SidebarMenu className="px-2 py-1 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -216,10 +216,10 @@ function AuthLayoutContent({
                       isActive={isActive}
                       onClick={() => {
                         if (isMobile) {
-                          // Auto-close the drawer after picking a page
+                          // Close the drawer after picking a page
                           setOpenMobile(false);
-                        } else if (isCollapsed) {
-                          // Icon rail: clicking an icon expands the nav
+                        } else if (!isCollapsed) {
+                          // Auto-close the nav after selecting a page
                           toggleSidebar();
                         }
                         navigate(item.path);

@@ -39,14 +39,27 @@ export async function getSnaptradeConfig(): Promise<SnaptradeConfig | null> {
   return { clientId, consumerKey };
 }
 
+/** Canonical JSON per SnapTrade docs: no spaces, keys sorted recursively. */
+function canonicalStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    return `[${value.map((v) => canonicalStringify(v)).join(",")}]`;
+  }
+  const obj = value as Record<string, unknown>;
+  const keys = Object.keys(obj).sort();
+  const parts = keys.map(
+    (k) => `${JSON.stringify(k)}:${canonicalStringify(obj[k])}`,
+  );
+  return `{${parts.join(",")}}`;
+}
+
 /**
- * SnapTrade request signature (see SnapTrade docs → Authentication):
- * HMAC-SHA256 over JSON.stringify({ content, path, query }) where
- *   - content = the request body exactly as transmitted (or null)
+ * SnapTrade request signature (docs.snaptrade.com/docs/request-signatures):
+ * HMAC-SHA256(consumerKey) over canonical JSON of { content, path, query },
+ * base64-encoded, where
+ *   - content = request body (null when absent/empty) — keys sorted recursively
  *   - path    = endpoint path INCLUDING the /api/v1 prefix
- *   - query   = the full query string, params sorted alphabetically
- * Key order content/path/query and body key insertion order must be
- * preserved — JSON.stringify (not sorted) is intentional.
+ *   - query   = raw query string exactly as sent (sorted for determinism)
  */
 function sign(
   consumerKey: string,
@@ -54,15 +67,17 @@ function sign(
   query: string,
   body: unknown,
 ): string {
+  const isEmptyObject =
+    typeof body === "object" && body !== null && Object.keys(body).length === 0;
   const sigObject = {
-    content: body === undefined || body === null ? null : body,
+    content: body === undefined || body === null || isEmptyObject ? null : body,
     path: `${API_PATH_PREFIX}${path}`,
     query,
   };
-  const sigContent = JSON.stringify(sigObject);
+  const sigContent = canonicalStringify(sigObject);
   return crypto
     .createHmac("sha256", consumerKey)
-    .update(sigContent)
+    .update(sigContent, "utf8")
     .digest("base64");
 }
 

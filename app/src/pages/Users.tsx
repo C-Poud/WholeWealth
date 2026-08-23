@@ -24,7 +24,7 @@ export default function Users() {
   }, [error]);
 
   return (
-    <div className="p-6 sm:p-10 space-y-8 max-w-[1200px] mx-auto">
+    <div className="p-4 sm:p-10 space-y-8 max-w-[1200px] mx-auto">
       {/* Header */}
       <header>
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">

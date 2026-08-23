@@ -54,7 +54,7 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6 sm:p-10 space-y-6 max-w-[1500px] mx-auto">
+      <div className="p-4 sm:p-10 space-y-6 max-w-[1500px] mx-auto">
         <Skeleton className="h-12 w-80 bg-white/5" />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -69,7 +69,7 @@ export default function Dashboard() {
   const positions = data?.positions ?? [];
 
   return (
-    <div className="p-6 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
+    <div className="p-4 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

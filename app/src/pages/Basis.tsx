@@ -29,7 +29,7 @@ export default function Basis() {
 
   if (isLoading) {
     return (
-      <div className="p-6 sm:p-10 space-y-6 max-w-[1500px] mx-auto">
+      <div className="p-4 sm:p-10 space-y-6 max-w-[1500px] mx-auto">
         <Skeleton className="h-12 w-80 bg-white/5" />
         <Skeleton className="h-10 w-72 bg-white/5" />
         <Skeleton className="h-80 bg-white/5" />
@@ -38,7 +38,7 @@ export default function Basis() {
   }
 
   return (
-    <div className="p-6 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
+    <div className="p-4 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

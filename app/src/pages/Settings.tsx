@@ -155,7 +155,7 @@ export default function Settings() {
   // Normal users: only their broker trade API is configurable.
   if (me.data && !isAdmin) {
     return (
-      <div className="p-6 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
+      <div className="p-4 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
         <header>
           <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
             Settings
@@ -170,7 +170,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="p-6 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
+    <div className="p-4 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
       {/* Header */}
       <header>
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">

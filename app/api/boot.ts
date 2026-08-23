@@ -15,16 +15,20 @@ import { Paths } from "@contracts/constants";
 // so server startup / health checks are never blocked by a cold database.
 if (env.isProduction || process.env.RUN_MIGRATIONS === "1") {
   void (async () => {
-    for (let attempt = 1; attempt <= 5; attempt++) {
+    for (let attempt = 1; attempt <= 20; attempt++) {
       try {
         await runMigrations();
         return;
-      } catch {
-        const wait = attempt * 5000;
-        console.warn(`[migrate] attempt ${attempt} failed, retrying in ${wait}ms`);
+      } catch (err) {
+        const wait = Math.min(attempt, 6) * 5000;
+        console.warn(
+          `[migrate] attempt ${attempt} failed, retrying in ${wait}ms:`,
+          err,
+        );
         await new Promise((r) => setTimeout(r, wait));
       }
     }
+    console.error("[migrate] giving up — database schema may be missing");
   })();
 }
 

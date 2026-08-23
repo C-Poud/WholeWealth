@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import * as schema from "@db/schema";
 import type { InsertUser } from "@db/schema";
 import { getDb } from "./connection";
@@ -29,10 +29,35 @@ export async function upsertUser(data: InsertUser) {
     updateSet.role = "admin";
   }
 
+  // Google sign-in: emails listed in ADMIN_EMAILS become admins.
+  if (
+    values.email &&
+    env.adminEmails.includes(values.email.trim().toLowerCase())
+  ) {
+    values.role = "admin";
+    updateSet.role = "admin";
+  }
+
   await getDb()
     .insert(schema.users)
     .values(values)
     .onDuplicateKeyUpdate({ set: updateSet });
+}
+
+/** Admin: list everyone who has signed in, most recent first. */
+export async function listUsers() {
+  return getDb()
+    .select({
+      id: schema.users.id,
+      name: schema.users.name,
+      email: schema.users.email,
+      avatar: schema.users.avatar,
+      role: schema.users.role,
+      createdAt: schema.users.createdAt,
+      lastSignInAt: schema.users.lastSignInAt,
+    })
+    .from(schema.users)
+    .orderBy(desc(schema.users.lastSignInAt));
 }
 
 const DEFAULT_UNION_ID = "workspace-default";

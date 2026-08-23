@@ -23,4 +23,9 @@ export const env = {
   googleEnabled: !!(
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
   ),
+  // Comma-separated list of emails that get the admin role on sign-in
+  adminEmails: (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
 };

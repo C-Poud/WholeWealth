@@ -28,6 +28,7 @@ import {
   PanelLeft,
   Settings,
   ShieldAlert,
+  Users,
 } from "lucide-react";
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
@@ -42,6 +43,8 @@ const menuItems = [
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
+
+const adminMenuItem = { icon: Users, label: "Users", path: "/users" };
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
@@ -133,7 +136,9 @@ function AuthLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location.pathname);
+  const visibleMenuItems =
+    user?.role === "admin" ? [...menuItems, adminMenuItem] : menuItems;
+  const activeMenuItem = visibleMenuItems.find(item => item.path === location.pathname);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -201,7 +206,7 @@ function AuthLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
+              {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>

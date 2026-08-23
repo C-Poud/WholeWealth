@@ -30,7 +30,7 @@ export default function Risk() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-4 max-w-[1400px]">
+      <div className="p-4 sm:p-6 space-y-4 max-w-[1400px]">
         <Skeleton className="h-8 w-80" />
         <Skeleton className="h-10 w-72" />
         <Skeleton className="h-64" />
@@ -39,7 +39,7 @@ export default function Risk() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-[1400px]">
+    <div className="p-4 sm:p-6 space-y-6 max-w-[1400px]">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
@@ -137,7 +137,7 @@ export default function Risk() {
 
                 {current.lower2 != null ? (
                   <>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="rounded-lg border bg-muted/30 p-4 text-center">
                         <div className="text-xs text-muted-foreground">
                           −2σ Boundary

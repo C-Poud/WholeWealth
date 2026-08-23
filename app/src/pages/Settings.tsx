@@ -39,7 +39,7 @@ export default function Settings() {
   });
 
   return (
-    <div className="p-6 space-y-6 max-w-[900px]">
+    <div className="p-4 sm:p-6 space-y-6 max-w-[900px]">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">

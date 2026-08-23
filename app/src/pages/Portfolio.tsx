@@ -150,7 +150,7 @@ export default function Portfolio() {
   const accounts = overview.data?.accounts ?? [];
 
   return (
-    <div className="p-6 space-y-6 max-w-[1400px]">
+    <div className="p-4 sm:p-6 space-y-6 max-w-[1400px]">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Portfolio</h1>
         <p className="text-sm text-muted-foreground">

@@ -4,6 +4,7 @@ import { getDb } from "../queries/connection";
 import { appSettings } from "@db/schema";
 
 const BASE_URL = "https://api.snaptrade.com/api/v1";
+const API_PATH_PREFIX = "/api/v1";
 
 export interface SnaptradeConfig {
   clientId: string;
@@ -38,20 +39,15 @@ export async function getSnaptradeConfig(): Promise<SnaptradeConfig | null> {
   return { clientId, consumerKey };
 }
 
-/** Deterministic JSON.stringify with recursively sorted keys (SnapTrade canonical form). */
-function canonicalStringify(value: unknown): string {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) {
-    return `[${value.map((v) => canonicalStringify(v)).join(",")}]`;
-  }
-  const obj = value as Record<string, unknown>;
-  const keys = Object.keys(obj).sort();
-  const parts = keys.map(
-    (k) => `${JSON.stringify(k)}:${canonicalStringify(obj[k])}`,
-  );
-  return `{${parts.join(",")}}`;
-}
-
+/**
+ * SnapTrade request signature (see SnapTrade docs → Authentication):
+ * HMAC-SHA256 over JSON.stringify({ content, path, query }) where
+ *   - content = the request body exactly as transmitted (or null)
+ *   - path    = endpoint path INCLUDING the /api/v1 prefix
+ *   - query   = the full query string, params sorted alphabetically
+ * Key order content/path/query and body key insertion order must be
+ * preserved — JSON.stringify (not sorted) is intentional.
+ */
 function sign(
   consumerKey: string,
   path: string,
@@ -60,10 +56,10 @@ function sign(
 ): string {
   const sigObject = {
     content: body === undefined || body === null ? null : body,
-    path,
+    path: `${API_PATH_PREFIX}${path}`,
     query,
   };
-  const sigContent = canonicalStringify(sigObject);
+  const sigContent = JSON.stringify(sigObject);
   return crypto
     .createHmac("sha256", consumerKey)
     .update(sigContent)
@@ -97,6 +93,7 @@ async function snaptradeRequest<T>(
     timestamp: Math.floor(Date.now() / 1000).toString(),
     ...opts.query,
   });
+  params.sort(); // SnapTrade requires alphabetically sorted query params
   const queryString = params.toString();
   const signature = sign(config.consumerKey, opts.path, queryString, opts.body);
 

@@ -22,8 +22,16 @@ const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 
 function callbackUri(c: Context): string {
-  const origin = new URL(c.req.url).origin;
-  return `${origin}/api/oauth/google/callback`;
+  // Behind a reverse proxy (Railway), the public scheme/host arrive via
+  // forwarded headers — req.url itself is plain http.
+  const proto =
+    c.req.header("x-forwarded-proto") ??
+    new URL(c.req.url).protocol.replace(":", "");
+  const host =
+    c.req.header("x-forwarded-host") ??
+    c.req.header("host") ??
+    new URL(c.req.url).host;
+  return `${proto}://${host}/api/oauth/google/callback`;
 }
 
 type GoogleProfile = {

@@ -8,7 +8,11 @@ import { KeyRound, Trash2 } from "lucide-react";
 
 export default function Settings() {
   const utils = trpc.useUtils();
-  const { data, isLoading, error } = trpc.settings.get.useQuery();
+  const me = trpc.auth.me.useQuery(undefined, { staleTime: 60_000 });
+  const isAdmin = me.data?.role === "admin";
+  const { data, isLoading, error } = trpc.settings.get.useQuery(undefined, {
+    enabled: isAdmin,
+  });
   const [form, setForm] = useState({ clientId: "", consumerKey: "" });
 
   useEffect(() => {
@@ -35,6 +39,27 @@ export default function Settings() {
     },
     onError: (e) => toast.error(e.message),
   });
+
+  // Normal users: nothing configurable — render an empty page.
+  if (me.data && !isAdmin) {
+    return (
+      <div className="p-6 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
+        <header>
+          <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+            Settings
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Integrations and market-data configuration.
+          </p>
+        </header>
+        <div className="panel-card py-16 text-center">
+          <p className="text-sm text-muted-foreground font-mono">
+            Nothing to configure here yet.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 sm:p-10 space-y-8 max-w-[1000px] mx-auto">

@@ -14,8 +14,6 @@ export function useAuth(options?: UseAuthOptions) {
 
   const navigate = useNavigate();
 
-  const utils = trpc.useUtils();
-
   const {
     data: user,
     isLoading,
@@ -27,9 +25,10 @@ export function useAuth(options?: UseAuthOptions) {
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: async () => {
-      await utils.invalidate();
-      navigate(redirectPath);
+    onSettled: () => {
+      // Hard navigation: guarantees the cleared session cookie and all
+      // cached queries are gone. /login bounces no-auth deployments home.
+      window.location.assign(redirectPath);
     },
   });
 

@@ -4,111 +4,126 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 262 30% 96%;
-    --secondary-foreground: 262 45% 25%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 262 60% 95%;
-    --accent-foreground: 262 70% 30%;
-    --destructive: 0 84.2% 60.2%;
+    --background: 240 7% 5%;
+    --foreground: 240 5% 95%;
+    --card: 240 6% 9%;
+    --card-foreground: 240 5% 95%;
+    --popover: 240 6% 9%;
+    --popover-foreground: 240 5% 95%;
+    --primary: 70 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 240 5% 95%;
+    --muted: 240 5% 14%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 70 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 262 83% 58%;
-    --radius: 0.625rem;
-    --sidebar-background: 270 33% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 262 83% 58%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 262 55% 93%;
-    --sidebar-accent-foreground: 262 65% 28%;
-    --sidebar-border: 262 25% 90%;
-    --sidebar-ring: 262 83% 58%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 70 100% 50%;
+    --radius: 0.5rem;
+    --sidebar-background: 240 6% 6%;
+    --sidebar-foreground: 240 5% 95%;
+    --sidebar-primary: 70 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent-foreground: 240 5% 95%;
+    --sidebar-border: 240 5% 12%;
+    --sidebar-ring: 70 100% 50%;
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 240 6% 95%;
-    --card: 240 8% 7%;
-    --card-foreground: 240 6% 95%;
-    --popover: 240 8% 7%;
-    --popover-foreground: 240 6% 95%;
-    --primary: 263 85% 72%;
-    --primary-foreground: 255 30% 10%;
-    --secondary: 262 20% 13%;
-    --secondary-foreground: 262 60% 92%;
-    --muted: 240 5% 12%;
-    --muted-foreground: 240 5% 58%;
-    --accent: 262 38% 16%;
-    --accent-foreground: 262 80% 92%;
-    --destructive: 0 72% 55%;
+    --background: 240 7% 5%;
+    --foreground: 240 5% 95%;
+    --card: 240 6% 9%;
+    --card-foreground: 240 5% 95%;
+    --popover: 240 6% 9%;
+    --popover-foreground: 240 5% 95%;
+    --primary: 70 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 240 5% 95%;
+    --muted: 240 5% 14%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 70 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 14%;
-    --input: 240 6% 14%;
-    --ring: 263 85% 72%;
-    --sidebar-background: 258 16% 6%;
-    --sidebar-foreground: 240 5% 70%;
-    --sidebar-primary: 263 85% 72%;
-    --sidebar-primary-foreground: 255 30% 10%;
-    --sidebar-accent: 262 30% 13%;
-    --sidebar-accent-foreground: 262 70% 90%;
-    --sidebar-border: 262 16% 13%;
-    --sidebar-ring: 263 85% 72%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 70 100% 50%;
+    --sidebar-background: 240 6% 6%;
+    --sidebar-foreground: 240 5% 95%;
+    --sidebar-primary: 70 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent-foreground: 240 5% 95%;
+    --sidebar-border: 240 5% 12%;
+    --sidebar-ring: 70 100% 50%;
   }
-
 }
 
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    background-color: #0c0c0e;
+    color: #f0f0f2;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: #d4ff00;
+    color: #000000;
   }
 }
 
-@layer components {
-  /* Dark panel with subtle inner highlight */
-  .panel-card {
-    @apply rounded-xl border border-white/10 bg-[#101014];
-    box-shadow:
-      inset 0 1px 0 0 rgb(255 255 255 / 0.04),
-      0 12px 32px -16px rgb(0 0 0 / 0.7);
-  }
-
-  /* Left accent bar used on the big stat numbers */
-  .stat-card-border {
-    @apply border-l-2 border-primary/70;
-  }
-
-  /* Small glowing status pill (e.g. "Includes demo data") */
-  .neon-badge {
-    @apply inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest text-primary;
-    box-shadow: 0 0 14px -3px hsl(var(--primary) / 0.45);
-  }
-
-  /* Dot-grid page backdrop */
-  .app-dot-grid {
-    background-color: hsl(var(--background));
-    background-image: radial-gradient(
-      circle,
-      rgb(255 255 255 / 0.055) 1px,
-      transparent 1px
-    );
-    background-size: 24px 24px;
-  }
+/* Custom design variation classes */
+.app-dot-grid {
+  background-color: #0c0c0e;
+  background-image: radial-gradient(rgba(240, 240, 242, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
-@layer base {
-  body {
-    @apply font-sans antialiased;
-  }
+.stat-card-border {
+  border-left: 2px solid rgba(240, 240, 242, 0.15);
+}
+
+.panel-card {
+  background-color: #141417;
+  border: 1px solid rgba(240, 240, 242, 0.1);
+  border-radius: 8px;
+}
+
+.neon-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 8px;
+  border: 1px solid #d4ff00;
+  color: #d4ff00;
+  border-radius: 2px;
+  background: rgba(212, 255, 0, 0.04);
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(240, 240, 242, 0.12);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(240, 240, 242, 0.25);
 }

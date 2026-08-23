@@ -55,6 +55,11 @@ export default function Risk() {
             Demo market data
           </div>
         )}
+        {data?.mode === "yahoo" && (
+          <div className="neon-badge shrink-0 self-start md:self-auto">
+            Real quotes · 15 min delay
+          </div>
+        )}
       </header>
 
       {error && (

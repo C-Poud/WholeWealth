@@ -8,10 +8,11 @@ import {
   getSnaptradeConfig,
 } from "../snaptrade/client";
 import { demoChain, demoSpot } from "../snaptrade/demo";
+import { getYahooChain, getYahooSpots } from "./yahoo";
 import type { ChainContract } from "./engine";
 
 export interface MarketDataResult {
-  mode: "live" | "demo";
+  mode: "live" | "yahoo" | "demo";
   spots: Record<string, number>;
   chains: Record<string, ChainContract[]>;
   errors: string[];
@@ -19,9 +20,9 @@ export interface MarketDataResult {
 
 /**
  * Resolves spot prices and option chains for a set of symbols.
- * Uses live SnapTrade data when the integration is configured and the user
- * has a connected brokerage account; otherwise (or per-symbol on failure)
- * falls back to deterministic demo data so analytics stay functional.
+ * Priority per symbol: SnapTrade broker data (when connected) →
+ * Yahoo Finance (real, ~15 min delayed, no brokerage needed) →
+ * deterministic demo data so analytics stay functional.
  */
 export async function resolveMarketData(
   userId: number,
@@ -51,6 +52,7 @@ export async function resolveMarketData(
   }
 
   const liveAvailable = !!(config && identity && accountId);
+  let liveChains = 0;
 
   if (liveAvailable && unique.length > 0) {
     // 1) quotes (single batched call; non-fatal if unsupported)
@@ -74,7 +76,6 @@ export async function resolveMarketData(
     }
 
     // 2) chains (per symbol, best effort)
-    let liveChains = 0;
     for (const sym of unique) {
       try {
         const raw = await getOptionsChain(
@@ -110,19 +111,45 @@ export async function resolveMarketData(
         );
       }
     }
+  }
 
-    if (liveChains > 0) {
-      // Fill gaps (missing spot or chain) with demo data per symbol.
-      for (const sym of unique) {
-        if (!chains[sym]) {
-          const d = demoChain(sym, spots[sym]);
-          chains[sym] = d.contracts;
-          if (!spots[sym]) spots[sym] = d.spot;
-        }
-        if (!spots[sym]) spots[sym] = demoSpot(sym);
+  // Yahoo Finance fallback for every symbol SnapTrade (or its absence)
+  // did not cover — real market data without a brokerage connection.
+  const missing = unique.filter((s) => !chains[s]);
+  if (missing.length > 0) {
+    try {
+      const ySpots = await getYahooSpots(missing);
+      for (const [k, v] of Object.entries(ySpots)) {
+        if (!spots[k]) spots[k] = v;
       }
-      return { mode: "live", spots, chains, errors };
+    } catch (e) {
+      errors.push(
+        `Yahoo quotes unavailable (${e instanceof Error ? e.message : "unknown error"})`,
+      );
     }
+    for (const sym of missing) {
+      try {
+        const contracts = await getYahooChain(sym);
+        if (contracts.length > 0) chains[sym] = contracts;
+      } catch (e) {
+        errors.push(
+          `Yahoo option chain for ${sym} unavailable (${e instanceof Error ? e.message : "unknown"})`,
+        );
+      }
+    }
+  }
+
+  if (Object.keys(chains).length > 0) {
+    // Fill any remaining gaps with demo data per symbol.
+    for (const sym of unique) {
+      if (!chains[sym]) {
+        const d = demoChain(sym, spots[sym]);
+        chains[sym] = d.contracts;
+        if (!spots[sym]) spots[sym] = d.spot;
+      }
+      if (!spots[sym]) spots[sym] = demoSpot(sym);
+    }
+    return { mode: liveChains > 0 ? "live" : "yahoo", spots, chains, errors };
   }
 
   // Full demo mode

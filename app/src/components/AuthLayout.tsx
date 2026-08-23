@@ -132,7 +132,7 @@ function AuthLayoutContent({
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { state, toggleSidebar } = useSidebar();
+  const { state, toggleSidebar, setOpenMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -189,10 +189,10 @@ function AuthLayoutContent({
             <div className="flex items-center gap-3 px-2 transition-all w-full">
               <button
                 onClick={toggleSidebar}
-                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                className="h-9 w-9 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
                 aria-label="Toggle navigation"
               >
-                <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                <PanelLeft className="h-5 w-5 text-muted-foreground" />
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
@@ -212,12 +212,21 @@ function AuthLayoutContent({
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => navigate(item.path)}
+                      onClick={() => {
+                        if (isMobile) {
+                          // Auto-close the drawer after picking a page
+                          setOpenMobile(false);
+                        } else if (isCollapsed) {
+                          // Icon rail: clicking an icon expands the nav
+                          toggleSidebar();
+                        }
+                        navigate(item.path);
+                      }}
                       tooltip={item.label}
                       className={`h-10 transition-all font-normal`}
                     >
                       <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                        className={`h-5 w-5 ${isActive ? "text-primary" : ""}`}
                       />
                       <span>{item.label}</span>
                     </SidebarMenuButton>
@@ -271,7 +280,13 @@ function AuthLayoutContent({
         />
       </div>
 
-      <SidebarInset>
+      <SidebarInset
+        onClick={() => {
+          // Click anywhere outside the nav to close it (desktop);
+          // on mobile the drawer overlay already handles this.
+          if (!isMobile && !isCollapsed) toggleSidebar();
+        }}
+      >
         {isMobile && (
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">

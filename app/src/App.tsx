@@ -7,6 +7,7 @@ import Basis from "./pages/Basis";
 import Risk from "./pages/Risk";
 import Settings from "./pages/Settings";
 import Users from "./pages/Users";
+import Suggestions from "./pages/Suggestions";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/portfolio" element={<Protected><Portfolio /></Protected>} />
         <Route path="/basis" element={<Protected><Basis /></Protected>} />
         <Route path="/risk" element={<Protected><Risk /></Protected>} />
+        <Route path="/suggestions" element={<Protected><Suggestions /></Protected>} />
         <Route path="/settings" element={<Protected><Settings /></Protected>} />
         <Route path="/users" element={<Protected><Users /></Protected>} />
         <Route path="/login" element={<Login />} />

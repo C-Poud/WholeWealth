@@ -78,4 +78,48 @@ export const settingsRouter = createRouter({
     await setSetting("snaptrade", null);
     return { ok: true };
   }),
+
+  // ── Broker Trade API (per user — everyone can manage their own) ──
+
+  /** Current user's broker trade API config (masked). */
+  getBrokerApi: authedQuery.query(async ({ ctx }) => {
+    const raw = await getSetting(`broker_api_${ctx.user.id}`);
+    const parsed = raw
+      ? (JSON.parse(raw) as { endpoint?: string; apiKey?: string })
+      : {};
+    return {
+      configured: !!(parsed.endpoint && parsed.apiKey),
+      endpoint: parsed.endpoint ?? null,
+      apiKeyMasked: parsed.apiKey ? mask(parsed.apiKey) : null,
+    };
+  }),
+
+  /** Save the user's broker trade API endpoint + key. */
+  setBrokerApi: authedQuery
+    .input(
+      z.object({
+        endpoint: z.string().trim().url(),
+        apiKey: z.string().trim().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const url = new URL(input.endpoint);
+      if (url.protocol !== "https:" && url.protocol !== "http:") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Endpoint must be an http(s) URL.",
+        });
+      }
+      await setSetting(
+        `broker_api_${ctx.user.id}`,
+        JSON.stringify({ endpoint: input.endpoint, apiKey: input.apiKey }),
+      );
+      return { ok: true };
+    }),
+
+  /** Remove the user's broker trade API config. */
+  clearBrokerApi: authedQuery.mutation(async ({ ctx }) => {
+    await setSetting(`broker_api_${ctx.user.id}`, null);
+    return { ok: true };
+  }),
 });

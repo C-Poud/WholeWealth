@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { KeyRound, Trash2 } from "lucide-react";
+import { KeyRound, Trash2, Webhook } from "lucide-react";
 
 export default function Settings() {
   const utils = trpc.useUtils();
@@ -40,7 +40,119 @@ export default function Settings() {
     onError: (e) => toast.error(e.message),
   });
 
-  // Normal users: nothing configurable — render an empty page.
+  // ── Broker Trade API (per user, everyone) ──
+  const broker = trpc.settings.getBrokerApi.useQuery();
+  const [brokerForm, setBrokerForm] = useState({ endpoint: "", apiKey: "" });
+
+  const saveBrokerMut = trpc.settings.setBrokerApi.useMutation({
+    onSuccess: async () => {
+      toast.success("Broker API saved. Suggested trades can now be pushed.");
+      setBrokerForm({ endpoint: "", apiKey: "" });
+      await utils.settings.getBrokerApi.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const clearBrokerMut = trpc.settings.clearBrokerApi.useMutation({
+    onSuccess: async () => {
+      toast.success("Broker API removed.");
+      await utils.settings.getBrokerApi.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const brokerPanel = (
+    <div className="panel-card p-6 sm:p-8 space-y-6">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          <Webhook className="h-4 w-4 text-primary" /> Broker Trade API
+        </span>
+        {broker.isLoading ? (
+          <span className="text-xs text-muted-foreground font-mono">Loading…</span>
+        ) : broker.data?.configured ? (
+          <span className="font-mono text-xs uppercase px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/30 font-bold">
+            Configured
+          </span>
+        ) : (
+          <span className="neon-badge">Not configured</span>
+        )}
+      </div>
+
+      <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+        When you press “Push to broker” on a suggested trade, we POST the trade
+        as JSON to this endpoint with your API key as a Bearer token. Point it
+        at your broker’s order API (or an automation webhook) to route
+        suggestions straight to your account.
+      </p>
+
+      {broker.data?.configured && (
+        <div className="p-4 rounded bg-white/[0.02] border border-white/5 font-mono text-xs text-muted-foreground space-y-1">
+          <div>
+            Endpoint: <span className="text-white font-bold break-all">{broker.data.endpoint}</span>
+          </div>
+          <div>
+            API key: <span className="text-white">{broker.data.apiKeyMasked}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label className="font-mono text-xs uppercase text-muted-foreground">
+            API Endpoint URL
+          </Label>
+          <Input
+            value={brokerForm.endpoint}
+            onChange={(e) =>
+              setBrokerForm((f) => ({ ...f, endpoint: e.target.value }))
+            }
+            placeholder="https://api.yourbroker.com/v1/orders"
+            autoComplete="off"
+            className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="font-mono text-xs uppercase text-muted-foreground">
+            API Key
+          </Label>
+          <Input
+            type="password"
+            value={brokerForm.apiKey}
+            onChange={(e) =>
+              setBrokerForm((f) => ({ ...f, apiKey: e.target.value }))
+            }
+            placeholder="••••••••••••••••"
+            autoComplete="off"
+            className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <Button
+          className="font-mono text-xs font-bold bg-primary text-black hover:bg-primary/90 uppercase tracking-wider"
+          onClick={() => saveBrokerMut.mutate(brokerForm)}
+          disabled={
+            !brokerForm.endpoint || !brokerForm.apiKey || saveBrokerMut.isPending
+          }
+        >
+          {saveBrokerMut.isPending ? "Saving…" : "Save API"}
+        </Button>
+        {broker.data?.configured && (
+          <Button
+            variant="ghost"
+            className="font-mono text-xs text-destructive hover:bg-destructive/10"
+            onClick={() => clearBrokerMut.mutate()}
+            disabled={clearBrokerMut.isPending}
+          >
+            <Trash2 className="h-4 w-4 mr-1" /> Remove
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
+  // Normal users: only their broker trade API is configurable.
   if (me.data && !isAdmin) {
     return (
       <div className="p-6 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
@@ -49,14 +161,10 @@ export default function Settings() {
             Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Integrations and market-data configuration.
+            Connect your broker API to push suggested trades.
           </p>
         </header>
-        <div className="panel-card py-16 text-center">
-          <p className="text-sm text-muted-foreground font-mono">
-            Nothing to configure here yet.
-          </p>
-        </div>
+        {brokerPanel}
       </div>
     );
   }
@@ -72,6 +180,8 @@ export default function Settings() {
           Integrations and market-data configuration.
         </p>
       </header>
+
+      {brokerPanel}
 
       <div className="panel-card p-6 sm:p-8 space-y-6">
         <div className="flex items-center justify-between border-b border-white/10 pb-4">

@@ -24,6 +24,7 @@ import {
   Briefcase,
   Coins,
   LayoutDashboard,
+  Lightbulb,
   LogOut,
   PanelLeft,
   Settings,
@@ -41,6 +42,7 @@ const menuItems = [
   { icon: Briefcase, label: "Portfolio", path: "/portfolio" },
   { icon: Coins, label: "Basis Improvement", path: "/basis" },
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
+  { icon: Lightbulb, label: "Suggestions", path: "/suggestions" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

@@ -75,6 +75,33 @@ export async function getYahooSpots(
   return out;
 }
 
+/** Beta (vs S&P 500) per symbol via quoteSummary — uses the crumb session. */
+export async function getYahooBetas(
+  symbols: string[],
+): Promise<Record<string, number>> {
+  const out: Record<string, number> = {};
+  if (symbols.length === 0) return out;
+  const s = await getSession();
+  await Promise.all(
+    symbols.map(async (sym) => {
+      try {
+        const j = await fetchJson(
+          `${Q2}/v10/finance/quoteSummary/${encodeURIComponent(sym)}?modules=summaryDetail&crumb=${encodeURIComponent(s.crumb)}`,
+          s.cookie,
+        );
+        const beta =
+          j?.quoteSummary?.result?.[0]?.summaryDetail?.beta?.raw;
+        if (typeof beta === "number" && isFinite(beta) && beta > 0) {
+          out[sym.toUpperCase()] = beta;
+        }
+      } catch {
+        /* per-symbol best effort */
+      }
+    }),
+  );
+  return out;
+}
+
 type YahooOption = {
   strike?: number;
   bid?: number;

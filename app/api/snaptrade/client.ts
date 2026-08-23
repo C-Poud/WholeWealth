@@ -254,6 +254,46 @@ export async function listAccountPositions(
   });
 }
 
+export interface AllPositionsItem {
+  instrument?: {
+    kind?: string; // stock | etf | option | crypto | ...
+    symbol?: string;
+    raw_symbol?: string;
+    description?: string | null;
+    // option instruments:
+    option_type?: string; // CALL | PUT
+    strike_price?: string | number;
+    expiration_date?: string;
+    underlying?: { symbol?: string; raw_symbol?: string } | null;
+  };
+  units?: string | number | null;
+  price?: string | number | null;
+  cost_basis?: string | number | null;
+  currency?: string | null;
+}
+
+/**
+ * Modern positions endpoint: returns stocks, ETFs AND option positions
+ * in one call (the legacy /positions endpoint omits options entirely).
+ * Throws SnaptradeError with status 503 while the brokerage is still
+ * performing its initial sync.
+ */
+export async function listAllAccountPositions(
+  config: SnaptradeConfig,
+  accountId: string,
+  userId: string,
+  userSecret: string,
+) {
+  const data = await snaptradeRequest<{ results?: AllPositionsItem[] }>(
+    config,
+    {
+      path: `/accounts/${accountId}/positions/all`,
+      query: { userId, userSecret },
+    },
+  );
+  return data.results ?? [];
+}
+
 export interface SnaptradeQuote {
   symbol?: string;
   last_trade_price?: number | null;

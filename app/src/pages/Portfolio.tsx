@@ -52,7 +52,17 @@ export default function Portfolio() {
 
   const syncMut = trpc.snaptrade.sync.useMutation({
     onSuccess: async (d) => {
-      toast.success(`Synced ${d.accounts} account(s), ${d.positions} position(s).`);
+      if (d.positions > 0) {
+        toast.success(`Synced ${d.accounts} account(s), ${d.positions} position(s).`);
+      } else if (d.syncBusy) {
+        toast.warning(
+          "SnapTrade is still syncing your brokerage account — hit Sync again in a minute.",
+        );
+      } else {
+        toast.warning(
+          "SnapTrade returned no positions. If you just connected, the first sync can take a few minutes — try Sync again shortly.",
+        );
+      }
       await invalidateAll();
     },
     onError: (e) => toast.error(e.message),

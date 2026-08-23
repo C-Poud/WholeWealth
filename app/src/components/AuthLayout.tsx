@@ -27,6 +27,7 @@ import {
   Lightbulb,
   LogOut,
   PanelLeft,
+  Rocket,
   Settings,
   ShieldAlert,
   Users,
@@ -43,6 +44,7 @@ const menuItems = [
   { icon: Coins, label: "Basis Improvement", path: "/basis" },
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
   { icon: Lightbulb, label: "Suggestions", path: "/suggestions" },
+  { icon: Rocket, label: "Career Optimiser", path: "/career" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
@@ -218,11 +220,15 @@ function AuthLayoutContent({
                         if (isMobile) {
                           // Close the drawer after picking a page
                           setOpenMobile(false);
-                        } else if (!isCollapsed) {
-                          // Auto-close the nav after selecting a page
+                          navigate(item.path);
+                        } else if (isCollapsed) {
+                          // Collapsed rail: clicking an icon just expands the nav
+                          toggleSidebar();
+                        } else {
+                          // Expanded: navigate, then auto-close back to the rail
+                          navigate(item.path);
                           toggleSidebar();
                         }
-                        navigate(item.path);
                       }}
                       tooltip={item.label}
                       className={`h-10 transition-all font-normal`}

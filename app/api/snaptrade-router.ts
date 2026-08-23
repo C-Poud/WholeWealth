@@ -12,9 +12,10 @@ import {
 import {
   getConnectionPortalLink,
   getSnaptradeConfig,
-  listAccountPositions,
+  listAllAccountPositions,
   listAccounts as stListAccounts,
   registerSnaptradeUser,
+  SnaptradeError,
 } from "./snaptrade/client";
 import crypto from "node:crypto";
 
@@ -84,7 +85,13 @@ export const snaptradeRouter = createRouter({
       return { url: portal.redirectURI };
     }),
 
-  /** Pull accounts + positions from SnapTrade and replace synced data. */
+  /**
+   * Pull accounts + positions from SnapTrade and replace synced data.
+   * Uses the modern /accounts/{id}/positions/all endpoint which returns
+   * stocks, ETFs AND option contracts (the legacy /positions endpoint
+   * silently omits options). A 503 means the brokerage's initial sync is
+   * still running — we report that as syncBusy instead of failing.
+   */
   sync: authedQuery.mutation(async ({ ctx }) => {
     const config = await getSnaptradeConfig();
     const identity = await getIdentity(ctx.user.id);
@@ -102,6 +109,7 @@ export const snaptradeRouter = createRouter({
     );
 
     let imported = 0;
+    let syncBusy = false;
     const rows: Array<{
       userId: number;
       accountId: number;
@@ -119,6 +127,12 @@ export const snaptradeRouter = createRouter({
       rawSymbol?: string;
     }> = [];
 
+    const num = (v: unknown): number | null => {
+      if (v === null || v === undefined || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+
     for (const acc of accounts) {
       const dbAcc = await upsertSnaptradeAccount(ctx.user.id, {
         snaptradeAccountId: acc.id,
@@ -129,55 +143,69 @@ export const snaptradeRouter = createRouter({
         currency: acc.balance?.total?.currency ?? "USD",
       });
 
-      const stPositions = await listAccountPositions(
-        config,
-        acc.id,
-        identity.snaptradeUserId,
-        identity.userSecret,
-      );
+      let items: Awaited<ReturnType<typeof listAllAccountPositions>>;
+      try {
+        items = await listAllAccountPositions(
+          config,
+          acc.id,
+          identity.snaptradeUserId,
+          identity.userSecret,
+        );
+      } catch (err) {
+        if (err instanceof SnaptradeError && err.status === 503) {
+          // Brokerage is still performing its initial sync — try again shortly.
+          syncBusy = true;
+          continue;
+        }
+        throw err;
+      }
 
-      for (const p of stPositions) {
-        const units = p.units ?? 0;
+      for (const p of items) {
+        const units = num(p.units) ?? 0;
         if (!units) continue;
-        const opt = p.symbol?.option_symbol;
-        const symObj = p.symbol?.symbol;
-        const baseSymbol = (
-          opt?.underlying_symbol?.symbol ??
-          symObj?.symbol ??
-          p.symbol?.raw_symbol ??
-          ""
-        ).toUpperCase();
-        if (!baseSymbol) continue;
+        const inst = p.instrument ?? {};
+        const kind = (inst.kind ?? "").toLowerCase();
+        const price = num(p.price);
+        const costBasis = num(p.cost_basis);
+        const currency = p.currency ?? "USD";
 
-        if (opt) {
+        if (kind === "option") {
+          const underlying = (
+            inst.underlying?.symbol ??
+            inst.underlying?.raw_symbol ??
+            ""
+          ).toUpperCase();
+          if (!underlying) continue;
           rows.push({
             userId: ctx.user.id,
             accountId: dbAcc.id,
-            symbol: baseSymbol,
-            description: symObj?.description ?? undefined,
+            symbol: underlying,
+            description: inst.description ?? undefined,
             assetType: "option",
             quantity: units,
-            costBasis: p.average_purchase_price ?? null,
-            price: p.price ?? null,
-            currency: p.currency?.code ?? "USD",
+            costBasis,
+            price,
+            currency,
             source: "snaptrade",
-            optionType: String(opt.option_type ?? "").toUpperCase() === "PUT" ? "put" : "call",
-            strike: opt.strike_price ?? null,
-            expiry: opt.expiration_date ?? null,
-            rawSymbol: opt.ticker ?? p.symbol?.raw_symbol ?? undefined,
+            optionType:
+              String(inst.option_type ?? "").toUpperCase() === "PUT" ? "put" : "call",
+            strike: num(inst.strike_price),
+            expiry: inst.expiration_date ?? null,
+            rawSymbol: inst.symbol ?? inst.raw_symbol ?? undefined,
           });
         } else {
-          const typeCode = symObj?.security_type?.code?.toLowerCase() ?? "";
+          const baseSymbol = (inst.raw_symbol ?? inst.symbol ?? "").toUpperCase();
+          if (!baseSymbol) continue;
           rows.push({
             userId: ctx.user.id,
             accountId: dbAcc.id,
             symbol: baseSymbol,
-            description: symObj?.description ?? undefined,
-            assetType: typeCode === "etf" ? "etf" : "stock",
+            description: inst.description ?? undefined,
+            assetType: kind === "etf" ? "etf" : kind === "stock" ? "stock" : "other",
             quantity: units,
-            costBasis: p.average_purchase_price ?? null,
-            price: p.price ?? null,
-            currency: p.currency?.code ?? "USD",
+            costBasis,
+            price,
+            currency,
             source: "snaptrade",
           });
         }
@@ -186,7 +214,11 @@ export const snaptradeRouter = createRouter({
     }
 
     await replacePositionsBySource(ctx.user.id, "snaptrade", rows);
-    return { accounts: accounts.length, positions: imported };
+    // Real data landed — drop the demo sample positions.
+    if (rows.length > 0) {
+      await replacePositionsBySource(ctx.user.id, "demo", []);
+    }
+    return { accounts: accounts.length, positions: imported, syncBusy };
   }),
 
   /** Remove the SnapTrade identity and all synced data. */

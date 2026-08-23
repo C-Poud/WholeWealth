@@ -9,6 +9,10 @@ module.exports = {
         display: ["Syne", "Inter", "ui-sans-serif", "sans-serif"],
         mono: ["Space Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
+      transitionTimingFunction: {
+        // Buttery iOS-style curve for the sidebar expand/collapse
+        smooth: "cubic-bezier(0.32, 0.72, 0, 1)",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

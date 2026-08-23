@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull, notInArray, or } from "drizzle-orm";
 import { getDb } from "./connection";
 import {
   appSettings,
@@ -108,6 +108,21 @@ export async function upsertSnaptradeAccount(
   return rows[0];
 }
 
+/** Enable/disable an account — disabled accounts' positions are hidden
+ *  from the portfolio, analytics and suggestions. */
+export async function setAccountEnabled(
+  userId: number,
+  accountId: number,
+  enabled: boolean,
+) {
+  await getDb()
+    .update(brokerAccounts)
+    .set({ enabled })
+    .where(
+      and(eq(brokerAccounts.id, accountId), eq(brokerAccounts.userId, userId)),
+    );
+}
+
 export async function getOrCreateImportAccount(userId: number) {
   const db = getDb();
   const existing = await db
@@ -140,11 +155,30 @@ export async function getOrCreateImportAccount(userId: number) {
 
 // ---- positions -------------------------------------------------------------
 
+/** All positions for a user, excluding ones in accounts they've disabled. */
 export async function listPositions(userId: number): Promise<Position[]> {
-  return getDb()
+  const db = getDb();
+  const disabledRows = await db
+    .select({ id: brokerAccounts.id })
+    .from(brokerAccounts)
+    .where(
+      and(eq(brokerAccounts.userId, userId), eq(brokerAccounts.enabled, false)),
+    );
+  const disabledIds = disabledRows.map((r) => Number(r.id));
+  return db
     .select()
     .from(positions)
-    .where(eq(positions.userId, userId));
+    .where(
+      and(
+        eq(positions.userId, userId),
+        disabledIds.length > 0
+          ? or(
+              isNull(positions.accountId),
+              notInArray(positions.accountId, disabledIds),
+            )
+          : undefined,
+      ),
+    );
 }
 
 export async function replacePositionsBySource(

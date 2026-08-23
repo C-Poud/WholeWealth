@@ -127,3 +127,15 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(240, 240, 242, 0.25);
 }
+
+/* Nav menu buttons: geometry animates in sync with the sidebar (slow + smooth),
+   while hover colors stay snappy. */
+.nav-menu-btn {
+  transition:
+    width 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    height 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    padding 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    gap 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 0.15s ease,
+    color 0.15s ease;
+}

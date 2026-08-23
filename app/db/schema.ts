@@ -6,6 +6,7 @@ import {
   text,
   timestamp,
   bigint,
+  boolean,
   double,
   index,
   uniqueIndex,
@@ -90,6 +91,8 @@ export const brokerAccounts = mysqlTable(
     number: varchar("number", { length: 64 }),
     cash: double("cash"),
     currency: varchar("currency", { length: 8 }).default("USD"),
+    /** Whether this account's positions count toward the portfolio. */
+    enabled: boolean("enabled").default(true).notNull(),
     source: mysqlEnum("source", ["snaptrade", "import", "demo"])
       .default("import")
       .notNull(),

@@ -7,6 +7,7 @@ import {
   listAccounts,
   replacePositionsBySource,
   saveIdentity,
+  setAccountEnabled,
   upsertSnaptradeAccount,
 } from "./queries/portfolio";
 import {
@@ -220,6 +221,30 @@ export const snaptradeRouter = createRouter({
     }
     return { accounts: accounts.length, positions: imported, syncBusy };
   }),
+
+  /** This user's connected accounts with their enabled flags. */
+  accounts: authedQuery.query(async ({ ctx }) => {
+    const accounts = await listAccounts(ctx.user.id);
+    return accounts.map((a) => ({
+      id: Number(a.id),
+      name: a.name ?? "Brokerage account",
+      institution: a.institution ?? null,
+      number: a.number ?? null,
+      cash: a.cash ?? null,
+      currency: a.currency ?? "USD",
+      source: a.source,
+      enabled: a.enabled,
+      lastSyncedAt: a.lastSyncedAt ?? null,
+    }));
+  }),
+
+  /** Include/exclude an account's positions from the portfolio. */
+  setAccountEnabled: authedQuery
+    .input(z.object({ accountId: z.number(), enabled: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      await setAccountEnabled(ctx.user.id, input.accountId, input.enabled);
+      return { ok: true };
+    }),
 
   /** Remove the SnapTrade identity and all synced data. */
   disconnect: authedQuery.mutation(async ({ ctx }) => {

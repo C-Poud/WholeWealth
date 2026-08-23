@@ -4,7 +4,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { KeyRound, Trash2, Webhook } from "lucide-react";
+import { Building2, KeyRound, Trash2, Webhook } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { fmtMoney } from "@/lib/format";
 
 export default function Settings() {
   const utils = trpc.useUtils();
@@ -60,6 +62,82 @@ export default function Settings() {
     },
     onError: (e) => toast.error(e.message),
   });
+
+  // ── Connected accounts (per user, everyone) ──
+  const accounts = trpc.snaptrade.accounts.useQuery();
+  const toggleAccountMut = trpc.snaptrade.setAccountEnabled.useMutation({
+    onSuccess: async (_d, vars) => {
+      toast.success(vars.enabled ? "Account included." : "Account excluded.");
+      await utils.snaptrade.accounts.invalidate();
+      await utils.portfolio.overview.invalidate();
+      await utils.analytics.invalidate();
+      await utils.suggestions.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const accountsPanel = (
+    <div className="panel-card p-6 sm:p-8 space-y-6">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-primary" /> Connected Accounts
+        </span>
+        <span className="font-mono text-xs text-muted-foreground">
+          {accounts.data?.length ?? 0} account(s)
+        </span>
+      </div>
+
+      <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+        Multiple brokerages can be connected at once. Toggle an account off to
+        exclude its positions from your portfolio, analytics and suggestions —
+        nothing is deleted, and you can switch it back on any time.
+      </p>
+
+      {accounts.isLoading ? (
+        <div className="text-xs text-muted-foreground font-mono">Loading…</div>
+      ) : !accounts.data || accounts.data.length === 0 ? (
+        <div className="p-4 rounded bg-white/[0.02] border border-white/5 font-mono text-xs text-muted-foreground">
+          No accounts connected yet — head to Portfolio and hit{" "}
+          <span className="text-primary font-bold">Connect</span> to link a
+          brokerage.
+        </div>
+      ) : (
+        <div className="divide-y divide-white/5">
+          {accounts.data.map((a) => (
+            <div
+              key={a.id}
+              className="flex items-center justify-between gap-4 py-4"
+            >
+              <div className="min-w-0">
+                <div className="font-bold text-sm text-white truncate">
+                  {a.name}
+                  {a.number ? (
+                    <span className="text-muted-foreground font-mono font-normal">
+                      {" "}
+                      ···{a.number.slice(-4)}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="font-mono text-xs text-muted-foreground mt-0.5 truncate">
+                  {[a.institution, a.source, a.cash != null ? fmtMoney(a.cash, a.currency) : null]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </div>
+              </div>
+              <Switch
+                checked={a.enabled}
+                disabled={toggleAccountMut.isPending}
+                onCheckedChange={(checked) =>
+                  toggleAccountMut.mutate({ accountId: a.id, enabled: checked })
+                }
+                aria-label={`Include ${a.name}`}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const brokerPanel = (
     <div className="panel-card p-6 sm:p-8 space-y-6">
@@ -161,9 +239,10 @@ export default function Settings() {
             Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Connect your broker API to push suggested trades.
+            Manage connected accounts and your broker trade API.
           </p>
         </header>
+        {accountsPanel}
         {brokerPanel}
       </div>
     );
@@ -180,6 +259,8 @@ export default function Settings() {
           Integrations and market-data configuration.
         </p>
       </header>
+
+      {accountsPanel}
 
       {brokerPanel}
 

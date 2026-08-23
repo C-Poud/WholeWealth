@@ -198,13 +198,15 @@ function AuthLayoutContent({
               >
                 <PanelLeft className="h-5 w-5 text-muted-foreground" />
               </button>
-              {!isCollapsed ? (
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold tracking-tight truncate">
-                    WheelDesk
-                  </span>
-                </div>
-              ) : null}
+              <div
+                className={`flex items-center gap-2 min-w-0 overflow-hidden transition-all duration-500 ${
+                  isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                }`}
+              >
+                <span className="font-semibold tracking-tight whitespace-nowrap">
+                  WheelDesk
+                </span>
+              </div>
             </div>
           </SidebarHeader>
 
@@ -231,12 +233,14 @@ function AuthLayoutContent({
                         }
                       }}
                       tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
+                      className={`h-10 nav-menu-btn font-normal`}
                     >
                       <item.icon
                         className={`h-5 w-5 ${isActive ? "text-primary" : ""}`}
                       />
-                      <span>{item.label}</span>
+                      <span className="whitespace-nowrap transition-opacity duration-300 group-data-[collapsible=icon]:opacity-0">
+                        {item.label}
+                      </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -256,7 +260,7 @@ function AuthLayoutContent({
                       {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                  <div className="flex-1 min-w-0 overflow-hidden transition-all duration-500 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:opacity-0">
                     <p className="text-sm font-medium truncate leading-none">
                       {user?.name || "-"}
                     </p>

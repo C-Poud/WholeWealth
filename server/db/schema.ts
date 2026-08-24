@@ -144,3 +144,44 @@ export const positions = mysqlTable(
   }),
 );
 export type Position = typeof positions.$inferSelect;
+
+/** User-curated watchlists. */
+export const watchlists = mysqlTable(
+  "watchlists",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    name: varchar("name", { length: 128 }).notNull().default("My Watchlist"),
+    description: varchar("description", { length: 255 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (t) => ({
+    userIdx: index("watchlists_user_idx").on(t.userId),
+  }),
+);
+export type Watchlist = typeof watchlists.$inferSelect;
+
+/** Individual ticker items in a user watchlist. */
+export const watchlistItems = mysqlTable(
+  "watchlist_items",
+  {
+    id: serial("id").primaryKey(),
+    watchlistId: bigint("watchlistId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => watchlists.id),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    symbol: varchar("symbol", { length: 32 }).notNull(),
+    notes: varchar("notes", { length: 255 }),
+    targetStrike: double("targetStrike"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (t) => ({
+    watchlistIdx: index("watchlist_items_wl_idx").on(t.watchlistId),
+    userSymIdx: index("watchlist_items_user_sym_idx").on(t.watchlistId, t.symbol),
+  }),
+);
+export type WatchlistItem = typeof watchlistItems.$inferSelect;

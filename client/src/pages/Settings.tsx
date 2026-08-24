@@ -76,33 +76,42 @@ export default function Settings() {
     onError: (e) => toast.error(e.message),
   });
 
+  const deleteAccountMut = trpc.snaptrade.deleteAccount.useMutation({
+    onSuccess: async () => {
+      toast.success("Account and its positions deleted. Data will no longer pull.");
+      await utils.snaptrade.accounts.invalidate();
+      await utils.portfolio.overview.invalidate();
+      await utils.analytics.invalidate();
+      await utils.suggestions.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const accountsPanel = (
-    <div className="panel-card p-6 sm:p-8 space-y-6">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
-        <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+    <div className="panel-box p-6 sm:p-8 space-y-6">
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <span className="meta-label flex items-center gap-2">
           <Building2 className="h-4 w-4 text-primary" /> Connected Accounts
         </span>
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="meta-label">
           {accounts.data?.length ?? 0} account(s)
         </span>
       </div>
 
-      <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-        Multiple brokerages can be connected at once. Toggle an account off to
-        exclude its positions from your portfolio, analytics and suggestions —
-        nothing is deleted, and you can switch it back on any time.
+      <p className="text-xs text-muted-foreground leading-relaxed font-sans">
+        Manage connected brokerages. Toggle an account off to temporarily exclude its positions, or delete it completely so data is no longer pulled into your portfolio.
       </p>
 
       {accounts.isLoading ? (
         <div className="text-xs text-muted-foreground font-mono">Loading…</div>
       ) : !accounts.data || accounts.data.length === 0 ? (
-        <div className="p-4 rounded bg-white/[0.02] border border-white/5 font-mono text-xs text-muted-foreground">
+        <div className="p-4 rounded bg-white/[0.02] border border-white/[0.06] font-mono text-xs text-muted-foreground">
           No accounts connected yet — head to Portfolio and hit{" "}
           <span className="text-primary font-bold">Connect</span> to link a
           brokerage.
         </div>
       ) : (
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-white/[0.04]">
           {accounts.data.map((a) => (
             <div
               key={a.id}
@@ -124,14 +133,39 @@ export default function Settings() {
                     .join(" · ")}
                 </div>
               </div>
-              <Switch
-                checked={a.enabled}
-                disabled={toggleAccountMut.isPending}
-                onCheckedChange={(checked) =>
-                  toggleAccountMut.mutate({ accountId: a.id, enabled: checked })
-                }
-                aria-label={`Include ${a.name}`}
-              />
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    {a.enabled ? "Active" : "Disabled"}
+                  </span>
+                  <Switch
+                    checked={a.enabled}
+                    disabled={toggleAccountMut.isPending || deleteAccountMut.isPending}
+                    onCheckedChange={(checked) =>
+                      toggleAccountMut.mutate({ accountId: a.id, enabled: checked })
+                    }
+                    aria-label={`Include ${a.name}`}
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={deleteAccountMut.isPending}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `Delete ${a.name}? Its positions will be removed and no new data will pull.`
+                      )
+                    ) {
+                      deleteAccountMut.mutate({ accountId: a.id });
+                    }
+                  }}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  title="Delete account"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -140,15 +174,15 @@ export default function Settings() {
   );
 
   const brokerPanel = (
-    <div className="panel-card p-6 sm:p-8 space-y-6">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
-        <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+    <div className="panel-box p-6 sm:p-8 space-y-6">
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <span className="meta-label flex items-center gap-2">
           <Webhook className="h-4 w-4 text-primary" /> Broker Trade API
         </span>
         {broker.isLoading ? (
           <span className="text-xs text-muted-foreground font-mono">Loading…</span>
         ) : broker.data?.configured ? (
-          <span className="font-mono text-xs uppercase px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/30 font-bold">
+          <span className="neon-badge">
             Configured
           </span>
         ) : (
@@ -156,7 +190,7 @@ export default function Settings() {
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+      <p className="text-xs text-muted-foreground leading-relaxed font-sans">
         When you press “Push to broker” on a suggested trade, we POST the trade
         as JSON to this endpoint with your API key as a Bearer token. Point it
         at your broker’s order API (or an automation webhook) to route
@@ -164,7 +198,7 @@ export default function Settings() {
       </p>
 
       {broker.data?.configured && (
-        <div className="p-4 rounded bg-white/[0.02] border border-white/5 font-mono text-xs text-muted-foreground space-y-1">
+        <div className="p-4 rounded bg-white/[0.02] border border-white/[0.06] font-mono text-xs text-muted-foreground space-y-1">
           <div>
             Endpoint: <span className="text-white font-bold break-all">{broker.data.endpoint}</span>
           </div>
@@ -176,7 +210,7 @@ export default function Settings() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="font-mono text-xs uppercase text-muted-foreground">
+          <Label className="meta-label">
             API Endpoint URL
           </Label>
           <Input
@@ -186,11 +220,11 @@ export default function Settings() {
             }
             placeholder="https://api.yourbroker.com/v1/orders"
             autoComplete="off"
-            className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+            className="bg-[#0a0a0b] border-white/10 font-mono text-sm"
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="font-mono text-xs uppercase text-muted-foreground">
+          <Label className="meta-label">
             API Key
           </Label>
           <Input
@@ -201,7 +235,7 @@ export default function Settings() {
             }
             placeholder="••••••••••••••••"
             autoComplete="off"
-            className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+            className="bg-[#0a0a0b] border-white/10 font-mono text-sm"
           />
         </div>
       </div>
@@ -234,11 +268,11 @@ export default function Settings() {
   if (me.data && !isAdmin) {
     return (
       <div className="p-4 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
-        <header>
-          <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+        <header className="pb-6 border-b border-white/[0.08]">
+          <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-[-0.05em] text-[#f0f0f2] leading-none uppercase">
             Settings
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="meta-label mt-2">
             Manage connected accounts and your broker trade API.
           </p>
         </header>
@@ -251,11 +285,11 @@ export default function Settings() {
   return (
     <div className="p-4 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
       {/* Header */}
-      <header>
-        <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+      <header className="pb-6 border-b border-white/[0.08]">
+        <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-[-0.05em] text-[#f0f0f2] leading-none uppercase">
           Settings
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="meta-label mt-2">
           Integrations and market-data configuration.
         </p>
       </header>
@@ -264,15 +298,15 @@ export default function Settings() {
 
       {brokerPanel}
 
-      <div className="panel-card p-6 sm:p-8 space-y-6">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+      <div className="panel-box p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+          <span className="meta-label flex items-center gap-2">
             <KeyRound className="h-4 w-4 text-primary" /> SnapTrade Integration
           </span>
           {isLoading ? (
             <span className="text-xs text-muted-foreground font-mono">Loading…</span>
           ) : data?.configured ? (
-            <span className="font-mono text-xs uppercase px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/30 font-bold">
+            <span className="neon-badge">
               Configured
             </span>
           ) : (
@@ -281,7 +315,7 @@ export default function Settings() {
         </div>
 
         {data?.configured && (
-          <div className="p-4 rounded bg-white/[0.02] border border-white/5 font-mono text-xs text-muted-foreground space-y-1">
+          <div className="p-4 rounded bg-white/[0.02] border border-white/[0.06] font-mono text-xs text-muted-foreground space-y-1">
             <div>
               Client ID: <span className="text-white font-bold">{data.clientIdMasked}</span>
             </div>
@@ -293,7 +327,7 @@ export default function Settings() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="font-mono text-xs uppercase text-muted-foreground">
+            <Label className="meta-label">
               Client ID
             </Label>
             <Input
@@ -303,11 +337,11 @@ export default function Settings() {
               }
               placeholder="YOUR-CLIENT-ID"
               autoComplete="off"
-              className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+              className="bg-[#0a0a0b] border-white/10 font-mono text-sm"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="font-mono text-xs uppercase text-muted-foreground">
+            <Label className="meta-label">
               Consumer Key
             </Label>
             <Input
@@ -318,7 +352,7 @@ export default function Settings() {
               }
               placeholder="••••••••••••••••"
               autoComplete="off"
-              className="bg-[#0c0c0e] border-white/10 font-mono text-sm"
+              className="bg-[#0a0a0b] border-white/10 font-mono text-sm"
             />
           </div>
         </div>
@@ -343,7 +377,7 @@ export default function Settings() {
           )}
         </div>
 
-        <p className="text-xs text-muted-foreground leading-relaxed font-mono pt-4 border-t border-white/5">
+        <p className="text-xs text-muted-foreground leading-relaxed font-sans pt-4 border-t border-white/[0.08]">
           Credentials are verified against the SnapTrade API before saving, then stored securely in the app database. Without credentials the app runs on deterministic demo market data.
         </p>
       </div>

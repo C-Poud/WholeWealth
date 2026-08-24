@@ -71,37 +71,65 @@ export const suggestionsRouter = createRouter({
     const spxSpot = indexSpots["^GSPC"] ?? null;
     const spySpot = indexSpots["SPY"] ?? null;
 
+    let portfolioValue = 0;
     const breakdown = positions.map((p) => {
       const sym = p.symbol.toUpperCase();
       const spot = spots[sym] ?? p.price ?? p.costBasis ?? 0;
       const beta = betas[sym] ?? 1;
+      const mult = p.assetType === "option" ? 100 : 1;
+      const posVal = p.quantity * spot * mult;
+      portfolioValue += Math.abs(posVal);
+
       let deltaDollars: number;
+      let rawDelta = 0; // instrument delta (e.g. 100 shares = +100 delta)
+
       if (p.assetType === "option") {
         const dir = p.optionType === "put" ? -1 : 1;
-        deltaDollars =
-          dir * ASSUMED_OPTION_DELTA * 100 * p.quantity * spot * beta;
+        rawDelta = dir * ASSUMED_OPTION_DELTA * 100 * p.quantity;
+        deltaDollars = rawDelta * spot * beta;
       } else {
+        rawDelta = p.quantity;
         deltaDollars = p.quantity * spot * beta;
       }
+
+      // SPX beta delta in decimal shares/equivalent
+      const spxDecimalDelta = spxSpot && spxSpot > 0 ? deltaDollars / spxSpot : (spot > 0 ? (rawDelta * beta) : 0);
+
       return {
         symbol: sym,
         assetType: p.assetType,
         quantity: p.quantity,
         price: round2(spot),
         beta: round2(beta),
-        spxDelta: round2(deltaDollars),
+        spxDeltaDollars: round2(deltaDollars),
+        spxDelta: round2(deltaDollars), // backwards-compatible field
+        spxBetaDelta: +(spxDecimalDelta.toFixed(2)), // decimal delta unit (e.g. +14.25 SPX Δ)
       };
     });
 
-    const totalDelta = round2(
-      breakdown.reduce((sum, b) => sum + b.spxDelta, 0),
+    const totalDeltaDollars = round2(
+      breakdown.reduce((sum, b) => sum + b.spxDeltaDollars, 0),
     );
-    const absDelta = Math.abs(totalDelta);
-    const neutral = absDelta < NEUTRAL_THRESHOLD_DOLLARS;
+    const absDeltaDollars = Math.abs(totalDeltaDollars);
+    const neutral = absDeltaDollars < NEUTRAL_THRESHOLD_DOLLARS;
+
+    // Whole portfolio weighted beta = sum(weight_i * beta_i)
+    let weightedBetaSum = 0;
+    for (const b of breakdown) {
+      weightedBetaSum += Math.abs(b.quantity * b.price * (b.assetType === "option" ? 100 : 1)) * b.beta;
+    }
+    const portfolioBeta = portfolioValue > 0 ? +(weightedBetaSum / portfolioValue).toFixed(2) : 1.0;
+
+    // Portfolio SPX Beta-Weighted Delta in pure decimals (SPX contract / index equivalent shares)
+    // Beta-Weighted Delta (Decimal) = Total Beta Dollar Delta / SPX Index Price
+    const spxBetaDeltaDecimal = spxSpot && spxSpot > 0 ? +(totalDeltaDollars / spxSpot).toFixed(2) : 0;
+    // SPY ETF equivalent shares (1/10th SPX)
+    const spyBetaDeltaDecimal = spySpot && spySpot > 0 ? +(totalDeltaDollars / spySpot).toFixed(2) : +(spxBetaDeltaDecimal * 10).toFixed(2);
 
     const ideas: TradeIdea[] = [];
     if (!neutral && spxSpot) {
-      const long = totalDelta > 0; // net long → add negative delta
+      const long = totalDeltaDollars > 0; // net long → add negative delta
+      const absDelta = absDeltaDollars;
       const T = 30 / 365;
 
       if (long) {
@@ -238,12 +266,17 @@ export const suggestionsRouter = createRouter({
       hasPositions: true as const,
       spxSpot: spxSpot ? round2(spxSpot) : null,
       spySpot: spySpot ? round2(spySpot) : null,
-      totalDelta,
+      totalDelta: totalDeltaDollars,
+      totalDeltaDollars,
+      spxBetaDelta: spxBetaDeltaDecimal, // Pure decimal representation (no $)
+      spyBetaDelta: spyBetaDeltaDecimal, // SPY share equivalent decimal
+      portfolioBeta,                     // Portfolio weighted beta decimal (e.g. 1.15)
+      portfolioValue: round2(portfolioValue),
       neutral,
-      direction: totalDelta > 0 ? "long" : totalDelta < 0 ? "short" : "flat",
+      direction: totalDeltaDollars > 0 ? "long" : totalDeltaDollars < 0 ? "short" : "flat",
       dataSource: "yahoo" as const,
       breakdown: breakdown.sort(
-        (a, b) => Math.abs(b.spxDelta) - Math.abs(a.spxDelta),
+        (a, b) => Math.abs(b.spxDeltaDollars) - Math.abs(a.spxDeltaDollars),
       ),
       ideas,
       note: "Betas from Yahoo Finance (vs S&P 500). Option positions use an assumed |Δ| 0.5 when greeks are unavailable. Estimates, not financial advice.",

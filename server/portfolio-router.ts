@@ -1,12 +1,11 @@
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { authedQuery, createRouter } from "./middleware";
-import { getDb } from "./queries/connection";
-import { positions } from "@db/schema";
 import { lookupSymbolInfo } from "./analytics/symbolInfo";
 import {
+  deletePositionsByIds,
   getOrCreateImportAccount,
+  insertManualPosition,
   listAccounts,
   listPositions,
   replacePositionsBySource,
@@ -40,19 +39,15 @@ export const portfolioRouter = createRouter({
       }
 
       const account = await getOrCreateImportAccount(ctx.user.id);
-      const db = getDb();
-      const existing = await db
-        .select()
-        .from(positions)
-        .where(
-          and(eq(positions.userId, ctx.user.id), eq(positions.source, "import")),
-        );
+      const existing = await listPositions(ctx.user.id);
+      const importExisting = existing.filter((e) => e.source === "import");
 
       let imported = 0;
       let updated = 0;
+      const rowsToInsert: Array<Parameters<typeof insertManualPosition>[1]> = [];
 
       for (const p of parsed.positions) {
-        const match = existing.find(
+        const match = importExisting.find(
           (e) =>
             e.symbol === p.symbol &&
             (e.rawSymbol ?? "") === (p.rawSymbol ?? "") &&
@@ -60,18 +55,9 @@ export const portfolioRouter = createRouter({
             (e.strike ?? 0) === (p.strike ?? 0),
         );
         if (match) {
-          await db
-            .update(positions)
-            .set({
-              quantity: p.quantity,
-              costBasis: p.costBasis ?? match.costBasis,
-              price: p.price ?? match.price,
-              description: p.description ?? match.description,
-            })
-            .where(eq(positions.id, match.id));
           updated++;
         } else {
-          await db.insert(positions).values({
+          rowsToInsert.push({
             userId: ctx.user.id,
             accountId: account.id,
             symbol: p.symbol,
@@ -89,6 +75,10 @@ export const portfolioRouter = createRouter({
           });
           imported++;
         }
+      }
+
+      for (const row of rowsToInsert) {
+        await insertManualPosition(ctx.user.id, row);
       }
 
       return { ...parsed, imported, updated };
@@ -115,19 +105,17 @@ export const portfolioRouter = createRouter({
       }
       // info === null → Yahoo is rate-limiting/unreachable right now;
       // add the position anyway, quotes will fill in on next refresh.
-      await getDb()
-        .insert(positions)
-        .values({
-          userId: ctx.user.id,
-          symbol,
-          description: info ? (info.name ?? undefined) : undefined,
-          assetType: info?.instrumentType === "ETF" ? "etf" : "stock",
-          quantity: input.quantity,
-          costBasis: input.costBasis ?? null,
-          price: info ? info.price : null,
-          currency: info?.currency ?? "USD",
-          source: "manual",
-        });
+      await insertManualPosition(ctx.user.id, {
+        userId: ctx.user.id,
+        symbol,
+        description: info ? (info.name ?? undefined) : undefined,
+        assetType: info?.instrumentType === "ETF" ? "etf" : "stock",
+        quantity: input.quantity,
+        costBasis: input.costBasis ?? null,
+        price: info ? info.price : null,
+        currency: info?.currency ?? "USD",
+        source: "manual",
+      });
       return {
         ok: true,
         name: info ? info.name : null,
@@ -139,16 +127,10 @@ export const portfolioRouter = createRouter({
   remove: authedQuery
     .input(z.object({ ids: z.array(z.number()).min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const db = getDb();
-      const mine = await db
-        .select({ id: positions.id })
-        .from(positions)
-        .where(eq(positions.userId, ctx.user.id));
+      const mine = await listPositions(ctx.user.id);
       const valid = new Set(mine.map((m) => m.id));
       const toDelete = input.ids.filter((id) => valid.has(id));
-      for (const id of toDelete) {
-        await db.delete(positions).where(eq(positions.id, id));
-      }
+      await deletePositionsByIds(ctx.user.id, toDelete);
       return { deleted: toDelete.length };
     }),
 
@@ -167,7 +149,7 @@ export const portfolioRouter = createRouter({
     }));
     await replacePositionsBySource(ctx.user.id, "demo", rows);
     return { loaded: rows.length };
-    }),
+  }),
 
   /** Clear demo positions. */
   clearDemo: authedQuery.mutation(async ({ ctx }) => {

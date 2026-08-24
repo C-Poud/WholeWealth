@@ -6,6 +6,7 @@ import { analyticsRouter } from "./analytics-router";
 import { settingsRouter } from "./settings-router";
 import { adminRouter } from "./admin-router";
 import { suggestionsRouter } from "./suggestions-router";
+import { watchlistRouter } from "./watchlist-router";
 
 export const appRouter = createRouter({
   ping: publicQuery.query(() => ({ ok: true, ts: Date.now() })),
@@ -16,6 +17,7 @@ export const appRouter = createRouter({
   settings: settingsRouter,
   admin: adminRouter,
   suggestions: suggestionsRouter,
+  watchlist: watchlistRouter,
 });
 
 export type AppRouter = typeof appRouter;

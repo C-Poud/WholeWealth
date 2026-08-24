@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { authedQuery, createRouter } from "./middleware";
 import {
+  deleteAccount,
   deleteIdentity,
   getIdentity,
   listAccounts,
@@ -243,6 +244,14 @@ export const snaptradeRouter = createRouter({
     .input(z.object({ accountId: z.number(), enabled: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       await setAccountEnabled(ctx.user.id, input.accountId, input.enabled);
+      return { ok: true };
+    }),
+
+  /** Delete a connected account and its positions completely. */
+  deleteAccount: authedQuery
+    .input(z.object({ accountId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await deleteAccount(ctx.user.id, input.accountId);
       return { ok: true };
     }),
 

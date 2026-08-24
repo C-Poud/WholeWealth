@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { trpc } from "@/providers/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSearchParams } from "react-router";
 import {
   Select,
   SelectContent,
@@ -20,12 +21,20 @@ function scoreLabel(s: number): string {
 }
 
 export default function Basis() {
+  const [searchParams] = useSearchParams();
+  const paramSym = searchParams.get("symbol");
   const { data, isLoading, error, refetch } = trpc.analytics.basisSuggestions.useQuery();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(paramSym);
+
+  useEffect(() => {
+    if (paramSym) setSelected(paramSym.toUpperCase());
+  }, [paramSym]);
 
   const suggestions = useMemo(() => data?.suggestions ?? [], [data]);
   const current =
-    suggestions.find((s) => s.symbol === selected) ?? suggestions[0];
+    suggestions.find(
+      (s) => s.symbol.toUpperCase() === (selected ?? paramSym ?? "").toUpperCase(),
+    ) ?? suggestions[0];
 
   if (isLoading) {
     return (
@@ -40,23 +49,23 @@ export default function Basis() {
   return (
     <div className="p-4 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
         <div>
-          <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+          <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-[-0.05em] text-[#f0f0f2] leading-none uppercase">
             Basis Improvement
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="meta-label mt-2">
             Covered-call suggestions that lower your cost basis. Small percentages compound dramatically.
           </p>
         </div>
         {data?.mode === "demo" && (
           <div className="neon-badge shrink-0 self-start md:self-auto">
-            Demo market data
+            Demo Market Data
           </div>
         )}
         {data?.mode === "yahoo" && (
           <div className="neon-badge shrink-0 self-start md:self-auto">
-            Real quotes · 15 min delay
+            Real quotes · 15m delay
           </div>
         )}
       </header>
@@ -76,7 +85,7 @@ export default function Basis() {
       )}
 
       {suggestions.length === 0 ? (
-        <div className="panel-card py-20 text-center space-y-4">
+        <div className="panel-box py-20 text-center space-y-4">
           <Coins className="h-12 w-12 mx-auto text-muted-foreground stroke-1" />
           <p className="text-xl font-display font-bold">Nothing to optimize yet</p>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
@@ -88,7 +97,7 @@ export default function Basis() {
       ) : (
         <>
           <div className="space-y-2">
-            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            <div className="meta-label">
               Select Position
             </div>
             <Select value={current?.symbol} onValueChange={setSelected}>
@@ -108,14 +117,14 @@ export default function Basis() {
           </div>
 
           {current && !current.best && (
-            <div className="panel-card p-8 text-center text-sm text-muted-foreground">
+            <div className="panel-box p-8 text-center text-sm text-muted-foreground">
               No suitable covered-call candidates for {current.symbol} in the
               10–60 DTE, Δ0.08–0.45 window right now.
             </div>
           )}
 
           {current?.best && (
-            <div className="panel-card p-6 sm:p-8 grid gap-8 lg:grid-cols-2">
+            <div className="panel-box p-6 sm:p-8 grid gap-8 lg:grid-cols-2">
               {/* Left: metrics */}
               <div className="space-y-6">
                 <div>
@@ -137,7 +146,7 @@ export default function Basis() {
                 </div>
 
                 <div>
-                  <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                  <div className="meta-label mb-2">
                     Mechanic Score
                   </div>
                   <ScoreBar
@@ -146,28 +155,28 @@ export default function Basis() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 p-4 rounded-lg bg-white/[0.02] border border-white/5">
+                <div className="grid grid-cols-3 gap-3 p-4 rounded bg-white/[0.02] border border-white/[0.06]">
                   <div>
-                    <div className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider">
+                    <div className="meta-label">
                       Yield
                     </div>
-                    <div className="font-mono text-lg font-bold text-primary">
+                    <div className="font-mono text-lg font-bold text-primary mt-1">
                       {fmtPct(current.best.yieldPct)}
                     </div>
                   </div>
                   <div>
-                    <div className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider">
+                    <div className="meta-label">
                       Annualized
                     </div>
-                    <div className="font-mono text-lg font-bold text-white">
+                    <div className="font-mono text-lg font-bold text-white mt-1">
                       {fmtPct(current.best.annualizedYieldPct, 1)}
                     </div>
                   </div>
                   <div>
-                    <div className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider">
+                    <div className="meta-label">
                       New Basis
                     </div>
-                    <div className="font-mono text-lg font-bold text-white">
+                    <div className="font-mono text-lg font-bold text-white mt-1">
                       {fmtMoney(current.best.newBasis)}
                     </div>
                   </div>
@@ -206,7 +215,7 @@ export default function Basis() {
               {/* Right: narrative */}
               <div className="text-sm leading-relaxed text-muted-foreground flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 lg:pl-8 pt-6 lg:pt-0">
                 <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-3">
+                  <span className="meta-label block mb-3">
                     Execution Plan & Rationale
                   </span>
                   <p className="text-zinc-300">
@@ -235,7 +244,7 @@ export default function Basis() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/5">
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground block mb-2">
+                  <span className="meta-label block mb-2">
                     Key Drivers
                   </span>
                   <ul className="space-y-1.5 list-disc pl-4 text-xs text-muted-foreground">
@@ -249,23 +258,23 @@ export default function Basis() {
           )}
 
           {current && current.alternatives.length > 0 && (
-            <div className="panel-card p-6 overflow-hidden">
-              <div className="mb-4 font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <div className="panel-box p-6 overflow-hidden">
+              <div className="mb-4 meta-label">
                 Alternative strikes & expiries — {current.symbol}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-white/10 text-muted-foreground text-xs font-normal">
-                      <th className="pb-3 text-right font-normal">Score</th>
-                      <th className="pb-3 text-right font-normal">Strike</th>
-                      <th className="pb-3 font-normal">Expiry</th>
-                      <th className="pb-3 text-right font-normal">DTE</th>
-                      <th className="pb-3 text-right font-normal">Δ</th>
-                      <th className="pb-3 text-right font-normal">Bid</th>
-                      <th className="pb-3 text-right font-normal">Yield</th>
-                      <th className="pb-3 text-right font-normal">Annualized</th>
-                      <th className="pb-3 text-right font-normal">New basis</th>
+                      <th className="pb-3 text-right font-normal meta-label">Score</th>
+                      <th className="pb-3 text-right font-normal meta-label">Strike</th>
+                      <th className="pb-3 font-normal meta-label">Expiry</th>
+                      <th className="pb-3 text-right font-normal meta-label">DTE</th>
+                      <th className="pb-3 text-right font-normal meta-label">Δ</th>
+                      <th className="pb-3 text-right font-normal meta-label">Bid</th>
+                      <th className="pb-3 text-right font-normal meta-label">Yield</th>
+                      <th className="pb-3 text-right font-normal meta-label">Annualized</th>
+                      <th className="pb-3 text-right font-normal meta-label">New basis</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04] font-mono text-xs">

@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { trpc } from "@/providers/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSearchParams } from "react-router";
 import {
   Select,
   SelectContent,
@@ -20,11 +21,20 @@ function scoreLabel(s: number): string {
 }
 
 export default function Risk() {
+  const [searchParams] = useSearchParams();
+  const paramSym = searchParams.get("symbol");
   const { data, isLoading, error, refetch } = trpc.analytics.riskReports.useQuery();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(paramSym);
+
+  useEffect(() => {
+    if (paramSym) setSelected(paramSym.toUpperCase());
+  }, [paramSym]);
 
   const reports = useMemo(() => data?.reports ?? [], [data]);
-  const current = reports.find((r) => r.symbol === selected) ?? reports[0];
+  const current =
+    reports.find(
+      (r) => r.symbol.toUpperCase() === (selected ?? paramSym ?? "").toUpperCase(),
+    ) ?? reports[0];
 
   if (isLoading) {
     return (
@@ -39,25 +49,25 @@ export default function Risk() {
   return (
     <div className="p-4 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
         <div>
-          <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-[#f0f0f2] leading-tight">
+          <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-[-0.05em] text-[#f0f0f2] leading-none uppercase">
             Extreme Risk Detection
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="meta-label mt-2">
             Expected-move ranges derived from implied volatility, plus portfolio
-            concentration risk. Total portfolio value{" "}
+            concentration risk. Total value{" "}
             <span className="font-mono text-white font-bold">{fmtMoney(data?.portfolioValue)}</span>.
           </p>
         </div>
         {data?.mode === "demo" && (
           <div className="neon-badge shrink-0 self-start md:self-auto">
-            Demo market data
+            Demo Market Data
           </div>
         )}
         {data?.mode === "yahoo" && (
           <div className="neon-badge shrink-0 self-start md:self-auto">
-            Real quotes · 15 min delay
+            Real quotes · 15m delay
           </div>
         )}
       </header>
@@ -77,7 +87,7 @@ export default function Risk() {
       )}
 
       {reports.length === 0 ? (
-        <div className="panel-card py-20 text-center space-y-4">
+        <div className="panel-box py-20 text-center space-y-4">
           <ShieldAlert className="h-12 w-12 mx-auto text-muted-foreground stroke-1" />
           <p className="text-xl font-display font-bold">No positions to analyze</p>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
@@ -88,7 +98,7 @@ export default function Risk() {
       ) : (
         <>
           <div className="space-y-2">
-            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            <div className="meta-label">
               Select Position
             </div>
             <Select value={current?.symbol} onValueChange={setSelected}>
@@ -106,7 +116,7 @@ export default function Risk() {
           </div>
 
           {current && (
-            <div className="panel-card p-6 sm:p-8 space-y-6">
+            <div className="panel-box p-6 sm:p-8 space-y-6">
               <div className="flex items-baseline justify-between flex-wrap gap-2 border-b border-white/10 pb-4">
                 <div className="font-display font-bold text-xl text-white">
                   Extreme Risk Detection: {current.symbol}
@@ -132,7 +142,7 @@ export default function Risk() {
               </div>
 
               <div>
-                <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                <div className="meta-label mb-2">
                   Risk Score
                 </div>
                 <ScoreBar
@@ -145,8 +155,8 @@ export default function Risk() {
               {current.lower2 != null ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-5 text-center">
-                      <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                    <div className="rounded border border-white/10 bg-white/[0.02] p-5 text-center">
+                      <div className="meta-label">
                         −2σ Boundary
                       </div>
                       <div className="mt-2 font-mono text-2xl sm:text-3xl font-bold text-white">
@@ -154,7 +164,7 @@ export default function Risk() {
                       </div>
                     </div>
 
-                    <div className="rounded-lg bg-primary p-5 text-center text-black">
+                    <div className="rounded bg-primary p-5 text-center text-black">
                       <div className="font-mono text-xs uppercase tracking-wider font-bold opacity-80">
                         Current Price
                       </div>
@@ -163,8 +173,8 @@ export default function Risk() {
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-5 text-center">
-                      <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                    <div className="rounded border border-white/10 bg-white/[0.02] p-5 text-center">
+                      <div className="meta-label">
                         +2σ Boundary
                       </div>
                       <div className="mt-2 font-mono text-2xl sm:text-3xl font-bold text-white">
@@ -174,7 +184,7 @@ export default function Risk() {
                   </div>
 
                   {/* 95% probable range bar */}
-                  <div className="p-4 rounded-lg bg-white/[0.02] border border-white/5 space-y-2">
+                  <div className="p-4 rounded bg-white/[0.02] border border-white/5 space-y-2">
                     <div className="flex font-mono text-[10px] text-muted-foreground">
                       <span className="w-[15%] text-center">2.5%</span>
                       <span className="flex-1 text-center text-primary font-bold">
@@ -223,10 +233,10 @@ export default function Risk() {
               )}
 
               <div className="pt-4 border-t border-white/10">
-                <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+                <span className="meta-label block mb-2">
                   Risk Notes
                 </span>
-                <ul className="space-y-1.5 list-disc pl-4 text-xs text-muted-foreground">
+                <ul className="space-y-1.5 list-disc pl-4 text-xs text-muted-foreground font-sans">
                   {current.notes.map((n, i) => (
                     <li key={i}>{n}</li>
                   ))}
@@ -241,7 +251,7 @@ export default function Risk() {
               <button
                 key={r.symbol}
                 onClick={() => setSelected(r.symbol)}
-                className={`panel-card p-5 text-left transition-all hover:border-primary/50 cursor-pointer ${
+                className={`panel-box p-5 text-left transition-all hover:border-primary/50 cursor-pointer ${
                   current?.symbol === r.symbol ? "border-primary shadow-[0_0_12px_rgba(212,255,0,0.15)]" : ""
                 }`}
               >
@@ -252,7 +262,7 @@ export default function Risk() {
                   </span>
                 </div>
                 {r.description && (
-                  <div className="mt-0.5 font-mono text-xs text-muted-foreground truncate">
+                  <div className="mt-0.5 font-sans text-xs text-muted-foreground truncate">
                     {r.description}
                   </div>
                 )}

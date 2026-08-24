@@ -2,7 +2,7 @@ import { getDb } from "../queries/connection";
 // TODO: import tables from "./schema"
 
 async function seed() {
-  const db = getDb();
+  const _db = getDb();
   console.log("Seeding database...");
 
   // TODO: insert seed data, e.g.

@@ -14,7 +14,7 @@ module.exports = {
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
         display: ["Syne", "Inter", "ui-sans-serif", "sans-serif"],
-        mono: ["Space Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+        mono: ["JetBrains Mono", "Space Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       transitionTimingFunction: {
         // Buttery iOS-style curve for the sidebar expand/collapse

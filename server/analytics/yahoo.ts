@@ -128,6 +128,71 @@ export async function getYahooSpots(
   return out;
 }
 
+export interface WatchlistQuote {
+  symbol: string;
+  name: string | null;
+  price: number;
+  change: number;
+  changePct: number;
+  previousClose: number | null;
+  dayHigh: number | null;
+  dayLow: number | null;
+  volume: number | null;
+  beta: number;
+}
+
+/** Rich quotes + day change + beta for a watchlist. */
+export async function getWatchlistQuotes(
+  symbols: string[],
+): Promise<Record<string, WatchlistQuote>> {
+  const out: Record<string, WatchlistQuote> = {};
+  if (symbols.length === 0) return out;
+
+  // Run quotes and betas concurrently
+  const [betas] = await Promise.all([
+    getYahooBetas(symbols).catch(() => ({})),
+    Promise.all(
+      symbols.map(async (rawSym) => {
+        const sym = rawSym.toUpperCase();
+        try {
+          const j = await fetchJson(
+            `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`,
+          );
+          const meta = j?.chart?.result?.[0]?.meta;
+          const px = meta?.regularMarketPrice;
+          if (typeof px === "number" && px > 0) {
+            const prevClose = meta?.chartPreviousClose ?? meta?.previousClose ?? px;
+            const change = +(px - prevClose).toFixed(2);
+            const changePct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
+            out[sym] = {
+              symbol: sym,
+              name: meta.longName ?? meta.shortName ?? sym,
+              price: +px.toFixed(2),
+              change,
+              changePct,
+              previousClose: prevClose ? +prevClose.toFixed(2) : null,
+              dayHigh: meta.regularMarketDayHigh ? +meta.regularMarketDayHigh.toFixed(2) : null,
+              dayLow: meta.regularMarketDayLow ? +meta.regularMarketDayLow.toFixed(2) : null,
+              volume: meta.regularMarketVolume ?? null,
+              beta: 1.0, // default, filled below
+            };
+          }
+        } catch {
+          // fallback
+        }
+      }),
+    ),
+  ]);
+
+  for (const [sym, quote] of Object.entries(out)) {
+    if (betas[sym]) {
+      quote.beta = +betas[sym].toFixed(2);
+    }
+  }
+
+  return out;
+}
+
 /** Beta (vs S&P 500) per symbol via quoteSummary — uses the crumb session. */
 export async function getYahooBetas(
   symbols: string[],

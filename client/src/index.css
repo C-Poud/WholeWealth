@@ -4,63 +4,63 @@
 
 @layer base {
   :root {
-    --background: 240 7% 5%;
+    --background: 240 6% 4%;
     --foreground: 240 5% 95%;
-    --card: 240 6% 9%;
+    --card: 240 6% 7%;
     --card-foreground: 240 5% 95%;
-    --popover: 240 6% 9%;
+    --popover: 240 6% 7%;
     --popover-foreground: 240 5% 95%;
     --primary: 70 100% 50%;
     --primary-foreground: 0 0% 0%;
-    --secondary: 240 5% 14%;
+    --secondary: 240 5% 12%;
     --secondary-foreground: 240 5% 95%;
-    --muted: 240 5% 14%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 60%;
     --accent: 70 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
+    --border: 240 5% 12%;
+    --input: 240 5% 12%;
     --ring: 70 100% 50%;
-    --radius: 0.5rem;
-    --sidebar-background: 240 6% 6%;
+    --radius: 0.25rem;
+    --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 240 5% 95%;
     --sidebar-primary: 70 100% 50%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent: 240 5% 10%;
     --sidebar-accent-foreground: 240 5% 95%;
-    --sidebar-border: 240 5% 12%;
+    --sidebar-border: 240 5% 10%;
     --sidebar-ring: 70 100% 50%;
   }
 
   .dark {
-    --background: 240 7% 5%;
+    --background: 240 6% 4%;
     --foreground: 240 5% 95%;
-    --card: 240 6% 9%;
+    --card: 240 6% 7%;
     --card-foreground: 240 5% 95%;
-    --popover: 240 6% 9%;
+    --popover: 240 6% 7%;
     --popover-foreground: 240 5% 95%;
     --primary: 70 100% 50%;
     --primary-foreground: 0 0% 0%;
-    --secondary: 240 5% 14%;
+    --secondary: 240 5% 12%;
     --secondary-foreground: 240 5% 95%;
-    --muted: 240 5% 14%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 60%;
     --accent: 70 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
+    --border: 240 5% 12%;
+    --input: 240 5% 12%;
     --ring: 70 100% 50%;
-    --sidebar-background: 240 6% 6%;
+    --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 240 5% 95%;
     --sidebar-primary: 70 100% 50%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent: 240 5% 10%;
     --sidebar-accent-foreground: 240 5% 95%;
-    --sidebar-border: 240 5% 12%;
+    --sidebar-border: 240 5% 10%;
     --sidebar-ring: 70 100% 50%;
   }
 }
@@ -73,7 +73,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    background-color: #0c0c0e;
+    background-color: #0a0a0b;
     color: #f0f0f2;
     overflow-x: hidden;
   }
@@ -85,7 +85,7 @@
 
 /* Custom design variation classes */
 .app-dot-grid {
-  background-color: #0c0c0e;
+  background-color: #0a0a0b;
   background-image: radial-gradient(rgba(240, 240, 242, 0.08) 1px, transparent 1px);
   background-size: 32px 32px;
 }
@@ -94,22 +94,51 @@
   border-left: 2px solid rgba(240, 240, 242, 0.15);
 }
 
-.panel-card {
-  background-color: #141417;
-  border: 1px solid rgba(240, 240, 242, 0.1);
-  border-radius: 8px;
+.panel-card, .panel-box {
+  background-color: #111113;
+  border: 1px solid rgba(240, 240, 242, 0.08);
+  border-radius: 4px;
+}
+
+.meta-label {
+  font-family: 'JetBrains Mono', 'Space Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(240, 240, 242, 0.5);
 }
 
 .neon-badge {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.6875rem;
+  font-family: 'JetBrains Mono', 'Space Mono', monospace;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border: 1px solid #d4ff00;
   color: #d4ff00;
-  border-radius: 2px;
+  border-radius: 4px;
   background: rgba(212, 255, 0, 0.04);
+}
+
+.gain {
+  color: #d4ff00;
+}
+
+.activity-widget {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px dashed rgba(240, 240, 242, 0.1);
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.activity-line {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 6px;
+  color: rgba(240, 240, 242, 0.6);
+  font-family: 'JetBrains Mono', 'Space Mono', monospace;
+  font-size: 0.7rem;
 }
 
 /* Custom subtle scrollbar */
@@ -128,16 +157,12 @@
   background: rgba(240, 240, 242, 0.25);
 }
 
-/* Nav menu buttons: geometry animates in sync with the sidebar (slow + smooth),
-   while hover colors stay snappy. */
+/* Nav menu buttons: snappy and crisp transition */
 .nav-menu-btn {
   transition:
-    width 0.5s cubic-bezier(0.32, 0.72, 0, 1),
-    height 0.5s cubic-bezier(0.32, 0.72, 0, 1),
-    padding 0.5s cubic-bezier(0.32, 0.72, 0, 1),
-    gap 0.5s cubic-bezier(0.32, 0.72, 0, 1),
     background-color 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    opacity 0.2s ease;
 }
 
 /* Subtle page transition on navigation */

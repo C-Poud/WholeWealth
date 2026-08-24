@@ -19,7 +19,38 @@ import {
   registerSnaptradeUser,
   SnaptradeError,
 } from "./snaptrade/client";
+import { getAudToUsdRate } from "./analytics/yahoo";
 import crypto from "node:crypto";
+
+export function isAussieBroker(
+  institution?: string | null,
+  accountName?: string | null,
+): boolean {
+  const text = `${institution ?? ""} ${accountName ?? ""}`.toLowerCase();
+  const aussieKeywords = [
+    "stake",
+    "superhero",
+    "commsec",
+    "commonwealth bank",
+    "nabtrade",
+    "national australia bank",
+    "anz",
+    "westpac",
+    "selfwealth",
+    "pearler",
+    "cmc markets",
+    "cmc",
+    "ig australia",
+    "moomoo au",
+    "tiger au",
+    "australia",
+    "australian",
+    "asx",
+    "(au)",
+    "au broker",
+  ];
+  return aussieKeywords.some((kw) => text.includes(kw));
+}
 
 export const snaptradeRouter = createRouter({
   /** Integration + connection status for the current user. */
@@ -135,14 +166,29 @@ export const snaptradeRouter = createRouter({
       return Number.isFinite(n) ? n : null;
     };
 
+    const audUsdRate = await getAudToUsdRate();
+
     for (const acc of accounts) {
+      const isAussie = isAussieBroker(acc.institution_name, acc.name);
+      let rawCash = num(acc.balance?.total?.amount);
+      let accCurrency = String(acc.balance?.total?.currency ?? "USD").toUpperCase();
+
+      // If pulling AUD on a US broker (not an Aussie broker), convert AUD to USD.
+      // If it's an Aussie broker pulling AUD, leave it untouched.
+      if (accCurrency === "AUD" && !isAussie) {
+        if (rawCash != null) {
+          rawCash = +(rawCash * audUsdRate).toFixed(2);
+        }
+        accCurrency = "USD";
+      }
+
       const dbAcc = await upsertSnaptradeAccount(ctx.user.id, {
         snaptradeAccountId: acc.id,
         name: acc.name ?? "Brokerage account",
         institution: acc.institution_name ?? undefined,
         number: acc.number ?? undefined,
-        cash: acc.balance?.total?.amount ?? null,
-        currency: acc.balance?.total?.currency ?? "USD",
+        cash: rawCash,
+        currency: accCurrency,
       });
 
       let items: Awaited<ReturnType<typeof listAllAccountPositions>>;
@@ -167,9 +213,17 @@ export const snaptradeRouter = createRouter({
         if (!units) continue;
         const inst = p.instrument ?? {};
         const kind = (inst.kind ?? "").toLowerCase();
-        const price = num(p.price);
-        const costBasis = num(p.cost_basis);
-        const currency = p.currency ?? "USD";
+        let price = num(p.price);
+        let costBasis = num(p.cost_basis);
+        let currency = String(p.currency ?? accCurrency ?? "USD").toUpperCase();
+
+        // If pulling AUD on a US broker, convert position price & costBasis to USD.
+        // If it's an Aussie broker pulling AUD, leave it untouched.
+        if (currency === "AUD" && !isAussie) {
+          if (price != null) price = +(price * audUsdRate).toFixed(2);
+          if (costBasis != null) costBasis = +(costBasis * audUsdRate).toFixed(2);
+          currency = "USD";
+        }
 
         if (kind === "option") {
           const underlying = (

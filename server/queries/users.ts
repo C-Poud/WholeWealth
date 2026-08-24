@@ -11,7 +11,7 @@ const inMemoryUsers: User[] = [
     id: 1,
     unionId: DEFAULT_UNION_ID,
     name: "My Workspace",
-    email: "trader@wheeldesk.local",
+    email: "trader@networth.local",
     avatar: null,
     role: "admin",
     createdAt: new Date(),

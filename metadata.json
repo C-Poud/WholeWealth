@@ -1,6 +1,8 @@
 {
-  "name": "WheelDesk",
+  "name": "NetWorth.io",
   "description": "Portfolio and options toolkit for covered calls, cash-secured puts, basis tracking, risk analytics, and trade suggestions.",
-  "permissions": [],
-  "capabilities": []
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

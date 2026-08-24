@@ -9,7 +9,6 @@ import {
   removeWatchlistSymbol,
 } from "./queries/watchlist";
 import { getWatchlistQuotes, type WatchlistQuote } from "./analytics/yahoo";
-import { lookupSymbolInfo } from "./analytics/symbolInfo";
 
 export const watchlistRouter = createRouter({
   /** Lists all user watchlists */
@@ -44,24 +43,13 @@ export const watchlistRouter = createRouter({
         res.items.map(async (item) => {
           const sym = item.symbol.toUpperCase();
           const q = quotes[sym];
-          const info = lookupSymbolInfo(sym);
 
-          // Categorize wheel suitability
           const beta = q?.beta ?? 1.0;
-          let wheelCategory = "Wheel Candidate";
-          if (beta > 1.4) {
-            wheelCategory = "High Volatility (High Premium)";
-          } else if (beta < 0.8) {
-            wheelCategory = "Low Beta (Stable Basis)";
-          } else if (["SPY", "QQQ", "IWM"].includes(sym)) {
-            wheelCategory = "Index Anchor";
-          }
-
           return {
             id: item.id,
             watchlistId: item.watchlistId,
             symbol: sym,
-            name: q?.name ?? info.description ?? sym,
+            name: q?.name ?? sym,
             notes: item.notes,
             targetStrike: item.targetStrike,
             price: q?.price ?? null,
@@ -71,7 +59,11 @@ export const watchlistRouter = createRouter({
             dayLow: q?.dayLow ?? null,
             volume: q?.volume ?? null,
             beta,
-            wheelCategory,
+            fiftyTwoWeekHigh: q?.fiftyTwoWeekHigh ?? null,
+            fiftyTwoWeekLow: q?.fiftyTwoWeekLow ?? null,
+            fiftyTwoWeekPos: q?.fiftyTwoWeekPos ?? null,
+            ivRank: q?.ivRank ?? null,
+            iv30: q?.iv30 ?? null,
             createdAt: item.createdAt,
           };
         }),

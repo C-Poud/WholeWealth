@@ -12,9 +12,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["Syne", "Inter", "ui-sans-serif", "sans-serif"],
-        mono: ["JetBrains Mono", "Space Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+        sans: ["Inter", "Plus Jakarta Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Plus Jakarta Sans", "Outfit", "Inter", "ui-sans-serif", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       transitionTimingFunction: {
         // Buttery iOS-style curve for the sidebar expand/collapse

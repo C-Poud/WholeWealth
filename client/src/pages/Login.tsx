@@ -134,7 +134,7 @@ export default function Login() {
             </svg>
           </div>
           <span className="font-display font-extrabold tracking-tight text-lg uppercase">
-            WheelDesk
+            NetWorth.io
           </span>
         </div>
         <Button
@@ -158,7 +158,7 @@ export default function Login() {
           <span className="text-primary">like a terminal</span>
         </h1>
         <p className="mt-6 text-muted-foreground max-w-xl mx-auto leading-relaxed text-sm sm:text-base">
-          WheelDesk turns your portfolio into an income machine — covered-call
+          NetWorth.io turns your portfolio into an income machine — covered-call
           basis improvement, tail-risk detection and SPX delta-neutral trade
           ideas, synced live from your brokerage.
         </p>
@@ -265,7 +265,7 @@ export default function Login() {
       {/* ── Footer ── */}
       <footer className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 border-t border-white/5">
         <p className="font-mono text-[11px] text-muted-foreground text-center leading-relaxed">
-          WHEELDESK © 2026 · Market data delayed ~15 min · Nothing here is
+          NetWorth.io © 2026 · Market data delayed ~15 min · Nothing here is
           financial advice. Options involve risk of loss.
         </p>
       </footer>

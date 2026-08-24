@@ -9,6 +9,7 @@ import {
   listAccounts,
   listPositions,
   replacePositionsBySource,
+  updatePosition,
 } from "./queries/portfolio";
 import { parsePositionsFile } from "./import/parser";
 import { DEMO_POSITIONS, demoSpot } from "./snaptrade/demo";
@@ -132,6 +133,37 @@ export const portfolioRouter = createRouter({
       const toDelete = input.ids.filter((id) => valid.has(id));
       await deletePositionsByIds(ctx.user.id, toDelete);
       return { deleted: toDelete.length };
+    }),
+
+  /** Update quantity, cost basis, or account for a position. */
+  update: authedQuery
+    .input(
+      z.object({
+        id: z.number(),
+        quantity: z.number().positive().optional(),
+        costBasis: z.number().positive().nullable().optional(),
+        accountId: z.number().nullable().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      await updatePosition(ctx.user.id, id, data);
+      return { ok: true };
+    }),
+
+  /** Move a position to a different account. */
+  movePosition: authedQuery
+    .input(
+      z.object({
+        positionId: z.number(),
+        targetAccountId: z.number().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await updatePosition(ctx.user.id, input.positionId, {
+        accountId: input.targetAccountId,
+      });
+      return { ok: true };
     }),
 
   /** Seed a demo portfolio (uses deterministic synthetic market data). */

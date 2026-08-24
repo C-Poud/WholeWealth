@@ -51,9 +51,9 @@ const menuItems = [
 const adminMenuItem = { icon: Users, label: "Users", path: "/users" };
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
-const DEFAULT_WIDTH = 280;
-const MIN_WIDTH = 200;
-const MAX_WIDTH = 480;
+const DEFAULT_WIDTH = 220;
+const MIN_WIDTH = 180;
+const MAX_WIDTH = 380;
 
 export default function AuthLayout({
   children,
@@ -111,6 +111,7 @@ export default function AuthLayout({
 
   return (
     <SidebarProvider
+      defaultOpen={false}
       style={
         {
           "--sidebar-width": `${sidebarWidth}px`,
@@ -136,14 +137,45 @@ function AuthLayoutContent({
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { state, toggleSidebar, setOpenMobile } = useSidebar();
+  const { state, setOpen, toggleSidebar, setOpenMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const visibleMenuItems =
     user?.role === "admin" ? [...menuItems, adminMenuItem] : menuItems;
   const activeMenuItem = visibleMenuItems.find(item => item.path === location.pathname);
   const isMobile = useIsMobile();
+
+  const handleMouseEnter = () => {
+    if (isMobile) return;
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    if (!isPinned && isCollapsed) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isMobile) return;
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+    if (!isPinned) {
+      hoverTimerRef.current = setTimeout(() => {
+        setOpen(false);
+      }, 100);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -177,36 +209,53 @@ function AuthLayoutContent({
 
   return (
     <>
-      <div className="relative" ref={sidebarRef}>
+      <div
+        className="relative"
+        ref={sidebarRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <Sidebar
           collapsible="icon"
-          className="border-r-0"
-
+          className="border-r border-white/[0.06] transition-[width] duration-100 ease-out shadow-[0_0_25px_rgba(212,255,0,0.03)]"
         >
-          <SidebarHeader className="h-16 justify-center border-b border-white/[0.06]">
-            <div className="flex items-center gap-3 px-3 transition-all w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:gap-0">
+          <SidebarHeader className="h-16 justify-center border-b border-white/[0.06] px-2.5">
+            <div className="flex items-center gap-2.5 px-1.5 transition-all w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
               <button
-                onClick={toggleSidebar}
-                className="h-8 w-8 flex items-center justify-center hover:bg-white/[0.06] rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-primary shrink-0"
-                aria-label="Toggle navigation"
-                title="Toggle sidebar"
+                onClick={() => {
+                  const nextPinned = !isPinned;
+                  setIsPinned(nextPinned);
+                  if (nextPinned) {
+                    setOpen(true);
+                  } else {
+                    toggleSidebar();
+                  }
+                }}
+                className={`h-9 w-9 flex items-center justify-center rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-primary shrink-0 cursor-pointer ${
+                  isPinned
+                    ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(212,255,0,0.2)]"
+                    : "hover:bg-white/[0.06] text-muted-foreground hover:text-white"
+                }`}
+                aria-label="Toggle navigation pin"
+                title={isPinned ? "Sidebar Pinned Open (Click to unpin)" : "Auto Expand Active (Click to pin open)"}
               >
-                <PanelLeft className="h-[18px] w-[18px] text-muted-foreground hover:text-white transition-colors" />
+                <PanelLeft className="h-4 w-4 transition-colors" />
               </button>
               <div
-                className={`flex items-center gap-2 min-w-0 overflow-hidden transition-all duration-300 ${
-                  isCollapsed ? "opacity-0 w-0" : "opacity-100"
-                }`}
+                className="flex items-center gap-2 min-w-0 overflow-hidden transition-all duration-100 ease-out max-w-[160px] opacity-100 translate-x-0 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2"
               >
-                <span className="font-display font-extrabold tracking-[-0.03em] text-base text-white uppercase whitespace-nowrap">
-                  WHEELDESK
+                <span className="font-display font-bold tracking-tight text-sm text-white uppercase whitespace-nowrap">
+                  NetWorth.io
+                </span>
+                <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 text-primary bg-primary/10 border border-primary/20 rounded font-semibold shadow-[0_0_10px_rgba(212,255,0,0.15)]">
+                  PRO
                 </span>
               </div>
             </div>
           </SidebarHeader>
 
           <SidebarContent className="gap-0 py-3">
-            <SidebarMenu className="px-2 py-1 space-y-1 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
+            <SidebarMenu className="px-2 py-1 space-y-1 group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:items-center">
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -220,16 +269,16 @@ function AuthLayoutContent({
                         navigate(item.path);
                       }}
                       tooltip={item.label}
-                      className={`h-10 nav-menu-btn text-sm rounded ${
+                      className={`h-10 nav-menu-btn text-xs font-medium rounded transition-all duration-100 flex items-center ${
                         isActive
-                          ? "bg-white/[0.08] text-white font-medium shadow-none"
-                          : "text-[rgba(240,240,242,0.6)] hover:text-white hover:bg-white/[0.04]"
+                          ? "bg-white/[0.08] text-white font-semibold border-l-2 border-primary shadow-[inset_0_0_12px_rgba(212,255,0,0.08)]"
+                          : "text-muted-foreground hover:text-white hover:bg-white/[0.04]"
                       }`}
                     >
                       <item.icon
-                        className={`h-[18px] w-[18px] shrink-0 ${isActive ? "text-primary opacity-100" : "opacity-75 group-hover:opacity-100"}`}
+                        className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-primary opacity-100 drop-shadow-[0_0_6px_rgba(212,255,0,0.4)]" : "opacity-75 group-hover:opacity-100"}`}
                       />
-                      <span className="whitespace-nowrap overflow-hidden transition-all duration-300 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:w-0">
+                      <span className="whitespace-nowrap overflow-hidden transition-all duration-100 ease-out text-xs font-medium max-w-[160px] opacity-100 translate-x-0 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2">
                         {item.label}
                       </span>
                     </SidebarMenuButton>
@@ -239,24 +288,24 @@ function AuthLayoutContent({
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="p-3 border-t border-white/[0.06] group-data-[collapsible=icon]:p-2">
+          <SidebarFooter className="p-3 border-t border-white/[0.06] group-data-[collapsible=icon]:p-1.5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded px-2 py-1.5 hover:bg-white/[0.05] transition-colors w-full text-left group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary">
-                  <Avatar className="h-8 w-8 border border-white/10 shrink-0 transition-all duration-500 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:w-7">
+                <button className="flex items-center gap-2.5 rounded px-2 py-1.5 hover:bg-white/[0.05] transition-colors w-full text-left group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer">
+                  <Avatar className="h-8 w-8 border border-white/10 shrink-0 transition-all duration-100 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:w-7">
                     {user?.avatar ? (
                       <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
                     ) : null}
-                    <AvatarFallback className="text-[10px] font-mono font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
+                    <AvatarFallback className="text-xs font-mono font-bold bg-white/10 text-white">
+                      {user?.name?.charAt(0).toUpperCase() || "N"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0 overflow-hidden transition-all duration-500 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:opacity-0">
-                    <div className="meta-label text-[0.6rem] block text-muted-foreground/80 leading-none mb-1">
+                  <div className="flex-1 min-w-0 overflow-hidden transition-all duration-100 ease-out max-w-[160px] opacity-100 translate-x-0 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2">
+                    <div className="meta-label text-[0.58rem] block text-muted-foreground/70 leading-none mb-0.5 whitespace-nowrap">
                       Workspace
                     </div>
-                    <p className="text-xs font-mono text-white/90 truncate leading-tight">
-                      {user?.email || user?.name || "trader@wheeldesk.local"}
+                    <p className="text-xs font-mono text-white/90 truncate leading-tight whitespace-nowrap">
+                      {user?.email || user?.name || "trader@networth.io"}
                     </p>
                   </div>
                 </button>
@@ -264,9 +313,9 @@ function AuthLayoutContent({
               <DropdownMenuContent align="end" className="w-48 bg-[#111113] border-white/10">
                 <DropdownMenuItem
                   onClick={logout}
-                  className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                  className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 text-xs font-mono"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="mr-2 h-3.5 w-3.5" />
                   <span>Sign out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -285,18 +334,30 @@ function AuthLayoutContent({
 
       <SidebarInset>
         {isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col gap-1">
-                  <span className="tracking-tight text-foreground">
-                    {activeMenuItem?.label ?? "Menu"}
-                  </span>
-                </div>
+          <header className="flex border-b border-white/[0.08] h-14 items-center justify-between bg-[#0a0a0b]/95 px-3.5 backdrop-blur sticky top-0 z-40">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="h-9 w-9 rounded-md bg-white/5 border border-white/10 text-white hover:bg-white/10 flex items-center justify-center cursor-pointer" />
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-display font-bold tracking-tight text-sm text-white uppercase shrink-0">
+                  NetWorth.io
+                </span>
+                <span className="text-[10px] font-mono text-muted-foreground shrink-0">/</span>
+                <span className="text-xs font-mono text-primary font-semibold truncate max-w-[130px]">
+                  {activeMenuItem?.label ?? "Dashboard"}
+                </span>
               </div>
             </div>
-          </div>
+            <div className="flex items-center gap-2">
+              <Avatar className="h-7 w-7 border border-white/10 shrink-0">
+                {user?.avatar ? (
+                  <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
+                ) : null}
+                <AvatarFallback className="text-[10px] font-mono font-bold bg-white/10 text-white">
+                  {user?.name?.charAt(0).toUpperCase() || "N"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          </header>
         )}
         <main className="flex-1 min-w-0">
           <div key={location.pathname} className="page-fade">

@@ -589,3 +589,36 @@ export async function deletePositionsByIds(userId: number, ids: number[]) {
     }
   }
 }
+
+export async function updatePosition(
+  userId: number,
+  id: number,
+  data: {
+    quantity?: number;
+    costBasis?: number | null;
+    price?: number | null;
+    accountId?: number | null;
+  },
+) {
+  const db = getDb();
+  if (db) {
+    try {
+      await db
+        .update(positions)
+        .set(data)
+        .where(and(eq(positions.id, id), eq(positions.userId, userId)));
+      return;
+    } catch (err) {
+      console.warn("[portfolio] updatePosition db error, fallback to memory:", err);
+    }
+  }
+
+  const pos = inMemoryPositions.find((p) => p.id === id && p.userId === userId);
+  if (pos) {
+    if (data.quantity !== undefined) pos.quantity = data.quantity;
+    if (data.costBasis !== undefined) pos.costBasis = data.costBasis;
+    if (data.price !== undefined) pos.price = data.price;
+    if (data.accountId !== undefined) pos.accountId = data.accountId;
+    pos.updatedAt = new Date();
+  }
+}

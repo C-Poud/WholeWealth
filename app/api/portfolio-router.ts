@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { authedQuery, createRouter } from "./middleware";
 import { getDb } from "./queries/connection";
 import { positions } from "@db/schema";
+import { lookupSymbolInfo } from "./analytics/symbolInfo";
 import {
   getOrCreateImportAccount,
   listAccounts,
@@ -92,7 +94,8 @@ export const portfolioRouter = createRouter({
       return { ...parsed, imported, updated };
     }),
 
-  /** Manually add a stock/ETF position. */
+  /** Manually add a stock/ETF position — name, price and type are
+   *  looked up from Yahoo Finance automatically. */
   addManual: authedQuery
     .input(
       z.object({
@@ -102,17 +105,34 @@ export const portfolioRouter = createRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const symbol = input.symbol.toUpperCase();
+      const info = await lookupSymbolInfo(symbol);
+      if (info === "not_found") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Couldn't find "${symbol}" on Yahoo Finance — check the ticker and try again.`,
+        });
+      }
+      // info === null → Yahoo is rate-limiting/unreachable right now;
+      // add the position anyway, quotes will fill in on next refresh.
       await getDb()
         .insert(positions)
         .values({
           userId: ctx.user.id,
-          symbol: input.symbol.toUpperCase(),
-          assetType: "stock",
+          symbol,
+          description: info ? (info.name ?? undefined) : undefined,
+          assetType: info?.instrumentType === "ETF" ? "etf" : "stock",
           quantity: input.quantity,
           costBasis: input.costBasis ?? null,
+          price: info ? info.price : null,
+          currency: info?.currency ?? "USD",
           source: "manual",
         });
-      return { ok: true };
+      return {
+        ok: true,
+        name: info ? info.name : null,
+        price: info ? info.price : null,
+      };
     }),
 
   /** Delete positions by id (must belong to the user). */

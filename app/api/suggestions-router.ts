@@ -2,7 +2,8 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { authedQuery, createRouter } from "./middleware";
 import { getSetting, listPositions } from "./queries/portfolio";
-import { getYahooBetas, getYahooSpots } from "./analytics/yahoo";
+import { getYahooBetas } from "./analytics/yahoo";
+import { getSpotsWithFallback } from "./analytics/symbolInfo";
 import { bsCallPrice } from "./analytics/blackScholes";
 
 /** Assumed |delta| for option positions whose greeks we don't know. */
@@ -63,9 +64,9 @@ export const suggestionsRouter = createRouter({
 
     const symbols = [...new Set(positions.map((p) => p.symbol.toUpperCase()))];
     const [spots, betas, indexSpots] = await Promise.all([
-      getYahooSpots(symbols),
+      getSpotsWithFallback(symbols),
       getYahooBetas(symbols).catch(() => ({}) as Record<string, number>),
-      getYahooSpots(["^GSPC", "SPY"]),
+      getSpotsWithFallback(["^GSPC", "SPY"]),
     ]);
     const spxSpot = indexSpots["^GSPC"] ?? null;
     const spySpot = indexSpots["SPY"] ?? null;

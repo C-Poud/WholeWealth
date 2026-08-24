@@ -115,15 +115,20 @@ export const analyticsRouter = createRouter({
       const spot = market.spots[symbol] ?? 0;
       const iv30 = estimateIv30(chain, spot);
       const agg = basisBySymbol.get(symbol);
-      return buildRiskReport({
-        symbol,
-        spot,
-        iv30,
-        basis: agg && agg.qty > 0 ? agg.cost / agg.qty : null,
-        marketValue: mv,
-        portfolioValue,
-        hasShortOptions: shortOptBySymbol.get(symbol) ?? false,
-      });
+      return {
+        ...buildRiskReport({
+          symbol,
+          spot,
+          iv30,
+          basis: agg && agg.qty > 0 ? agg.cost / agg.qty : null,
+          marketValue: mv,
+          portfolioValue,
+          hasShortOptions: shortOptBySymbol.get(symbol) ?? false,
+        }),
+        description:
+          rows.find((p) => p.symbol === symbol && p.description)?.description ??
+          null,
+      };
     });
 
     reports.sort((a, b) => b.riskScore - a.riskScore);

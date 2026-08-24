@@ -3,16 +3,17 @@ import { TRPCError } from "@trpc/server";
 import { authedQuery, createRouter } from "./middleware";
 import { lookupSymbolInfo } from "./analytics/symbolInfo";
 import {
+  clearDemoData,
   deletePositionsByIds,
   getOrCreateImportAccount,
   insertManualPosition,
   listAccounts,
   listPositions,
-  replacePositionsBySource,
+  seedDemoData,
   updatePosition,
 } from "./queries/portfolio";
 import { parsePositionsFile } from "./import/parser";
-import { DEMO_POSITIONS, demoSpot } from "./snaptrade/demo";
+import { DEMO_POSITIONS } from "./snaptrade/demo";
 
 export const portfolioRouter = createRouter({
   /** Positions + accounts for the signed-in user. */
@@ -168,24 +169,13 @@ export const portfolioRouter = createRouter({
 
   /** Seed a demo portfolio (uses deterministic synthetic market data). */
   loadDemo: authedQuery.mutation(async ({ ctx }) => {
-    const rows = DEMO_POSITIONS.map((p) => ({
-      userId: ctx.user.id,
-      symbol: p.symbol,
-      description: p.description,
-      assetType: "stock" as const,
-      quantity: p.quantity,
-      costBasis: p.costBasis,
-      price: demoSpot(p.symbol),
-      currency: "USD",
-      source: "demo" as const,
-    }));
-    await replacePositionsBySource(ctx.user.id, "demo", rows);
-    return { loaded: rows.length };
+    await seedDemoData(ctx.user.id);
+    return { loaded: DEMO_POSITIONS.length };
   }),
 
-  /** Clear demo positions. */
+  /** Clear demo positions & demo accounts. */
   clearDemo: authedQuery.mutation(async ({ ctx }) => {
-    await replacePositionsBySource(ctx.user.id, "demo", []);
+    await clearDemoData(ctx.user.id);
     return { ok: true };
   }),
 });

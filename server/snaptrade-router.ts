@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { authedQuery, createRouter } from "./middleware";
 import {
+  clearDemoData,
   deleteAccount,
   deleteIdentity,
   getIdentity,
@@ -270,9 +271,9 @@ export const snaptradeRouter = createRouter({
     }
 
     await replacePositionsBySource(ctx.user.id, "snaptrade", rows);
-    // Real data landed — drop the demo sample positions.
-    if (rows.length > 0) {
-      await replacePositionsBySource(ctx.user.id, "demo", []);
+    // Real SnapTrade data connected/synced — purge all demo sample data (positions + demo accounts).
+    if (accounts.length > 0 || rows.length > 0) {
+      await clearDemoData(ctx.user.id);
     }
     return { accounts: accounts.length, positions: imported, syncBusy };
   }),

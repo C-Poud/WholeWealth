@@ -6,19 +6,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Briefcase,
@@ -26,17 +13,19 @@ import {
   LayoutDashboard,
   Lightbulb,
   LogOut,
-  PanelLeft,
+  Menu,
   Rocket,
   Settings,
   ShieldAlert,
   Users,
+  X,
 } from "lucide-react";
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { trpc } from "@/providers/trpc";
 import { AuthLayoutSkeleton } from "./AuthLayoutSkeleton";
 import { Button } from "./ui/button";
+import { Logo } from "./Logo";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -50,29 +39,68 @@ const menuItems = [
 
 const adminMenuItem = { icon: Users, label: "Users", path: "/users" };
 
-const SIDEBAR_WIDTH_KEY = "sidebar-width";
-const DEFAULT_WIDTH = 220;
-const MIN_WIDTH = 180;
-const MAX_WIDTH = 380;
+const PIN_STORAGE_KEY = "networth_sidebar_pinned";
 
-export default function AuthLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
-    return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
+export default function AuthLayout({ children }: { children: ReactNode }) {
+  const { isLoading, user, refresh, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  const [isPinned, setIsPinned] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(PIN_STORAGE_KEY) === "true";
+    } catch {
+      return false;
+    }
   });
-  const { isLoading, user, refresh } = useAuth();
+  const [isHovered, setIsHovered] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const providers = trpc.auth.providers.useQuery(undefined, {
     staleTime: 60_000,
   });
   const googleEnabled = providers.data?.google ?? false;
 
   useEffect(() => {
-    localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
-  }, [sidebarWidth]);
+    try {
+      localStorage.setItem(PIN_STORAGE_KEY, String(isPinned));
+    } catch {
+      // ignore
+    }
+  }, [isPinned]);
+
+  // Keyboard shortcut Ctrl+B or Cmd+B to toggle pin
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsPinned(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleMouseEnter = () => {
+    if (isMobile) return;
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (isMobile) return;
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 100);
+  };
 
   // No-auth mode: while the workspace initializes (cold start), keep retrying.
   useEffect(() => {
@@ -92,16 +120,20 @@ export default function AuthLayout({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-6 p-8 max-w-md w-full">
-          <h1 className="text-2xl font-semibold tracking-tight text-center">
+      <div className="flex items-center justify-center min-h-screen app-dot-grid">
+        <div className="flex flex-col items-center gap-6 p-8 max-w-md w-full bg-[#111113] border border-white/10 rounded-xl shadow-[0_0_30px_rgba(212,255,0,0.08)]">
+          <Logo size={44} />
+          <h1 className="text-xl font-bold tracking-tight text-center text-white mt-2">
             Preparing your workspace…
           </h1>
-          <p className="text-sm text-muted-foreground text-center max-w-sm">
-            The app is starting up. This usually takes a few seconds — the page
-            will continue automatically.
+          <p className="text-xs font-mono text-muted-foreground text-center max-w-sm">
+            The terminal is initializing market feeds. This takes a brief moment.
           </p>
-          <Button onClick={() => refresh()} size="lg" className="w-full">
+          <Button
+            onClick={() => refresh()}
+            size="lg"
+            className="w-full bg-primary text-black font-mono font-bold uppercase tracking-wider hover:bg-primary/90 shadow-[0_0_15px_rgba(212,255,0,0.2)]"
+          >
             Retry now
           </Button>
         </div>
@@ -109,262 +141,269 @@ export default function AuthLayout({
     );
   }
 
-  return (
-    <SidebarProvider
-      defaultOpen={false}
-      style={
-        {
-          "--sidebar-width": `${sidebarWidth}px`,
-        } as CSSProperties
-      }
-    >
-      <AuthLayoutContent setSidebarWidth={setSidebarWidth}>
-        {children}
-      </AuthLayoutContent>
-    </SidebarProvider>
-  );
-}
-
-type AuthLayoutContentProps = {
-  children: ReactNode;
-  setSidebarWidth: (width: number) => void;
-};
-
-function AuthLayoutContent({
-  children,
-  setSidebarWidth,
-}: AuthLayoutContentProps) {
-  const { user, logout } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { state, setOpen, toggleSidebar, setOpenMobile } = useSidebar();
-  const isCollapsed = state === "collapsed";
-  const [isResizing, setIsResizing] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
-  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
   const visibleMenuItems =
     user?.role === "admin" ? [...menuItems, adminMenuItem] : menuItems;
   const activeMenuItem = visibleMenuItems.find(item => item.path === location.pathname);
-  const isMobile = useIsMobile();
 
-  const handleMouseEnter = () => {
-    if (isMobile) return;
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = null;
-    }
-    if (!isPinned && isCollapsed) {
-      setOpen(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (isMobile) return;
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-    }
-    if (!isPinned) {
-      hoverTimerRef.current = setTimeout(() => {
-        setOpen(false);
-      }, 100);
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing || isCollapsed) return;
-
-      const sidebarLeft = sidebarRef.current?.getBoundingClientRect().left ?? 0;
-      const newWidth = e.clientX - sidebarLeft;
-      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
-        setSidebarWidth(newWidth);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-    };
-
-    if (isResizing && !isCollapsed) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    }
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-  }, [isResizing, isCollapsed, setSidebarWidth]);
+  const isExpanded = isPinned || isHovered;
 
   return (
-    <>
-      <div
-        className="relative"
-        ref={sidebarRef}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <Sidebar
-          collapsible="icon"
-          className="border-r border-white/[0.06] transition-[width] duration-100 ease-out shadow-[0_0_25px_rgba(212,255,0,0.03)]"
-        >
-          <SidebarHeader className="h-16 justify-center border-b border-white/[0.06] px-2.5">
-            <div className="flex items-center gap-2.5 px-1.5 transition-all w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-              <button
-                onClick={() => {
-                  const nextPinned = !isPinned;
-                  setIsPinned(nextPinned);
-                  if (nextPinned) {
-                    setOpen(true);
-                  } else {
-                    toggleSidebar();
-                  }
-                }}
-                className={`h-9 w-9 flex items-center justify-center rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-primary shrink-0 cursor-pointer ${
-                  isPinned
-                    ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(212,255,0,0.2)]"
-                    : "hover:bg-white/[0.06] text-muted-foreground hover:text-white"
-                }`}
-                aria-label="Toggle navigation pin"
-                title={isPinned ? "Sidebar Pinned Open (Click to unpin)" : "Auto Expand Active (Click to pin open)"}
-              >
-                <PanelLeft className="h-4 w-4 transition-colors" />
-              </button>
-              <div
-                className="flex items-center gap-2 min-w-0 overflow-hidden transition-all duration-100 ease-out max-w-[160px] opacity-100 translate-x-0 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2"
-              >
-                <span className="font-display font-bold tracking-tight text-sm text-white uppercase whitespace-nowrap">
-                  NetWorth.io
-                </span>
-                <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 text-primary bg-primary/10 border border-primary/20 rounded font-semibold shadow-[0_0_10px_rgba(212,255,0,0.15)]">
-                  PRO
-                </span>
-              </div>
-            </div>
-          </SidebarHeader>
+    <div className="min-h-screen flex bg-[#0a0a0b] text-[#f0f0f2] antialiased overflow-x-hidden">
+      {/* ── DESKTOP SIDEBAR (Hardware Accelerated, Smooth Transitions) ── */}
+      {!isMobile && (
+        <>
+          {/* Static Spacer when pinned to push main content smoothly */}
+          <div
+            className="hidden md:block shrink-0 transition-[width] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{ width: isPinned ? "240px" : "68px" }}
+          />
 
-          <SidebarContent className="gap-0 py-3">
-            <SidebarMenu className="px-2 py-1 space-y-1 group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:items-center">
+          {/* Floating / Anchored Sidebar Container */}
+          <aside
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            className={`fixed inset-y-0 left-0 z-40 hidden md:flex flex-col bg-[#0e0e11] border-r border-white/[0.08] transition-[width,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] select-none ${
+              isExpanded
+                ? "w-[240px] shadow-[12px_0_35px_-4px_rgba(0,0,0,0.7),0_0_25px_rgba(212,255,0,0.06)]"
+                : "w-[68px] shadow-[4px_0_20px_rgba(0,0,0,0.4)]"
+            }`}
+          >
+            {/* Header / Logo - Click to toggle sidebar pin */}
+            <div className="h-16 shrink-0 flex items-center px-2.5 border-b border-white/[0.06] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setIsPinned(prev => !prev)}
+                className="flex items-center w-full h-11 px-1 rounded-lg hover:bg-white/[0.05] active:scale-[0.98] transition-all cursor-pointer group focus:outline-none focus-visible:ring-1 focus-visible:ring-primary text-left"
+                title={isPinned ? "Sidebar pinned. Click logo to unpin (Ctrl+B)" : "Click logo to pin sidebar open (Ctrl+B)"}
+                aria-label={isPinned ? "Unpin sidebar" : "Pin sidebar open"}
+              >
+                <div className="w-[44px] h-full flex items-center justify-center shrink-0">
+                  <Logo size={34} showText={false} isPinned={isPinned} />
+                </div>
+
+                {/* Sliding/Fading Text Label */}
+                <div
+                  className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ml-1 ${
+                    isExpanded
+                      ? "opacity-100 translate-x-0 max-w-[160px] pointer-events-auto"
+                      : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
+                  }`}
+                >
+                  <span className="font-display font-extrabold tracking-tight text-sm text-white uppercase tracking-wider">
+                    NetWorth<span className="text-primary font-mono">.io</span>
+                  </span>
+                  <span
+                    className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded transition-all ${
+                      isPinned
+                        ? "text-black bg-primary border border-primary font-black shadow-[0_0_10px_rgba(212,255,0,0.4)]"
+                        : "text-primary bg-primary/10 border border-primary/30 shadow-[0_0_8px_rgba(212,255,0,0.15)] group-hover:bg-primary/20"
+                    }`}
+                  >
+                    {isPinned ? "PINNED" : "PRO"}
+                  </span>
+                </div>
+              </button>
+            </div>
+
+            {/* Navigation Menu Links */}
+            <nav className="flex-1 py-3 px-2 space-y-1.5 overflow-y-auto overflow-x-hidden scrollbar-none">
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => {
-                        if (isMobile) {
-                          setOpenMobile(false);
-                        }
-                        navigate(item.path);
-                      }}
-                      tooltip={item.label}
-                      className={`h-10 nav-menu-btn text-xs font-medium rounded transition-all duration-100 flex items-center ${
-                        isActive
-                          ? "bg-white/[0.08] text-white font-semibold border-l-2 border-primary shadow-[inset_0_0_12px_rgba(212,255,0,0.08)]"
-                          : "text-muted-foreground hover:text-white hover:bg-white/[0.04]"
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => navigate(item.path)}
+                    className={`relative w-full h-11 rounded-lg flex items-center transition-all duration-150 group cursor-pointer ${
+                      isActive
+                        ? "bg-white/[0.08] text-white font-medium shadow-[inset_0_0_15px_rgba(212,255,0,0.06)] border border-primary/25"
+                        : "text-muted-foreground hover:text-white hover:bg-white/[0.04]"
+                    }`}
+                    title={!isExpanded ? item.label : undefined}
+                  >
+                    {/* Active Accent Bar */}
+                    {isActive && (
+                      <span className="absolute left-0 inset-y-2 w-1 rounded-r bg-primary shadow-[0_0_8px_#d4ff00]" />
+                    )}
+
+                    {/* Fixed Icon Container (Anchored at exact same location always) */}
+                    <div className="w-[50px] h-full flex items-center justify-center shrink-0">
+                      <item.icon
+                        className={`h-4 w-4 transition-transform duration-150 group-hover:scale-110 ${
+                          isActive
+                            ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.4)]"
+                            : "opacity-75 group-hover:opacity-100"
+                        }`}
+                      />
+                    </div>
+
+                    {/* Sliding/Fading Text Label */}
+                    <div
+                      className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center ${
+                        isExpanded
+                          ? "opacity-100 translate-x-0 max-w-[160px] pointer-events-auto"
+                          : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
                       }`}
                     >
-                      <item.icon
-                        className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-primary opacity-100 drop-shadow-[0_0_6px_rgba(212,255,0,0.4)]" : "opacity-75 group-hover:opacity-100"}`}
-                      />
-                      <span className="whitespace-nowrap overflow-hidden transition-all duration-100 ease-out text-xs font-medium max-w-[160px] opacity-100 translate-x-0 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2">
+                      <span className="text-xs font-mono tracking-tight leading-none truncate">
                         {item.label}
                       </span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                    </div>
+                  </button>
                 );
               })}
-            </SidebarMenu>
-          </SidebarContent>
+            </nav>
 
-          <SidebarFooter className="p-3 border-t border-white/[0.06] group-data-[collapsible=icon]:p-1.5">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2.5 rounded px-2 py-1.5 hover:bg-white/[0.05] transition-colors w-full text-left group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer">
-                  <Avatar className="h-8 w-8 border border-white/10 shrink-0 transition-all duration-100 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:w-7">
-                    {user?.avatar ? (
-                      <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
-                    ) : null}
-                    <AvatarFallback className="text-xs font-mono font-bold bg-white/10 text-white">
-                      {user?.name?.charAt(0).toUpperCase() || "N"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0 overflow-hidden transition-all duration-100 ease-out max-w-[160px] opacity-100 translate-x-0 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-2">
-                    <div className="meta-label text-[0.58rem] block text-muted-foreground/70 leading-none mb-0.5 whitespace-nowrap">
-                      Workspace
+            {/* Footer / User Profile */}
+            <div className="shrink-0 p-2.5 border-t border-white/[0.06] bg-[#0c0c0e]/80">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full h-12 rounded-lg flex items-center hover:bg-white/[0.06] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer px-1 group"
+                  >
+                    {/* Fixed Avatar */}
+                    <div className="w-[46px] h-full flex items-center justify-center shrink-0">
+                      <Avatar className="h-8 w-8 border border-white/10 group-hover:border-primary/40 transition-colors">
+                        {user?.avatar ? (
+                          <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
+                        ) : null}
+                        <AvatarFallback className="text-xs font-mono font-bold bg-white/10 text-white group-hover:text-primary">
+                          {user?.name?.charAt(0).toUpperCase() || "N"}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
-                    <p className="text-xs font-mono text-white/90 truncate leading-tight whitespace-nowrap">
-                      {user?.email || user?.name || "trader@networth.io"}
-                    </p>
-                  </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-[#111113] border-white/10">
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 text-xs font-mono"
-                >
-                  <LogOut className="mr-2 h-3.5 w-3.5" />
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <div
-          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 transition-colors ${isCollapsed ? "hidden" : ""}`}
-          onMouseDown={() => {
-            if (isCollapsed) return;
-            setIsResizing(true);
-          }}
-          style={{ zIndex: 50 }}
-        />
-      </div>
 
-      <SidebarInset>
-        {isMobile && (
-          <header className="flex border-b border-white/[0.08] h-14 items-center justify-between bg-[#0a0a0b]/95 px-3.5 backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="h-9 w-9 rounded-md bg-white/5 border border-white/10 text-white hover:bg-white/10 flex items-center justify-center cursor-pointer" />
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="font-display font-bold tracking-tight text-sm text-white uppercase shrink-0">
-                  NetWorth.io
-                </span>
-                <span className="text-[10px] font-mono text-muted-foreground shrink-0">/</span>
-                <span className="text-xs font-mono text-primary font-semibold truncate max-w-[130px]">
-                  {activeMenuItem?.label ?? "Dashboard"}
-                </span>
-              </div>
+                    {/* User Metadata */}
+                    <div
+                      className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex-1 text-left ${
+                        isExpanded
+                          ? "opacity-100 translate-x-0 max-w-[150px] pointer-events-auto ml-1"
+                          : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
+                      }`}
+                    >
+                      <div className="text-[9px] font-mono text-muted-foreground/70 uppercase leading-none mb-0.5">
+                        Workspace
+                      </div>
+                      <div className="text-xs font-mono text-white/90 truncate leading-tight">
+                        {user?.email || user?.name || "trader@networth.io"}
+                      </div>
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" className="w-52 bg-[#111113] border-white/10 text-white shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                  <div className="px-2.5 py-2 border-b border-white/10 font-mono text-xs">
+                    <div className="text-muted-foreground text-[10px] uppercase">Signed in as</div>
+                    <div className="font-semibold text-white truncate">{user?.name || "Workspace User"}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{user?.email}</div>
+                  </div>
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 text-xs font-mono mt-1"
+                  >
+                    <LogOut className="mr-2 h-3.5 w-3.5" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
+          </aside>
+        </>
+      )}
+
+      {/* ── MOBILE SLIDE-IN DRAWER & HEADER (<768px) ── */}
+      {isMobile && (
+        <>
+          {/* Top Mobile Bar */}
+          <header className="fixed top-0 inset-x-0 h-14 z-30 flex items-center justify-between px-3 bg-[#0c0c0e]/95 border-b border-white/[0.08] backdrop-blur">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
+                className="h-9 w-9 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10 flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(212,255,0,0.06)]"
+                aria-label="Open Navigation"
+              >
+                <Menu className="h-4 w-4" />
+              </button>
+              <Logo size={28} showText={true} />
+            </div>
+
             <div className="flex items-center gap-2">
-              <Avatar className="h-7 w-7 border border-white/10 shrink-0">
-                {user?.avatar ? (
-                  <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
-                ) : null}
-                <AvatarFallback className="text-[10px] font-mono font-bold bg-white/10 text-white">
-                  {user?.name?.charAt(0).toUpperCase() || "N"}
-                </AvatarFallback>
-              </Avatar>
+              <span className="text-[11px] font-mono text-primary font-bold px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
+                {activeMenuItem?.label ?? "Dashboard"}
+              </span>
             </div>
           </header>
-        )}
-        <main className="flex-1 min-w-0">
-          <div key={location.pathname} className="page-fade">
-            {children}
-          </div>
-        </main>
-      </SidebarInset>
-    </>
+
+          {/* Backdrop Overlay */}
+          {mobileOpen && (
+            <div
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm transition-opacity"
+            />
+          )}
+
+          {/* Slide-out Drawer */}
+          <aside
+            className={`fixed inset-y-0 left-0 z-50 w-[270px] bg-[#0e0e11] border-r border-white/10 flex flex-col transition-transform duration-250 ease-out shadow-[10px_0_30px_rgba(0,0,0,0.9)] ${
+              mobileOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.08]">
+              <Logo size={32} showText={true} />
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="h-8 w-8 rounded-md hover:bg-white/10 text-muted-foreground hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
+              {visibleMenuItems.map(item => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      navigate(item.path);
+                    }}
+                    className={`w-full h-11 rounded-lg flex items-center px-3 gap-3 transition-colors cursor-pointer ${
+                      isActive
+                        ? "bg-primary/15 text-primary font-bold border border-primary/30 shadow-[0_0_12px_rgba(212,255,0,0.15)]"
+                        : "text-muted-foreground hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="text-xs font-mono">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="p-3 border-t border-white/10">
+              <button
+                type="button"
+                onClick={logout}
+                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-mono border border-destructive/20 cursor-pointer"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
+
+      {/* ── MAIN VIEWPORT ── */}
+      <main className={`flex-1 min-w-0 transition-all ${isMobile ? "pt-14" : ""}`}>
+        <div key={location.pathname} className="page-fade">
+          {children}
+        </div>
+      </main>
+    </div>
   );
 }

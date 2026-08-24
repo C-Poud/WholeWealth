@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
 import { trpc } from "@/providers/trpc";
 import {
   Briefcase,
@@ -119,27 +120,10 @@ export default function Login() {
     <div className="min-h-screen app-dot-grid text-[#f0f0f2]">
       {/* ── Nav ── */}
       <nav className="max-w-[1200px] mx-auto flex items-center justify-between px-4 sm:px-8 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 border border-white/10">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              className="text-primary"
-            >
-              <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93" />
-            </svg>
-          </div>
-          <span className="font-display font-extrabold tracking-tight text-lg uppercase">
-            NetWorth.io
-          </span>
-        </div>
+        <Logo size={34} />
         <Button
           variant="outline"
-          className="font-mono text-xs font-bold uppercase tracking-wider border-primary/40 text-primary hover:bg-primary/10"
+          className="font-mono text-xs font-bold uppercase tracking-wider border-primary/40 text-primary hover:bg-primary/10 shadow-[0_0_15px_rgba(212,255,0,0.12)]"
           disabled={!googleEnabled}
           onClick={signIn}
         >

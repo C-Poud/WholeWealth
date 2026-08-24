@@ -159,6 +159,7 @@ export async function deleteIdentity(userId: number) {
 // ---- accounts --------------------------------------------------------------
 
 export async function listAccounts(userId: number): Promise<BrokerAccount[]> {
+  await ensureUserDemoData(userId);
   const db = getDb();
   if (db) {
     try {
@@ -384,6 +385,7 @@ export async function getOrCreateImportAccount(userId: number): Promise<BrokerAc
 
 /** All positions for a user, excluding ones in accounts they've disabled. */
 export async function listPositions(userId: number): Promise<Position[]> {
+  await ensureUserDemoData(userId);
   const db = getDb();
   let rows: Position[] = [];
   if (db) {
@@ -621,4 +623,157 @@ export async function updatePosition(
     if (data.accountId !== undefined) pos.accountId = data.accountId;
     pos.updatedAt = new Date();
   }
+}
+
+// ---- demo lifecycle management ---------------------------------------------
+
+/** Seeds standard demo positions and a demo broker account for a user. */
+export async function seedDemoData(userId: number) {
+  const db = getDb();
+  let accountId: number | null = null;
+
+  if (db) {
+    try {
+      const existingDemo = await db
+        .select()
+        .from(brokerAccounts)
+        .where(
+          and(
+            eq(brokerAccounts.userId, userId),
+            eq(brokerAccounts.source, "demo"),
+          ),
+        );
+      if (existingDemo[0]) {
+        accountId = existingDemo[0].id;
+      } else {
+        const [res] = await db.insert(brokerAccounts).values({
+          userId,
+          name: "Primary Trading",
+          institution: "Interactive Brokers",
+          number: "U***8492",
+          cash: 25480.0,
+          currency: "USD",
+          enabled: true,
+          source: "demo",
+          lastSyncedAt: new Date(),
+        });
+        accountId = res ? Number(res.insertId) : null;
+      }
+    } catch (err) {
+      console.warn("[portfolio] seedDemoData account db error, fallback to memory:", err);
+    }
+  }
+
+  if (!accountId) {
+    const existing = inMemoryAccounts.find(
+      (a) => a.userId === userId && a.source === "demo",
+    );
+    if (existing) {
+      accountId = existing.id;
+    } else {
+      const acc: BrokerAccount = {
+        id: nextAccountId++,
+        userId,
+        snaptradeAccountId: null,
+        name: "Primary Trading",
+        institution: "Interactive Brokers",
+        number: "U***8492",
+        cash: 25480.0,
+        currency: "USD",
+        enabled: true,
+        source: "demo",
+        lastSyncedAt: new Date(),
+        createdAt: new Date(),
+      };
+      inMemoryAccounts.push(acc);
+      accountId = acc.id;
+    }
+  }
+
+  const rows = DEMO_POSITIONS.map((p) => ({
+    userId,
+    accountId,
+    symbol: p.symbol,
+    description: p.description,
+    assetType: "stock" as const,
+    quantity: p.quantity,
+    costBasis: p.costBasis,
+    price: demoSpot(p.symbol),
+    currency: "USD",
+    source: "demo" as const,
+  }));
+
+  await replacePositionsBySource(userId, "demo", rows);
+}
+
+/** Clears all demo positions and demo broker accounts for a user. */
+export async function clearDemoData(userId: number) {
+  // Clear demo positions
+  await replacePositionsBySource(userId, "demo", []);
+
+  // Clear demo accounts
+  const db = getDb();
+  if (db) {
+    try {
+      await db
+        .delete(brokerAccounts)
+        .where(
+          and(
+            eq(brokerAccounts.userId, userId),
+            eq(brokerAccounts.source, "demo"),
+          ),
+        );
+    } catch (err) {
+      console.warn("[portfolio] clearDemoData accounts db error, fallback to memory:", err);
+    }
+  }
+
+  for (let i = inMemoryAccounts.length - 1; i >= 0; i--) {
+    if (
+      inMemoryAccounts[i].userId === userId &&
+      inMemoryAccounts[i].source === "demo"
+    ) {
+      inMemoryAccounts.splice(i, 1);
+    }
+  }
+}
+
+/** Ensures that a new user starts with demo data by default. */
+export async function ensureUserDemoData(userId: number) {
+  // 1. If user has a SnapTrade identity registered, never auto-seed demo data
+  const identity = await getIdentity(userId);
+  if (identity) return;
+
+  // 2. Check if user already has positions or accounts in DB
+  const db = getDb();
+  if (db) {
+    try {
+      const [dbPositions, dbAccounts] = await Promise.all([
+        db
+          .select({ id: positions.id })
+          .from(positions)
+          .where(eq(positions.userId, userId))
+          .limit(1),
+        db
+          .select({ id: brokerAccounts.id, source: brokerAccounts.source })
+          .from(brokerAccounts)
+          .where(eq(brokerAccounts.userId, userId)),
+      ]);
+
+      if (dbPositions.length > 0) return;
+      if (dbAccounts.some((a) => a.source === "snaptrade" || a.source === "import")) return;
+    } catch (err) {
+      console.warn("[portfolio] ensureUserDemoData db check error, fallback to memory:", err);
+    }
+  }
+
+  // Check in-memory state
+  const memPositions = inMemoryPositions.filter((p) => p.userId === userId);
+  if (memPositions.length > 0) return;
+
+  const memAccounts = inMemoryAccounts.filter((a) => a.userId === userId);
+  if (memAccounts.some((a) => a.source === "snaptrade" || a.source === "import")) return;
+
+  // Auto-seed demo portfolio for this new user
+  await seedDemoData(userId);
 }

@@ -1,7 +1,14 @@
+const path = require("path");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  // Absolute paths: Tailwind resolves content globs against process.cwd(),
+  // which is the project root when building via `vite build --config client/...`
+  content: [
+    path.join(__dirname, "index.html"),
+    path.join(__dirname, "src/**/*.{js,ts,jsx,tsx}"),
+  ],
   theme: {
     extend: {
       fontFamily: {

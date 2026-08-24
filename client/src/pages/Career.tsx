@@ -18,6 +18,8 @@ import {
   Lock,
   BarChart3,
   Scale,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -311,15 +313,36 @@ export default function Career() {
                 <label className="block text-xs font-mono uppercase text-muted-foreground mb-1.5">
                   Current Total Compensation (USD / yr)
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-xs font-mono text-muted-foreground">$</span>
+                <div className="relative flex items-center group">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">$</span>
                   <input
                     type="number"
                     step="5000"
+                    min="0"
                     value={currentComp}
-                    onChange={(e) => setCurrentComp(Number(e.target.value) || 0)}
-                    className="w-full bg-[#141418] border border-white/10 rounded-lg pl-7 pr-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-primary"
+                    onChange={(e) => setCurrentComp(Math.max(0, Number(e.target.value) || 0))}
+                    className="w-full bg-[#141418] border border-white/10 rounded-lg pl-7 pr-8 py-2 text-xs font-mono text-white focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors"
                   />
+                  <div className="absolute right-1 inset-y-1 flex flex-col justify-center gap-0.5 border-l border-white/10 pl-1 pr-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentComp(prev => Math.max(0, prev + 5000))}
+                      className="flex-1 px-1 flex items-center justify-center rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer group/btn"
+                      aria-label="Increase compensation by $5,000"
+                      title="Increase ($5,000)"
+                    >
+                      <ChevronUp className="h-2.5 w-2.5 transition-transform group-hover/btn:scale-125" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentComp(prev => Math.max(0, prev - 5000))}
+                      className="flex-1 px-1 flex items-center justify-center rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer group/btn"
+                      aria-label="Decrease compensation by $5,000"
+                      title="Decrease ($5,000)"
+                    >
+                      <ChevronDown className="h-2.5 w-2.5 transition-transform group-hover/btn:scale-125" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

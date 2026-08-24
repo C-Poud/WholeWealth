@@ -55,6 +55,7 @@ export const watchlistRouter = createRouter({
             price: q?.price ?? null,
             change: q?.change ?? 0,
             changePct: q?.changePct ?? 0,
+            ytdChangePct: q?.ytdChangePct ?? null,
             dayHigh: q?.dayHigh ?? null,
             dayLow: q?.dayLow ?? null,
             volume: q?.volume ?? null,

@@ -330,7 +330,7 @@ export default function Portfolio() {
               <thead>
                 <tr className="border-b border-white/[0.08] text-muted-foreground text-xs font-mono">
                   <th className="pb-3 font-medium meta-label">Symbol</th>
-                  <th className="pb-3 font-medium meta-label">Account</th>
+                  <th className="pb-3 font-medium meta-label">Broker</th>
                   <th className="pb-3 font-medium meta-label">Type</th>
                   <th className="pb-3 font-medium meta-label text-right">Qty</th>
                   <th className="pb-3 font-medium meta-label text-right">Cost Basis</th>
@@ -352,7 +352,7 @@ export default function Portfolio() {
                       <td className="py-3 text-muted-foreground text-xs font-mono">
                         {acc ? (
                           <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white">
-                            {acc.name || acc.institution}
+                            {acc.institution || acc.name || "Broker"}
                           </span>
                         ) : (
                           <span className="text-muted-foreground/60">—</span>

@@ -9,8 +9,6 @@ import {
   Scale,
   Plus,
   Trash2,
-  ShieldAlert,
-  Coins,
   Sparkles,
   ArrowUpRight,
   ArrowDownRight,
@@ -35,18 +33,6 @@ const COLORS = [
   "#34d399",
   "#fb923c",
   "#22d3ee",
-];
-
-const POPULAR_WHEEL_TICKERS = [
-  "NVDA",
-  "AAPL",
-  "TSLA",
-  "AMD",
-  "SPY",
-  "MSFT",
-  "AMZN",
-  "PLTR",
-  "GOOGL",
 ];
 
 export default function Dashboard() {
@@ -212,14 +198,6 @@ export default function Dashboard() {
     };
   }, [data]);
 
-  const handleQuickAdd = (sym: string) => {
-    if (!activeWlId) return;
-    addSymbolMut.mutate({
-      watchlistId: activeWlId,
-      symbol: sym,
-    });
-  };
-
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeWlId || !tickerInput.trim()) return;
@@ -266,7 +244,7 @@ export default function Dashboard() {
             Portfolio & Watchlist
           </h1>
           <p className="meta-label mt-2">
-            Holdings, SPX Beta Delta hedge & real-time target watchlists
+            Holdings, market beta hedge & real-time watchlist
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -312,22 +290,22 @@ export default function Dashboard() {
       {/* Stats & Risk KPIs Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
         <div className="stat-card">
-          <div className="meta-label text-xs">Capital at Work</div>
+          <div className="meta-label text-xs">Portfolio Value</div>
           <div className="stat-value text-white text-2xl mt-1 font-bold">
-            {fmtMoney(stats.capitalAtWork)}
+            {fmtMoney(stats.equityValue + stats.cash)}
           </div>
           <div className="text-xs text-muted-foreground mt-1.5 font-mono">
-            {fmtMoney(stats.stockCostBasis)} stock · {fmtMoney(stats.cspCollateral)} CSP
+            {fmtMoney(stats.equityValue)} equity · {fmtMoney(stats.cash)} cash
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="meta-label text-xs">Available Buying Power</div>
+          <div className="meta-label text-xs">Available Cash</div>
           <div className="stat-value text-primary text-2xl mt-1 font-bold drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]">
             {fmtMoney(stats.availableBuyingPower)}
           </div>
           <div className="text-xs text-muted-foreground mt-1.5 font-mono">
-            {fmtMoney(stats.cash)} cash in accounts
+            {fmtMoney(stats.cash)} ready buying power
           </div>
         </div>
 
@@ -370,12 +348,12 @@ export default function Dashboard() {
         </div>
 
         <div className="stat-card">
-          <div className="meta-label text-xs">Option Coverage</div>
+          <div className="meta-label text-xs">Active Positions</div>
           <div className="stat-value text-white text-2xl mt-1 font-bold">
-            {stats.coveragePct.toFixed(0)}%
+            {stats.count}
           </div>
           <div className="text-xs text-muted-foreground mt-1.5 font-mono">
-            {fmtNum(stats.coveredShares, 0)}/{fmtNum(stats.roundLotShares, 0)} sh · {stats.shortCallCount} CC/{stats.shortPutCount} CSP
+            {stats.allocation.length} distinct assets in portfolio
           </div>
         </div>
 
@@ -642,7 +620,7 @@ export default function Dashboard() {
         </div>
 
         {/* ========================================================================= */}
-        {/* ROW 2: TARGET WATCHLIST (Full Width)                                      */}
+        {/* ROW 2: WATCHLIST (Full Width)                                             */}
         {/* ========================================================================= */}
         <div className="w-full space-y-4">
           <div className="panel-box p-6 sm:p-8 overflow-hidden">
@@ -650,24 +628,26 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-5">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
-                  <Coins className="h-4 w-4 text-primary" /> Target Watchlist
+                  <Sparkles className="h-4 w-4 text-primary" /> Watchlist
                 </span>
-                {/* Watchlist switcher buttons */}
-                <div className="flex items-center gap-1 bg-white/[0.03] p-0.5 rounded border border-white/[0.08]">
-                  {watchlists?.map((w) => (
-                    <button
-                      key={w.id}
-                      onClick={() => setSelectedWatchlistId(w.id)}
-                      className={`px-2.5 py-1 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                        activeWlId === w.id
-                          ? "bg-primary text-black"
-                          : "text-muted-foreground hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      {w.name}
-                    </button>
-                  ))}
-                </div>
+                {/* Watchlist switcher buttons when multiple lists exist */}
+                {watchlists && watchlists.length > 1 && (
+                  <div className="flex items-center gap-1 bg-white/[0.03] p-0.5 rounded border border-white/[0.08]">
+                    {watchlists.map((w) => (
+                      <button
+                        key={w.id}
+                        onClick={() => setSelectedWatchlistId(w.id)}
+                        className={`px-2.5 py-1 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                          activeWlId === w.id
+                            ? "bg-primary text-black"
+                            : "text-muted-foreground hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        {w.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons: New List & Add Ticker */}
@@ -691,7 +671,7 @@ export default function Dashboard() {
                         <label className="meta-label block mb-1.5">Watchlist Name</label>
                         <input
                           type="text"
-                          placeholder="e.g. High Volatility CSPs, Core Wheel"
+                          placeholder="e.g. Growth, Tech, Dividend"
                           value={newListName}
                           onChange={(e) => setNewListName(e.target.value)}
                           required
@@ -702,7 +682,7 @@ export default function Dashboard() {
                         <label className="meta-label block mb-1.5">Description (Optional)</label>
                         <input
                           type="text"
-                          placeholder="e.g. Weekly wheel candidates"
+                          placeholder="e.g. Core tracked tickers"
                           value={newListDesc}
                           onChange={(e) => setNewListDesc(e.target.value)}
                           className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-muted-foreground focus:outline-none focus:border-primary"
@@ -792,28 +772,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Quick Add Presets Bar */}
-            <div className="flex items-center gap-1.5 flex-wrap py-2 text-xs font-mono text-muted-foreground border-b border-white/[0.04]">
-              <span className="text-[10px] text-muted-foreground/80 uppercase font-semibold">Quick add:</span>
-              {POPULAR_WHEEL_TICKERS.map((sym) => {
-                const alreadyInList = watchlistData?.items.some((i) => i.symbol === sym);
-                return (
-                  <button
-                    key={sym}
-                    onClick={() => !alreadyInList && handleQuickAdd(sym)}
-                    disabled={alreadyInList || addSymbolMut.isPending}
-                    className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors cursor-pointer ${
-                      alreadyInList
-                        ? "border-white/5 text-muted-foreground/30 cursor-default"
-                        : "border-white/10 bg-white/[0.02] text-white hover:border-primary/50 hover:text-primary"
-                    }`}
-                  >
-                    {alreadyInList ? `✓${sym}` : `+${sym}`}
-                  </button>
-                );
-              })}
-            </div>
-
             {/* Watchlist Table */}
             {isWatchlistLoading ? (
               <div className="py-12 space-y-2.5">
@@ -826,7 +784,7 @@ export default function Dashboard() {
                 <Sparkles className="h-7 w-7 mx-auto text-muted-foreground" />
                 <p className="text-xs font-mono text-white">Watchlist is empty</p>
                 <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
-                  Add tickers above to track IV Rank, 52-Week range & run Basis analysis.
+                  Add tickers above to track live prices, IV Rank, YTD performance, and 52-week High/Low.
                 </p>
               </div>
             ) : (
@@ -837,10 +795,12 @@ export default function Dashboard() {
                       <th className="pb-2.5 font-normal meta-label">Ticker</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Price</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Day Chg</th>
-                      <th className="pb-2.5 font-normal meta-label text-center">IV Rank</th>
-                      <th className="pb-2.5 font-normal meta-label text-center min-w-[120px]">52-Week</th>
-                      <th className="pb-2.5 font-normal meta-label text-right">Beta</th>
-                      <th className="pb-2.5 font-normal meta-label text-right">Basis / Risk</th>
+                      <th className="pb-2.5 font-normal meta-label text-center">IVR</th>
+                      <th className="pb-2.5 font-normal meta-label text-right">YTD</th>
+                      <th className="pb-2.5 font-normal meta-label text-right">High</th>
+                      <th className="pb-2.5 font-normal meta-label text-right">Low</th>
+                      <th className="pb-2.5 font-normal meta-label text-center min-w-[140px]">52W Range</th>
+                      <th className="pb-2.5 font-normal meta-label text-right w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.03]">
@@ -854,40 +814,43 @@ export default function Dashboard() {
                             : "bg-blue-400/15 text-blue-300 border-blue-400/30";
 
                       const pos52 = item.fiftyTwoWeekPos ?? 50;
+                      const ytd = item.ytdChangePct;
 
                       return (
                         <tr
                           key={item.id}
                           className="hover:bg-white/[0.03] transition-colors group"
                         >
-                          {/* Ticker Symbol */}
-                          <td className="py-2.5">
+                          {/* Ticker Symbol & Name */}
+                          <td className="py-3">
                             <div className="font-bold text-white text-sm">
                               {item.symbol}
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[110px]">
+                            <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[140px]">
                               {item.name}
                             </div>
                           </td>
 
                           {/* Price */}
-                          <td className="py-2.5 text-right font-medium text-white text-xs">
+                          <td className="py-3 text-right font-medium text-white text-xs">
                             {item.price ? fmtMoney(item.price) : "—"}
                           </td>
 
                           {/* Day Change */}
                           <td
-                            className={`py-2.5 text-right font-medium text-xs ${
+                            className={`py-3 text-right font-medium text-xs ${
                               item.change >= 0 ? "text-primary" : "text-red-400"
                             }`}
                           >
                             {item.price ? (
                               <>
-                                {item.change >= 0 ? "+" : ""}
-                                {item.change.toFixed(2)}
+                                <div>
+                                  {item.change >= 0 ? "+" : ""}
+                                  {item.change.toFixed(2)}
+                                </div>
                                 <div className="text-[10px]">
                                   {item.changePct >= 0 ? "+" : ""}
-                                  {item.changePct.toFixed(1)}%
+                                  {item.changePct.toFixed(2)}%
                                 </div>
                               </>
                             ) : (
@@ -895,22 +858,41 @@ export default function Dashboard() {
                             )}
                           </td>
 
-                          {/* IV Rank */}
-                          <td className="py-2.5 text-center">
+                          {/* IVR (IV Rank) */}
+                          <td className="py-3 text-center">
                             <span
-                              className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${ivColor}`}
-                              title={
-                                iv >= 60
-                                  ? "High IV Rank — prime for selling options premium"
-                                  : "Moderate IV Rank"
-                              }
+                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${ivColor}`}
+                              title={`Implied Volatility Rank: ${iv}%`}
                             >
                               {iv}%
                             </span>
                           </td>
 
-                          {/* 52-Week Range */}
-                          <td className="py-2.5 px-2">
+                          {/* YTD Return */}
+                          <td
+                            className={`py-3 text-right font-medium text-xs ${
+                              ytd == null
+                                ? "text-muted-foreground"
+                                : ytd >= 0
+                                  ? "text-primary"
+                                  : "text-red-400"
+                            }`}
+                          >
+                            {ytd != null ? `${ytd >= 0 ? "+" : ""}${ytd.toFixed(2)}%` : "—"}
+                          </td>
+
+                          {/* 52W High */}
+                          <td className="py-3 text-right font-medium text-white/90 text-xs">
+                            {item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "—"}
+                          </td>
+
+                          {/* 52W Low */}
+                          <td className="py-3 text-right font-medium text-muted-foreground text-xs">
+                            {item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "—"}
+                          </td>
+
+                          {/* 52W Range Visual */}
+                          <td className="py-3 px-3">
                             <div className="w-full flex flex-col items-center gap-1">
                               <div className="w-full bg-white/[0.08] h-1.5 rounded-full overflow-hidden relative">
                                 <div
@@ -919,49 +901,27 @@ export default function Dashboard() {
                                 />
                               </div>
                               <div className="w-full flex justify-between text-[9px] text-muted-foreground font-mono">
-                                <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "L"}</span>
+                                <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "Low"}</span>
                                 <span className="text-white/80 font-bold">{pos52}%</span>
-                                <span>{item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "H"}</span>
+                                <span>{item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "High"}</span>
                               </div>
                             </div>
                           </td>
 
-                          {/* Beta */}
-                          <td className="py-2.5 text-right text-white font-bold text-xs">
-                            {item.beta ? item.beta.toFixed(2) : "1.00"}
-                          </td>
-
-                          {/* Basis & Risk Quick Action buttons */}
-                          <td className="py-2.5 text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Link
-                                to={`/basis?symbol=${item.symbol}`}
-                                className="px-2 py-1 rounded bg-primary/10 hover:bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1 transition-colors"
-                                title="Run Basis Improvement analysis"
-                              >
-                                <Coins className="h-3 w-3" />
-                                <span>Basis</span>
-                              </Link>
-                              <Link
-                                to={`/risk?symbol=${item.symbol}`}
-                                className="px-1.5 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] text-[10px] font-bold text-muted-foreground hover:text-white uppercase tracking-wider transition-colors"
-                                title="Run Risk & Expected Move Check"
-                              >
-                                <ShieldAlert className="h-3 w-3" />
-                              </Link>
-                              <button
-                                onClick={() =>
-                                  removeSymbolMut.mutate({
-                                    watchlistId: item.watchlistId,
-                                    symbol: item.symbol,
-                                  })
-                                }
-                                className="p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                title="Remove from watchlist"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
+                          {/* Remove Action */}
+                          <td className="py-3 text-right">
+                            <button
+                              onClick={() =>
+                                removeSymbolMut.mutate({
+                                  watchlistId: item.watchlistId,
+                                  symbol: item.symbol,
+                                })
+                              }
+                              className="p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                              title="Remove from watchlist"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
                           </td>
                         </tr>
                       );

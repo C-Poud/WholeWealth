@@ -9,7 +9,6 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Briefcase,
-  Coins,
   LayoutDashboard,
   Lightbulb,
   LogOut,
@@ -30,7 +29,6 @@ import { Logo } from "./Logo";
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Briefcase, label: "Portfolio", path: "/portfolio" },
-  { icon: Coins, label: "Basis Improvement", path: "/basis" },
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
   { icon: Lightbulb, label: "Suggestions", path: "/suggestions" },
   { icon: Rocket, label: "Career Optimiser", path: "/career" },

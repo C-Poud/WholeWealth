@@ -15,6 +15,13 @@
       "when": 1787502807708,
       "tag": "0001_organic_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1787528300000,
+      "tag": "0002_add_watchlists",
+      "breakpoints": true
     }
   ]
 }

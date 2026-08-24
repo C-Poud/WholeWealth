@@ -24,6 +24,7 @@ import {
   ArrowRightLeft,
   Building2,
   Edit2,
+  Briefcase,
 } from "lucide-react";
 
 export default function Portfolio() {

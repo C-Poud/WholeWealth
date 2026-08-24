@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "./connection";
 import {
   watchlists,
@@ -6,6 +6,41 @@ import {
   type Watchlist,
   type WatchlistItem,
 } from "@db/schema";
+
+let tablesEnsured = false;
+async function ensureTables(db: NonNullable<ReturnType<typeof getDb>>) {
+  if (tablesEnsured) return;
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS \`watchlists\` (
+        \`id\` bigint unsigned NOT NULL AUTO_INCREMENT,
+        \`userId\` bigint unsigned NOT NULL,
+        \`name\` varchar(128) NOT NULL DEFAULT 'My Watchlist',
+        \`description\` varchar(255),
+        \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (\`id\`),
+        KEY \`watchlists_user_idx\` (\`userId\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS \`watchlist_items\` (
+        \`id\` bigint unsigned NOT NULL AUTO_INCREMENT,
+        \`watchlistId\` bigint unsigned NOT NULL,
+        \`userId\` bigint unsigned NOT NULL,
+        \`symbol\` varchar(32) NOT NULL,
+        \`notes\` varchar(255),
+        \`targetStrike\` double,
+        \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (\`id\`),
+        KEY \`watchlist_items_wl_idx\` (\`watchlistId\`),
+        KEY \`watchlist_items_user_sym_idx\` (\`watchlistId\`,\`symbol\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    tablesEnsured = true;
+  } catch (err) {
+    console.warn("[watchlist] ensureTables notice:", err);
+  }
+}
 
 // ---- In-memory fallback stores ---------------------------------------------
 
@@ -92,6 +127,7 @@ export async function listUserWatchlists(userId: number): Promise<Watchlist[]> {
   const db = getDb();
   if (db) {
     try {
+      await ensureTables(db);
       const userWls = await db
         .select()
         .from(watchlists)
@@ -166,6 +202,7 @@ export async function getWatchlistWithItems(
   const db = getDb();
   if (db) {
     try {
+      await ensureTables(db);
       const [wl] = await db
         .select()
         .from(watchlists)
@@ -206,6 +243,7 @@ export async function createWatchlist(
   const db = getDb();
   if (db) {
     try {
+      await ensureTables(db);
       await db.insert(watchlists).values({
         userId,
         name: name.trim() || "My Watchlist",
@@ -239,6 +277,7 @@ export async function deleteWatchlist(
   const db = getDb();
   if (db) {
     try {
+      await ensureTables(db);
       await db
         .delete(watchlistItems)
         .where(
@@ -282,6 +321,7 @@ export async function addWatchlistSymbol(
   const db = getDb();
   if (db) {
     try {
+      await ensureTables(db);
       // Check if already in watchlist
       const existing = await db
         .select()
@@ -350,6 +390,7 @@ export async function removeWatchlistSymbol(
   const db = getDb();
   if (db) {
     try {
+      await ensureTables(db);
       await db
         .delete(watchlistItems)
         .where(

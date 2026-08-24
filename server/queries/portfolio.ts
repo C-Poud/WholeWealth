@@ -738,6 +738,40 @@ export async function clearDemoData(userId: number) {
   }
 }
 
+/**
+ * Completely clears a user's linked accounts, SnapTrade credentials,
+ * and synced/imported positions, enabling them to re-authenticate
+ * and connect fresh. The user account itself remains intact (not banned).
+ */
+export async function resetUserPortfolioData(userId: number) {
+  const db = getDb();
+  if (db) {
+    try {
+      // 1. Delete user's positions
+      await db.delete(positions).where(eq(positions.userId, userId));
+      // 2. Delete user's broker accounts
+      await db.delete(brokerAccounts).where(eq(brokerAccounts.userId, userId));
+      // 3. Delete SnapTrade identity
+      await db.delete(snaptradeIdentities).where(eq(snaptradeIdentities.userId, userId));
+    } catch (err) {
+      console.warn("[portfolio] resetUserPortfolioData db error, fallback to memory:", err);
+    }
+  }
+
+  // In-memory cleanup
+  inMemoryIdentities.delete(userId);
+  for (let i = inMemoryPositions.length - 1; i >= 0; i--) {
+    if (inMemoryPositions[i].userId === userId) {
+      inMemoryPositions.splice(i, 1);
+    }
+  }
+  for (let i = inMemoryAccounts.length - 1; i >= 0; i--) {
+    if (inMemoryAccounts[i].userId === userId) {
+      inMemoryAccounts.splice(i, 1);
+    }
+  }
+}
+
 /** Ensures that a new user starts with demo data by default. */
 export async function ensureUserDemoData(userId: number) {
   // 1. If user has a SnapTrade identity registered, never auto-seed demo data

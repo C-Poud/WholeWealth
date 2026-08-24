@@ -192,15 +192,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   <span className="font-display font-extrabold tracking-tight text-sm text-white uppercase tracking-wider">
                     NetWorth<span className="text-primary font-mono">.io</span>
                   </span>
-                  <span
-                    className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded transition-all ${
-                      isPinned
-                        ? "text-black bg-primary border border-primary font-black shadow-[0_0_10px_rgba(212,255,0,0.4)]"
-                        : "text-primary bg-primary/10 border border-primary/30 shadow-[0_0_8px_rgba(212,255,0,0.15)] group-hover:bg-primary/20"
-                    }`}
-                  >
-                    {isPinned ? "PINNED" : "PRO"}
-                  </span>
                 </div>
               </button>
             </div>
@@ -285,8 +276,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       <div className="text-[9px] font-mono text-muted-foreground/70 uppercase leading-none mb-0.5">
                         Workspace
                       </div>
-                      <div className="text-xs font-mono text-white/90 truncate leading-tight">
-                        {user?.email || user?.name || "trader@networth.io"}
+                      <div className="text-xs font-mono text-white/90 truncate leading-tight font-medium">
+                        {user?.name || user?.email || "Workspace User"}
                       </div>
                     </div>
                   </button>

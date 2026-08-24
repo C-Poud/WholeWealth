@@ -3,7 +3,12 @@ import * as schema from "@db/schema";
 import type { InsertUser, User } from "@db/schema";
 import { getDb } from "./connection";
 import { env } from "../lib/env";
-import { ensureUserDemoData } from "./portfolio";
+import {
+  ensureUserDemoData,
+  getIdentity,
+  listAccounts,
+  listPositions,
+} from "./portfolio";
 
 const DEFAULT_UNION_ID = "workspace-default";
 
@@ -104,12 +109,33 @@ export async function upsertUser(data: InsertUser) {
   }
 }
 
-/** Admin: list everyone who has signed in, most recent first. */
-export async function listUsers(): Promise<Array<Pick<User, "id" | "name" | "email" | "avatar" | "role" | "createdAt" | "lastSignInAt">>> {
+export type AdminUserInfo = Pick<
+  User,
+  "id" | "name" | "email" | "avatar" | "role" | "createdAt" | "lastSignInAt"
+> & {
+  accounts: Array<{
+    id: number;
+    name: string | null;
+    institution: string | null;
+    number: string | null;
+    cash: number | null;
+    currency: string | null;
+    source: "snaptrade" | "import" | "demo";
+    enabled: boolean;
+    lastSyncedAt: Date | null;
+  }>;
+  totalCash: number;
+  accountsCount: number;
+  positionsCount: number;
+  hasSnaptrade: boolean;
+};
+
+/** Admin: list everyone who has signed in, with their cash and accounts. */
+export async function listUsers(): Promise<AdminUserInfo[]> {
   const db = getDb();
   if (db) {
     try {
-      return await db
+      const userRows = await db
         .select({
           id: schema.users.id,
           name: schema.users.name,
@@ -121,21 +147,92 @@ export async function listUsers(): Promise<Array<Pick<User, "id" | "name" | "ema
         })
         .from(schema.users)
         .orderBy(desc(schema.users.lastSignInAt));
+
+      const [allAccounts, allIdentities, allPositions] = await Promise.all([
+        db.select().from(schema.brokerAccounts),
+        db.select().from(schema.snaptradeIdentities),
+        db
+          .select({ id: schema.positions.id, userId: schema.positions.userId })
+          .from(schema.positions),
+      ]);
+
+      return userRows.map((u) => {
+        const userAccs = allAccounts.filter((a) => a.userId === u.id);
+        const totalCash = userAccs.reduce(
+          (sum, a) => sum + (typeof a.cash === "number" ? a.cash : 0),
+          0,
+        );
+        const userPositions = allPositions.filter((p) => p.userId === u.id);
+        const hasSnaptrade = allIdentities.some((i) => i.userId === u.id);
+
+        return {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          avatar: u.avatar,
+          role: u.role,
+          createdAt: u.createdAt,
+          lastSignInAt: u.lastSignInAt,
+          accounts: userAccs.map((a) => ({
+            id: a.id,
+            name: a.name,
+            institution: a.institution,
+            number: a.number,
+            cash: a.cash,
+            currency: a.currency ?? "USD",
+            source: a.source,
+            enabled: a.enabled,
+            lastSyncedAt: a.lastSyncedAt,
+          })),
+          totalCash,
+          accountsCount: userAccs.length,
+          positionsCount: userPositions.length,
+          hasSnaptrade,
+        };
+      });
     } catch (err) {
       console.warn("[users] listUsers db error, falling back to memory:", err);
     }
   }
-  return [...inMemoryUsers]
-    .sort((a, b) => b.lastSignInAt.getTime() - a.lastSignInAt.getTime())
-    .map((u) => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      avatar: u.avatar,
-      role: u.role,
-      createdAt: u.createdAt,
-      lastSignInAt: u.lastSignInAt,
-    }));
+
+  return Promise.all(
+    [...inMemoryUsers]
+      .sort((a, b) => b.lastSignInAt.getTime() - a.lastSignInAt.getTime())
+      .map(async (u) => {
+        const userAccs = await listAccounts(u.id);
+        const userPositions = await listPositions(u.id);
+        const identity = await getIdentity(u.id);
+        const totalCash = userAccs.reduce(
+          (sum, a) => sum + (typeof a.cash === "number" ? a.cash : 0),
+          0,
+        );
+
+        return {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          avatar: u.avatar,
+          role: u.role,
+          createdAt: u.createdAt,
+          lastSignInAt: u.lastSignInAt,
+          accounts: userAccs.map((a) => ({
+            id: a.id,
+            name: a.name,
+            institution: a.institution,
+            number: a.number,
+            cash: a.cash,
+            currency: a.currency ?? "USD",
+            source: a.source,
+            enabled: a.enabled,
+            lastSyncedAt: a.lastSyncedAt,
+          })),
+          totalCash,
+          accountsCount: userAccs.length,
+          positionsCount: userPositions.length,
+          hasSnaptrade: !!identity,
+        };
+      }),
+  );
 }
 
 /**

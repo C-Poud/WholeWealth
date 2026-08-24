@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams } from "react-router";
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { ScoreBar, DeltaGauge } from "@/components/Gauges";
 import { fmtDate, fmtMoney, fmtPct } from "@/lib/format";
-import { Coins } from "lucide-react";
+import { Coins, Sparkles } from "lucide-react";
 
 function scoreLabel(s: number): string {
   if (s >= 8) return `${s.toFixed(1)} Excellent`;
@@ -21,41 +21,48 @@ function scoreLabel(s: number): string {
 }
 
 export default function Basis() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const paramSym = searchParams.get("symbol");
   const { data, isLoading, error, refetch } = trpc.analytics.basisSuggestions.useQuery();
-  const [selected, setSelected] = useState<string | null>(paramSym);
-
-  useEffect(() => {
-    if (paramSym) setSelected(paramSym.toUpperCase());
-  }, [paramSym]);
-
+  
   const suggestions = useMemo(() => data?.suggestions ?? [], [data]);
-  const current =
-    suggestions.find(
-      (s) => s.symbol.toUpperCase() === (selected ?? paramSym ?? "").toUpperCase(),
-    ) ?? suggestions[0];
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const current = useMemo(() => {
+    if (selected) {
+      return suggestions.find((s) => s.symbol.toUpperCase() === selected.toUpperCase()) ?? suggestions[0];
+    }
+    if (paramSym) {
+      return suggestions.find((s) => s.symbol.toUpperCase() === paramSym.toUpperCase()) ?? suggestions[0];
+    }
+    return suggestions[0];
+  }, [suggestions, selected, paramSym]);
+
+  const handleSelectSymbol = (sym: string) => {
+    setSelected(sym);
+    setSearchParams({ symbol: sym });
+  };
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-10 space-y-6 max-w-[1500px] mx-auto">
-        <Skeleton className="h-12 w-80 bg-white/5" />
+      <div className="p-5 sm:p-8 space-y-6 max-w-[1500px] mx-auto">
+        <Skeleton className="h-10 w-64 bg-white/5" />
         <Skeleton className="h-10 w-72 bg-white/5" />
-        <Skeleton className="h-80 bg-white/5" />
+        <Skeleton className="h-72 bg-white/5" />
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-10 space-y-8 max-w-[1500px] mx-auto">
+    <div className="p-5 sm:p-8 lg:p-10 space-y-7 max-w-[1550px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-white/[0.08]">
         <div>
-          <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-[-0.05em] text-[#f0f0f2] leading-none uppercase">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#f0f0f2] uppercase">
             Basis Improvement
           </h1>
-          <p className="meta-label mt-2">
-            Covered-call suggestions that lower your cost basis. Small percentages compound dramatically.
+          <p className="meta-label mt-1.5">
+            Optimal covered calls to reduce cost basis and capture premium.
           </p>
         </div>
         {data?.mode === "demo" && (
@@ -71,8 +78,8 @@ export default function Basis() {
       </header>
 
       {error && (
-        <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-4">
-          <p className="text-sm text-destructive font-mono">
+        <div className="p-3.5 rounded-lg border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-4">
+          <p className="text-xs text-destructive font-mono">
             Failed to load suggestions: {error.message}
           </p>
           <button
@@ -85,98 +92,89 @@ export default function Basis() {
       )}
 
       {suggestions.length === 0 ? (
-        <div className="panel-box py-20 text-center space-y-4">
-          <Coins className="h-12 w-12 mx-auto text-muted-foreground stroke-1" />
-          <p className="text-xl font-display font-bold">Nothing to optimize yet</p>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        <div className="panel-box py-16 text-center space-y-3">
+          <Coins className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
+          <p className="text-lg font-display font-bold text-white">No qualifying stock positions</p>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             {data?.message ??
               error?.message ??
-              "Add a long stock position with at least 100 shares to see covered-call suggestions."}
+              "Add a long stock position with at least 100 shares to see covered-call basis strategies."}
           </p>
         </div>
       ) : (
         <>
-          <div className="space-y-2">
-            <div className="meta-label">
-              Select Position
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="meta-label text-xs">Select Underlying Asset</div>
+              <Select
+                value={current?.symbol}
+                onValueChange={handleSelectSymbol}
+              >
+                <SelectTrigger className="w-full sm:w-80 bg-[#141417] border-white/10 font-mono text-xs">
+                  <SelectValue placeholder="Choose a position" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#141417] border-white/10 font-mono text-xs">
+                  {suggestions.map((s) => (
+                    <SelectItem key={s.symbol} value={s.symbol}>
+                      {s.symbol} {s.description ? `(${s.description})` : ""} · {s.shares} sh @ {fmtMoney(s.basis)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={current?.symbol} onValueChange={setSelected}>
-              <SelectTrigger className="w-full max-w-md bg-[#141417] border-white/10 font-mono text-sm">
-                <SelectValue placeholder="Choose a position" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#141417] border-white/10 font-mono text-sm">
-                {suggestions.map((s) => (
-                  <SelectItem key={s.symbol} value={s.symbol}>
-                    {s.symbol}
-                    {s.description ? ` — ${s.description}` : ""} · {s.shares} sh @{" "}
-                    {fmtMoney(s.basis)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {current && (
+              <div className="text-xs font-mono text-muted-foreground flex items-center gap-3">
+                <span>Spot: <strong className="text-white">{fmtMoney(current.spot)}</strong></span>
+                <span>Basis: <strong className="text-white">{fmtMoney(current.basis)}</strong></span>
+                <span>Lots: <strong className="text-primary">{Math.floor(current.shares / 100)}</strong> ({current.shares} sh)</span>
+              </div>
+            )}
           </div>
 
           {current && !current.best && (
-            <div className="panel-box p-8 text-center text-sm text-muted-foreground">
-              No suitable covered-call candidates for {current.symbol} in the
-              10–60 DTE, Δ0.08–0.45 window right now.
+            <div className="panel-box p-8 text-center text-xs font-mono text-muted-foreground">
+              No optimal covered-call contracts available for {current.symbol} within the 10–60 DTE, Δ0.08–0.45 threshold.
             </div>
           )}
 
           {current?.best && (
-            <div className="panel-box p-6 sm:p-8 grid gap-8 lg:grid-cols-2">
-              {/* Left: metrics */}
-              <div className="space-y-6">
+            <div className="panel-box p-6 sm:p-7 grid gap-6 lg:grid-cols-2">
+              {/* Left: metrics & gauges */}
+              <div className="space-y-5">
                 <div>
-                  <div className="font-display font-bold text-xl text-white">
-                    Basis Improvement: {current.symbol}
-                    {current.description ? ` — ${current.description}` : ""}
+                  <div className="font-display font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Recommended Covered Call
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    Small percentages compound dramatically
+                  <div className="text-xs font-mono text-primary font-bold mt-1">
+                    Sell {current.best.contracts}x {current.symbol} {fmtMoney(current.best.strike)}C · {fmtDate(current.best.expiry)} ({current.best.dte} DTE)
                   </div>
                 </div>
 
-                <div className="text-sm font-mono text-muted-foreground bg-white/[0.03] p-3 rounded border border-white/5">
-                  Sell {current.best.contracts} covered call
-                  {current.best.contracts > 1 ? "s" : ""} · Strike{" "}
-                  <span className="text-white font-bold">{fmtMoney(current.best.strike)}</span> · Expires{" "}
-                  <span className="text-white font-bold">{fmtDate(current.best.expiry)}</span> ({current.best.dte} DTE, Δ
-                  {current.best.delta.toFixed(4)})
-                </div>
-
-                <div>
-                  <div className="meta-label mb-2">
-                    Mechanic Score
-                  </div>
+                <div className="space-y-1.5">
+                  <div className="meta-label text-xs">Mechanic Score</div>
                   <ScoreBar
                     score={current.best.score}
                     label={scoreLabel(current.best.score)}
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 p-4 rounded bg-white/[0.02] border border-white/[0.06]">
+                <div className="grid grid-cols-3 gap-3 p-3.5 rounded bg-white/[0.02] border border-white/[0.06]">
                   <div>
-                    <div className="meta-label">
-                      Yield
-                    </div>
-                    <div className="font-mono text-lg font-bold text-primary mt-1">
+                    <div className="meta-label text-[10px]">Trade Yield</div>
+                    <div className="font-mono text-base font-bold text-primary mt-0.5">
                       {fmtPct(current.best.yieldPct)}
                     </div>
                   </div>
                   <div>
-                    <div className="meta-label">
-                      Annualized
-                    </div>
-                    <div className="font-mono text-lg font-bold text-white mt-1">
+                    <div className="meta-label text-[10px]">Annualized</div>
+                    <div className="font-mono text-base font-bold text-white mt-0.5">
                       {fmtPct(current.best.annualizedYieldPct, 1)}
                     </div>
                   </div>
                   <div>
-                    <div className="meta-label">
-                      New Basis
-                    </div>
-                    <div className="font-mono text-lg font-bold text-white mt-1">
+                    <div className="meta-label text-[10px]">New Cost Basis</div>
+                    <div className="font-mono text-base font-bold text-white mt-0.5">
                       {fmtMoney(current.best.newBasis)}
                     </div>
                   </div>
@@ -184,68 +182,45 @@ export default function Basis() {
 
                 <DeltaGauge delta={current.best.delta} />
 
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-mono text-muted-foreground pt-2 border-t border-white/5">
-                  <span>
-                    Manage by:{" "}
-                    <b className="text-white font-normal">
-                      {fmtDate(current.best.manageBy)}
-                    </b>
-                  </span>
-                  <span>
-                    50% target:{" "}
-                    <b className="text-white font-normal">
-                      {fmtMoney(current.best.target50)}
-                    </b>
-                  </span>
-                  <span>
-                    Breakeven:{" "}
-                    <b className="text-white font-normal">
-                      {fmtMoney(current.best.breakeven)}
-                    </b>
-                  </span>
-                  <span>
-                    Total Premium:{" "}
-                    <b className="text-primary font-bold">
-                      +{fmtMoney(current.best.premiumTotal)}
-                    </b>
-                  </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono text-muted-foreground pt-3 border-t border-white/5">
+                  <div>
+                    <span className="text-[10px] block text-muted-foreground/70">Premium:</span>
+                    <span className="text-primary font-bold">+{fmtMoney(current.best.premiumTotal)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] block text-muted-foreground/70">Breakeven:</span>
+                    <span className="text-white">{fmtMoney(current.best.breakeven)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] block text-muted-foreground/70">50% Exit Target:</span>
+                    <span className="text-white">{fmtMoney(current.best.target50)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] block text-muted-foreground/70">Manage Date:</span>
+                    <span className="text-white">{fmtDate(current.best.manageBy)}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Right: narrative */}
-              <div className="text-sm leading-relaxed text-muted-foreground flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 lg:pl-8 pt-6 lg:pt-0">
+              {/* Right: Key Rationale & Strategy Summary */}
+              <div className="flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 lg:pl-6 pt-5 lg:pt-0 space-y-4">
                 <div>
-                  <span className="meta-label block mb-3">
-                    Execution Plan & Rationale
+                  <span className="meta-label block mb-2.5 text-xs">
+                    Strategic Execution
                   </span>
-                  <p className="text-zinc-300">
-                    Sell {current.best.contracts} covered call
-                    {current.best.contracts > 1 ? "s" : ""} at the{" "}
-                    <strong className="text-white">{fmtMoney(current.best.strike)}</strong> strike expiring{" "}
-                    <strong className="text-white">{fmtDate(current.best.expiry)}</strong> ({current.best.dte} DTE, Δ
-                    {current.best.delta.toFixed(4)}). This structure yields a
-                    Mechanic Score of <strong className="text-primary">{current.best.score.toFixed(1)}</strong>, driven
-                    primarily by delta alignment relative to the underlying price
-                    of {fmtMoney(current.spot)}.
-                  </p>
-                  <p className="mt-3 text-zinc-300">
-                    The trade generates a yield of{" "}
-                    <strong className="text-primary">{fmtPct(current.best.yieldPct)}</strong> (
-                    {fmtPct(current.best.annualizedYieldPct, 1)} annualized),
-                    resulting in a new cost basis of{" "}
-                    <strong className="text-white">{fmtMoney(current.best.newBasis)}</strong> and a breakeven of{" "}
-                    {fmtMoney(current.best.breakeven)}. Management targets a 50%
-                    profit exit ({fmtMoney(current.best.target50)}) or a
-                    transition at the {fmtDate(current.best.manageBy)} management
-                    date, with an approximate{" "}
-                    {(current.best.assignmentProb * 100).toFixed(0)}% probability
-                    of assignment.
-                  </p>
+                  <div className="p-3.5 rounded bg-white/[0.02] border border-white/[0.06] text-xs font-sans text-zinc-300 space-y-2 leading-relaxed">
+                    <p>
+                      Selling <strong>{current.best.contracts}x {current.symbol} {fmtMoney(current.best.strike)} Calls</strong> ({current.best.dte} DTE, Δ{current.best.delta.toFixed(3)}) captures <strong className="text-primary">{fmtMoney(current.best.premiumTotal)}</strong> in upfront premium.
+                    </p>
+                    <p>
+                      This lowers your cost basis from <strong>{fmtMoney(current.basis)}</strong> to <strong className="text-white">{fmtMoney(current.best.newBasis)}</strong> (<strong className="text-primary">{fmtPct(current.best.yieldPct)}</strong> yield) with an estimated <strong>{(current.best.assignmentProb * 100).toFixed(0)}%</strong> probability of assignment.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-white/5">
-                  <span className="meta-label block mb-2">
-                    Key Drivers
+                <div className="pt-3 border-t border-white/5">
+                  <span className="meta-label block mb-2 text-xs">
+                    Optimization Drivers
                   </span>
                   <ul className="space-y-1.5 list-disc pl-4 text-xs text-muted-foreground">
                     {current.best.rationale.map((r, i) => (
@@ -258,49 +233,49 @@ export default function Basis() {
           )}
 
           {current && current.alternatives.length > 0 && (
-            <div className="panel-box p-6 overflow-hidden">
-              <div className="mb-4 meta-label">
-                Alternative strikes & expiries — {current.symbol}
+            <div className="panel-box p-5 sm:p-6 overflow-hidden">
+              <div className="mb-3.5 meta-label text-xs">
+                Alternative Strikes & Expiries ({current.alternatives.length})
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
+                <table className="w-full text-left border-collapse text-xs font-mono">
                   <thead>
-                    <tr className="border-b border-white/10 text-muted-foreground text-xs font-normal">
-                      <th className="pb-3 text-right font-normal meta-label">Score</th>
-                      <th className="pb-3 text-right font-normal meta-label">Strike</th>
-                      <th className="pb-3 font-normal meta-label">Expiry</th>
-                      <th className="pb-3 text-right font-normal meta-label">DTE</th>
-                      <th className="pb-3 text-right font-normal meta-label">Δ</th>
-                      <th className="pb-3 text-right font-normal meta-label">Bid</th>
-                      <th className="pb-3 text-right font-normal meta-label">Yield</th>
-                      <th className="pb-3 text-right font-normal meta-label">Annualized</th>
-                      <th className="pb-3 text-right font-normal meta-label">New basis</th>
+                    <tr className="border-b border-white/10 text-muted-foreground text-[11px]">
+                      <th className="pb-2.5 text-right font-normal meta-label">Score</th>
+                      <th className="pb-2.5 text-right font-normal meta-label">Strike</th>
+                      <th className="pb-2.5 font-normal meta-label">Expiry</th>
+                      <th className="pb-2.5 text-right font-normal meta-label">DTE</th>
+                      <th className="pb-2.5 text-right font-normal meta-label">Δ</th>
+                      <th className="pb-2.5 text-right font-normal meta-label">Bid</th>
+                      <th className="pb-2.5 text-right font-normal meta-label">Yield</th>
+                      <th className="pb-2.5 text-right font-normal meta-label">Annualized</th>
+                      <th className="pb-2.5 text-right font-normal meta-label">New Basis</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/[0.04] font-mono text-xs">
+                  <tbody className="divide-y divide-white/[0.04]">
                     {current.alternatives.map((a) => (
-                      <tr key={`${a.expiry}-${a.strike}`} className="hover:bg-white/[0.02]">
-                        <td className="py-3 text-right font-bold text-primary">
+                      <tr key={`${a.expiry}-${a.strike}`} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="py-2.5 text-right font-bold text-primary">
                           {a.score.toFixed(1)}
                         </td>
-                        <td className="py-3 text-right text-white">
+                        <td className="py-2.5 text-right text-white">
                           {fmtMoney(a.strike)}
                         </td>
-                        <td className="py-3 text-muted-foreground">{fmtDate(a.expiry)}</td>
-                        <td className="py-3 text-right text-muted-foreground">{a.dte}</td>
-                        <td className="py-3 text-right text-muted-foreground">
+                        <td className="py-2.5 text-muted-foreground">{fmtDate(a.expiry)}</td>
+                        <td className="py-2.5 text-right text-muted-foreground">{a.dte}</td>
+                        <td className="py-2.5 text-right text-muted-foreground">
                           {a.delta.toFixed(3)}
                         </td>
-                        <td className="py-3 text-right text-white">
+                        <td className="py-2.5 text-right text-white">
                           {fmtMoney(a.bid)}
                         </td>
-                        <td className="py-3 text-right text-primary font-medium">
+                        <td className="py-2.5 text-right text-primary font-medium">
                           {fmtPct(a.yieldPct)}
                         </td>
-                        <td className="py-3 text-right text-muted-foreground">
+                        <td className="py-2.5 text-right text-muted-foreground">
                           {fmtPct(a.annualizedYieldPct, 1)}
                         </td>
-                        <td className="py-3 text-right text-white">
+                        <td className="py-2.5 text-right text-white">
                           {fmtMoney(a.newBasis)}
                         </td>
                       </tr>
@@ -312,10 +287,6 @@ export default function Basis() {
           )}
         </>
       )}
-
-      <p className="text-xs text-muted-foreground font-mono">
-        Generated by a quantitative heuristic from live or demo option-chain data. Not financial advice.
-      </p>
     </div>
   );
 }

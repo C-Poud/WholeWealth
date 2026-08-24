@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { trpc } from "@/providers/trpc";
+import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fmtMoney, fmtNum, fmtPct } from "@/lib/format";
 import { Link } from "react-router";

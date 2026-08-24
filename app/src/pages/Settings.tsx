@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { trpc } from "@/providers/trpc";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

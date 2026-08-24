@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { trpc } from "@/providers/trpc";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users as UsersIcon } from "lucide-react";

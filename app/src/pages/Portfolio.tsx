@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { trpc } from "@/providers/trpc";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";

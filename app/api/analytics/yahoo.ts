@@ -15,7 +15,7 @@ const Q2 = "https://query2.finance.yahoo.com";
 // The options endpoint requires a cookie + crumb pair; cache it ~25 min.
 let session: { cookie: string; crumb: string; expiresAt: number } | null = null;
 
-async function getSession() {
+export async function getYahooSession() {
   if (session && session.expiresAt > Date.now()) return session;
 
   const cookieResp = await fetch("https://fc.yahoo.com", {
@@ -28,7 +28,7 @@ async function getSession() {
       : [cookieResp.headers.get("set-cookie") ?? ""];
   const cookie = setCookies
     .filter(Boolean)
-    .map((c) => c.split(";")[0])
+    .map(c => c.split(";")[0])
     .join("; ");
 
   const crumbResp = await fetch(`${Q1}/v1/test/getcrumb`, {
@@ -46,58 +46,79 @@ async function getSession() {
   return session;
 }
 
-async function fetchJson(url: string, cookie?: string): Promise<any> {
+export async function fetchYahooJson<T>(
+  url: string,
+  cookie?: string
+): Promise<T> {
   const resp = await fetch(url, {
     headers: { "User-Agent": UA, ...(cookie ? { cookie } : {}) },
   });
   if (!resp.ok) throw new Error(`Yahoo request failed (${resp.status})`);
-  return resp.json();
+  return (await resp.json()) as T;
 }
+
+type ChartResp = {
+  chart?: { result?: Array<{ meta?: { regularMarketPrice?: number } }> };
+};
+
+type QuoteSummaryResp = {
+  quoteSummary?: {
+    result?: Array<{ summaryDetail?: { beta?: { raw?: number } } }>;
+  };
+};
+
+type OptionChainResp = {
+  optionChain?: {
+    result?: Array<{
+      options?: YahooOptionsPage[];
+      expirationDates?: number[];
+    }>;
+  };
+};
 
 /** Spot prices for a set of symbols (per-symbol, best effort). */
 export async function getYahooSpots(
-  symbols: string[],
+  symbols: string[]
 ): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
   await Promise.all(
-    symbols.map(async (sym) => {
+    symbols.map(async sym => {
       try {
-        const j = await fetchJson(
-          `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`,
+        const j = await fetchYahooJson<ChartResp>(
+          `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`
         );
         const px = j?.chart?.result?.[0]?.meta?.regularMarketPrice;
         if (typeof px === "number" && px > 0) out[sym.toUpperCase()] = px;
       } catch {
         /* per-symbol best effort */
       }
-    }),
+    })
   );
   return out;
 }
 
 /** Beta (vs S&P 500) per symbol via quoteSummary — uses the crumb session. */
 export async function getYahooBetas(
-  symbols: string[],
+  symbols: string[]
 ): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
   if (symbols.length === 0) return out;
-  const s = await getSession();
+  const s = await getYahooSession();
   await Promise.all(
-    symbols.map(async (sym) => {
+    symbols.map(async sym => {
       try {
-        const j = await fetchJson(
+        const j = await fetchYahooJson<QuoteSummaryResp>(
           `${Q2}/v10/finance/quoteSummary/${encodeURIComponent(sym)}?modules=summaryDetail&crumb=${encodeURIComponent(s.crumb)}`,
-          s.cookie,
+          s.cookie
         );
-        const beta =
-          j?.quoteSummary?.result?.[0]?.summaryDetail?.beta?.raw;
+        const beta = j?.quoteSummary?.result?.[0]?.summaryDetail?.beta?.raw;
         if (typeof beta === "number" && isFinite(beta) && beta > 0) {
           out[sym.toUpperCase()] = beta;
         }
       } catch {
         /* per-symbol best effort */
       }
-    }),
+    })
   );
   return out;
 }
@@ -120,7 +141,7 @@ type YahooOptionsPage = {
 
 function pushContracts(
   out: ChainContract[],
-  page: YahooOptionsPage | null | undefined,
+  page: YahooOptionsPage | null | undefined
 ) {
   if (!page) return;
   const push = (list: YahooOption[] | undefined, type: "call" | "put") => {
@@ -150,11 +171,14 @@ function pushContracts(
  * expiration within ~95 days (covers the 10–60 DTE suggestion window).
  */
 export async function getYahooChain(symbol: string): Promise<ChainContract[]> {
-  const s = await getSession();
+  const s = await getYahooSession();
   const sym = encodeURIComponent(symbol.toUpperCase());
   const crumb = `crumb=${encodeURIComponent(s.crumb)}`;
 
-  const base = await fetchJson(`${Q2}/v7/finance/options/${sym}?${crumb}`, s.cookie);
+  const base = await fetchYahooJson<OptionChainResp>(
+    `${Q2}/v7/finance/options/${sym}?${crumb}`,
+    s.cookie
+  );
   const result = base?.optionChain?.result?.[0];
   if (!result) throw new Error(`No option chain for ${symbol}`);
 
@@ -165,25 +189,26 @@ export async function getYahooChain(symbol: string): Promise<ChainContract[]> {
   const nowSec = Date.now() / 1000;
   const expirations: number[] = result.expirationDates ?? [];
   const wanted = expirations
-    .filter((e) => e > nowSec - 86_400 && e < nowSec + 95 * 86_400)
-    .filter((e) => e !== firstPage?.expirationDate)
+    .filter(e => e > nowSec - 86_400 && e < nowSec + 95 * 86_400)
+    .filter(e => e !== firstPage?.expirationDate)
     .slice(0, 14);
 
   const pages = await Promise.all(
     wanted.map(async (e): Promise<YahooOptionsPage | null> => {
       try {
-        const j = await fetchJson(
+        const j = await fetchYahooJson<OptionChainResp>(
           `${Q2}/v7/finance/options/${sym}?date=${e}&${crumb}`,
-          s.cookie,
+          s.cookie
         );
         return j?.optionChain?.result?.[0]?.options?.[0] ?? null;
       } catch {
         return null;
       }
-    }),
+    })
   );
   for (const page of pages) pushContracts(contracts, page);
 
-  if (contracts.length === 0) throw new Error(`Empty option chain for ${symbol}`);
+  if (contracts.length === 0)
+    throw new Error(`Empty option chain for ${symbol}`);
   return contracts;
 }

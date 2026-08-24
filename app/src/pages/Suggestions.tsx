@@ -1,4 +1,4 @@
-import { trpc } from "@/providers/trpc";
+import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fmtMoney } from "@/lib/format";
 import { toast } from "sonner";

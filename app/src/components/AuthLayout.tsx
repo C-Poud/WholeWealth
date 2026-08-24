@@ -17,8 +17,8 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-  useSidebar,
 } from "@/components/ui/sidebar";
+import { useSidebar } from "@/hooks/use-sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Briefcase,
@@ -32,9 +32,15 @@ import {
   ShieldAlert,
   Users,
 } from "lucide-react";
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
-import { trpc } from "@/providers/trpc";
+import { trpc } from "@/lib/trpc";
 import { AuthLayoutSkeleton } from "./AuthLayoutSkeleton";
 import { Button } from "./ui/button";
 
@@ -55,11 +61,7 @@ const DEFAULT_WIDTH = 280;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 480;
 
-export default function AuthLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function AuthLayout({ children }: { children: ReactNode }) {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
@@ -142,14 +144,20 @@ function AuthLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const visibleMenuItems =
     user?.role === "admin" ? [...menuItems, adminMenuItem] : menuItems;
-  const activeMenuItem = visibleMenuItems.find(item => item.path === location.pathname);
+  const activeMenuItem = visibleMenuItems.find(
+    item => item.path === location.pathname
+  );
   const isMobile = useIsMobile();
 
-  useEffect(() => {
+  // Reset in-progress resizing when the sidebar collapses
+  // (state adjustment during render instead of an effect).
+  const [wasCollapsed, setWasCollapsed] = useState(isCollapsed);
+  if (wasCollapsed !== isCollapsed) {
+    setWasCollapsed(isCollapsed);
     if (isCollapsed) {
       setIsResizing(false);
     }
-  }, [isCollapsed]);
+  }
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -184,11 +192,7 @@ function AuthLayoutContent({
   return (
     <>
       <div className="relative" ref={sidebarRef}>
-        <Sidebar
-          collapsible="icon"
-          className="border-r-0"
-
-        >
+        <Sidebar collapsible="icon" className="border-r-0">
           <SidebarHeader className="h-16 justify-center">
             <div className="flex items-center gap-3 px-2 transition-all w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
               <button

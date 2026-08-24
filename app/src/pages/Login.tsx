@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";
-import { trpc } from "@/providers/trpc";
+import { trpc } from "@/lib/trpc";
 
 const ERROR_MESSAGES: Record<string, string> = {
   access_denied: "Sign-in was cancelled.",

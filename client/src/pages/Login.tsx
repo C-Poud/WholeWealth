@@ -35,12 +35,90 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen app-dot-grid flex flex-col justify-between text-[#f0f0f2] p-4 sm:p-8">
+    <div className="min-h-screen login-animated-bg flex flex-col justify-between text-[#f0f0f2] p-4 sm:p-8 relative overflow-hidden">
+      {/* Background Slow-Animated Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        {/* Soft floating neon radial glow orbs */}
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/10 blur-[100px] animate-pulse-slow" />
+        <div className="absolute -bottom-40 -right-32 w-[30rem] h-[30rem] rounded-full bg-primary/10 blur-[130px] animate-pulse-slow-reverse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/[0.03] blur-[140px]" />
+
+        {/* Slow floating financial chart curves & candlestick silhouettes */}
+        <div className="absolute inset-0 opacity-[0.14] animate-chart-drift">
+          <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1440 800" fill="none">
+            {/* Options payoff / volatility wave curves */}
+            <path
+              d="M-50 480 C 250 560, 450 320, 750 420 C 1050 520, 1250 240, 1500 300"
+              stroke="#d4ff00"
+              strokeWidth="2"
+              strokeDasharray="6 6"
+            />
+            <path
+              d="M-50 350 C 300 200, 600 480, 950 280 C 1200 120, 1380 340, 1500 240"
+              stroke="rgba(240, 240, 242, 0.4)"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M-50 600 C 400 680, 700 450, 1100 580 C 1300 620, 1420 510, 1500 540"
+              stroke="#d4ff00"
+              strokeWidth="1"
+              strokeOpacity="0.4"
+            />
+
+            {/* Stylized background candlestick bars with slow glow */}
+            <g className="animate-pulse-slow" opacity="0.6">
+              {/* Bar 1 */}
+              <line x1="160" y1="260" x2="160" y2="420" stroke="#d4ff00" strokeWidth="1" />
+              <rect x="154" y="300" width="12" height="70" fill="#d4ff00" rx="2" opacity="0.8" />
+
+              {/* Bar 2 */}
+              <line x1="220" y1="210" x2="220" y2="390" stroke="#d4ff00" strokeWidth="1" />
+              <rect x="214" y="240" width="12" height="90" fill="#d4ff00" rx="2" opacity="0.9" />
+
+              {/* Bar 3 */}
+              <line x1="280" y1="290" x2="280" y2="460" stroke="#ff5555" strokeWidth="1" opacity="0.5" />
+              <rect x="274" y="330" width="12" height="80" fill="#ff5555" rx="2" opacity="0.6" />
+
+              {/* Bar 4 */}
+              <line x1="1180" y1="180" x2="1180" y2="360" stroke="#d4ff00" strokeWidth="1" />
+              <rect x="1174" y="220" width="12" height="95" fill="#d4ff00" rx="2" opacity="0.8" />
+
+              {/* Bar 5 */}
+              <line x1="1240" y1="230" x2="1240" y2="410" stroke="#d4ff00" strokeWidth="1" />
+              <rect x="1234" y="260" width="12" height="100" fill="#d4ff00" rx="2" opacity="0.9" />
+
+              {/* Bar 6 */}
+              <line x1="1300" y1="310" x2="1300" y2="480" stroke="#ff5555" strokeWidth="1" opacity="0.5" />
+              <rect x="1294" y="350" width="12" height="75" fill="#ff5555" rx="2" opacity="0.6" />
+            </g>
+
+            {/* Matrix Coordinate Crosses */}
+            <g stroke="#d4ff00" strokeWidth="1" opacity="0.3">
+              <path d="M120 180 h 12 M126 174 v 12" />
+              <path d="M480 140 h 12 M486 134 v 12" />
+              <path d="M960 160 h 12 M966 154 v 12" />
+              <path d="M1320 120 h 12 M1326 114 v 12" />
+              <path d="M240 680 h 12 M246 674 v 12" />
+              <path d="M840 690 h 12 M846 684 v 12" />
+              <path d="M1200 660 h 12 M1206 654 v 12" />
+            </g>
+          </svg>
+        </div>
+
+        {/* Ambient subtle ticker stream watermark in background */}
+        <div className="absolute top-1/4 -left-10 text-[7rem] font-mono font-black text-white/[0.015] select-none tracking-widest uppercase">
+          SPX · NVDA · AAPL · TSLA
+        </div>
+        <div className="absolute bottom-1/4 -right-10 text-[7rem] font-mono font-black text-white/[0.015] select-none tracking-widest uppercase">
+          WHEEL · DELTA · THETA · VEGA
+        </div>
+      </div>
+
       {/* Top Bar */}
-      <header className="max-w-[1200px] w-full mx-auto flex items-center justify-between py-2">
+      <header className="max-w-[1200px] w-full mx-auto flex items-center justify-between py-2 relative z-10">
         <Logo size={36} />
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-muted-foreground backdrop-blur-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             Terminal Auth Gateway
           </span>
@@ -48,8 +126,8 @@ export default function Login() {
       </header>
 
       {/* Main Login Card */}
-      <main className="w-full max-w-md mx-auto my-auto py-10">
-        <div className="panel-card p-8 sm:p-10 border border-white/[0.1] shadow-[0_12px_40px_rgba(0,0,0,0.8),0_0_30px_rgba(212,255,0,0.08)] text-center relative overflow-hidden">
+      <main className="w-full max-w-md mx-auto my-auto py-10 relative z-10">
+        <div className="panel-card p-8 sm:p-10 border border-white/[0.1] shadow-[0_12px_40px_rgba(0,0,0,0.8),0_0_30px_rgba(212,255,0,0.08)] text-center relative overflow-hidden backdrop-blur-md">
           {/* Neon accent line at top of card */}
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
 
@@ -128,7 +206,7 @@ export default function Login() {
       </main>
 
       {/* Footer */}
-      <footer className="max-w-[1200px] w-full mx-auto py-4 text-center">
+      <footer className="max-w-[1200px] w-full mx-auto py-4 text-center relative z-10">
         <p className="font-mono text-[11px] text-muted-foreground">
           NetWorth.io Terminal · Single Sign-On via Google
         </p>

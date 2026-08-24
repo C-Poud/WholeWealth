@@ -403,104 +403,106 @@ export default function Dashboard() {
       {/* Main Grid: Holdings + Allocation (Row 1) & Target Watchlist (Row 2) */}
       <div className="space-y-8">
         
-        {/* Top Row: Active Holdings Table (7 cols) + Asset Allocation Pie Chart (5 cols) */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* Top Row: Active Holdings Table (3 cols) + Asset Allocation Pie Chart (2 cols) */}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 items-stretch">
           
           {/* Active Holdings Table */}
-          <div className="xl:col-span-7 space-y-4">
-            <div className="panel-box p-6 sm:p-8 overflow-hidden">
-              <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5">
-                <div className="flex items-center gap-2.5">
-                  <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
-                    <Briefcase className="h-4 w-4 text-primary" /> Active Holdings
-                  </span>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-muted-foreground border border-white/10">
-                    {positions.length}
-                  </span>
-                </div>
-                <Link
-                  to="/portfolio"
-                  className="text-xs font-mono text-primary hover:underline font-medium"
-                >
-                  Manage Portfolio →
-                </Link>
-              </div>
-
-              {positions.length === 0 ? (
-                <div className="py-14 text-center space-y-3">
-                  <Briefcase className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
-                  <p className="text-sm font-mono text-white font-semibold">No active positions</p>
-                  <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                    Connect a brokerage or load demo data in Portfolio menu.
-                  </p>
+          <div className="xl:col-span-3 flex flex-col">
+            <div className="panel-box p-6 sm:p-8 overflow-hidden flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5 min-h-[34px]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
+                      <Briefcase className="h-4 w-4 text-primary" /> Active Holdings
+                    </span>
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-muted-foreground border border-white/10">
+                      {positions.length}
+                    </span>
+                  </div>
                   <Link
                     to="/portfolio"
-                    className="inline-block mt-2 rounded bg-primary px-4 py-2 text-xs font-mono font-bold text-black hover:bg-primary/90 uppercase tracking-wider shadow-[0_0_15px_rgba(212,255,0,0.25)]"
+                    className="text-xs font-mono text-primary hover:underline font-medium"
                   >
-                    Open Portfolio
+                    Manage Portfolio →
                   </Link>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs font-mono">
-                    <thead>
-                      <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
-                        <th className="pb-2.5 font-normal meta-label">Symbol</th>
-                        <th className="pb-2.5 font-normal meta-label">Type</th>
-                        <th className="pb-2.5 font-normal meta-label text-right">Qty</th>
-                        <th className="pb-2.5 font-normal meta-label text-right">Cost</th>
-                        <th className="pb-2.5 font-normal meta-label text-right">Price</th>
-                        <th className="pb-2.5 font-normal meta-label text-right">Value</th>
-                        <th className="pb-2.5 font-normal meta-label text-right">P&L</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.03]">
-                      {positions.map((p) => {
-                        const px = p.price ?? p.costBasis ?? 0;
-                        const mult = p.assetType === "option" ? 100 : 1;
-                        const mv = p.quantity * px * mult;
-                        const cb = p.costBasis ?? px;
-                        const pnl = p.quantity * (px - cb) * mult;
-                        const label =
-                          p.assetType === "option"
-                            ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${
-                                p.optionType === "put" ? "P" : "C"
-                              }`
-                            : p.symbol;
-                        return (
-                          <tr key={p.id} className="hover:bg-white/[0.03] transition-colors">
-                            <td className="py-2.5 font-bold text-white">
-                              {label}
-                            </td>
-                            <td className="py-2.5 capitalize text-muted-foreground font-sans text-[11px]">
-                              {p.assetType}
-                            </td>
-                            <td className="py-2.5 text-right text-muted-foreground">
-                              {fmtNum(p.quantity, 0)}
-                            </td>
-                            <td className="py-2.5 text-right text-muted-foreground">
-                              {fmtMoney(p.costBasis)}
-                            </td>
-                            <td className="py-2.5 text-right text-white">
-                              {fmtMoney(px)}
-                            </td>
-                            <td className="py-2.5 text-right font-medium text-white">
-                              {fmtMoney(mv)}
-                            </td>
-                            <td
-                              className={`py-2.5 text-right font-semibold ${
-                                pnl >= 0 ? "text-primary" : "text-red-400"
-                              }`}
-                            >
-                              {pnl >= 0 ? `+${fmtMoney(pnl)}` : fmtMoney(pnl)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+
+                {positions.length === 0 ? (
+                  <div className="py-14 text-center space-y-3">
+                    <Briefcase className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
+                    <p className="text-sm font-mono text-white font-semibold">No active positions</p>
+                    <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                      Connect a brokerage or load demo data in Portfolio menu.
+                    </p>
+                    <Link
+                      to="/portfolio"
+                      className="inline-block mt-2 rounded bg-primary px-4 py-2 text-xs font-mono font-bold text-black hover:bg-primary/90 uppercase tracking-wider shadow-[0_0_15px_rgba(212,255,0,0.25)]"
+                    >
+                      Open Portfolio
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs font-mono">
+                      <thead>
+                        <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
+                          <th className="pb-2.5 font-normal meta-label">Symbol</th>
+                          <th className="pb-2.5 font-normal meta-label">Type</th>
+                          <th className="pb-2.5 font-normal meta-label text-right">Qty</th>
+                          <th className="pb-2.5 font-normal meta-label text-right">Cost</th>
+                          <th className="pb-2.5 font-normal meta-label text-right">Price</th>
+                          <th className="pb-2.5 font-normal meta-label text-right">Value</th>
+                          <th className="pb-2.5 font-normal meta-label text-right">P&L</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.03]">
+                        {positions.map((p) => {
+                          const px = p.price ?? p.costBasis ?? 0;
+                          const mult = p.assetType === "option" ? 100 : 1;
+                          const mv = p.quantity * px * mult;
+                          const cb = p.costBasis ?? px;
+                          const pnl = p.quantity * (px - cb) * mult;
+                          const label =
+                            p.assetType === "option"
+                              ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${
+                                  p.optionType === "put" ? "P" : "C"
+                                }`
+                              : p.symbol;
+                          return (
+                            <tr key={p.id} className="hover:bg-white/[0.03] transition-colors">
+                              <td className="py-2.5 font-bold text-white">
+                                {label}
+                              </td>
+                              <td className="py-2.5 capitalize text-muted-foreground font-sans text-[11px]">
+                                {p.assetType}
+                              </td>
+                              <td className="py-2.5 text-right text-muted-foreground">
+                                {fmtNum(p.quantity, 0)}
+                              </td>
+                              <td className="py-2.5 text-right text-muted-foreground">
+                                {fmtMoney(p.costBasis)}
+                              </td>
+                              <td className="py-2.5 text-right text-white">
+                                {fmtMoney(px)}
+                              </td>
+                              <td className="py-2.5 text-right font-medium text-white">
+                                {fmtMoney(mv)}
+                              </td>
+                              <td
+                                className={`py-2.5 text-right font-semibold ${
+                                  pnl >= 0 ? "text-primary" : "text-red-400"
+                                }`}
+                              >
+                                {pnl >= 0 ? `+${fmtMoney(pnl)}` : fmtMoney(pnl)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
 
               {/* Real-time Greek Stream widget */}
               <div className="activity-widget mt-5">
@@ -516,18 +518,19 @@ export default function Dashboard() {
           </div>
 
           {/* Allocation Pie Chart Section */}
-          <div className="xl:col-span-5 space-y-4">
-            <div className="panel-box p-6 sm:p-8 overflow-hidden">
-              <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5">
-                <div className="flex items-center gap-2.5">
-                  <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
-                    <PieIcon className="h-4 w-4 text-primary" /> Capital Allocation
+          <div className="xl:col-span-2 flex flex-col">
+            <div className="panel-box p-6 sm:p-8 overflow-hidden flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5 min-h-[34px]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
+                      <PieIcon className="h-4 w-4 text-primary" /> Capital Allocation
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono text-muted-foreground">
+                    Total <span className="text-white font-semibold">{fmtMoney(stats.equityValue + stats.cash)}</span>
                   </span>
                 </div>
-                <span className="text-xs font-mono text-muted-foreground">
-                  Total <span className="text-white font-semibold">{fmtMoney(stats.equityValue + stats.cash)}</span>
-                </span>
-              </div>
 
               {stats.allocation.length === 0 ? (
                 <div className="py-14 text-center space-y-2">
@@ -633,6 +636,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>

@@ -35,129 +35,46 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen login-animated-bg flex flex-col justify-between text-[#f0f0f2] p-4 sm:p-8 relative overflow-hidden">
-      {/* Background Slow-Animated Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        {/* Soft floating neon radial glow orbs */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/10 blur-[100px] animate-pulse-slow" />
-        <div className="absolute -bottom-40 -right-32 w-[30rem] h-[30rem] rounded-full bg-primary/10 blur-[130px] animate-pulse-slow-reverse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/[0.03] blur-[140px]" />
-
-        {/* Slow floating financial chart curves & candlestick silhouettes */}
-        <div className="absolute inset-0 opacity-[0.14] animate-chart-drift">
-          <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1440 800" fill="none">
-            {/* Options payoff / volatility wave curves */}
-            <path
-              d="M-50 480 C 250 560, 450 320, 750 420 C 1050 520, 1250 240, 1500 300"
-              stroke="#d4ff00"
-              strokeWidth="2"
-              strokeDasharray="6 6"
-            />
-            <path
-              d="M-50 350 C 300 200, 600 480, 950 280 C 1200 120, 1380 340, 1500 240"
-              stroke="rgba(240, 240, 242, 0.4)"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M-50 600 C 400 680, 700 450, 1100 580 C 1300 620, 1420 510, 1500 540"
-              stroke="#d4ff00"
-              strokeWidth="1"
-              strokeOpacity="0.4"
-            />
-
-            {/* Stylized background candlestick bars with slow glow */}
-            <g className="animate-pulse-slow" opacity="0.6">
-              {/* Bar 1 */}
-              <line x1="160" y1="260" x2="160" y2="420" stroke="#d4ff00" strokeWidth="1" />
-              <rect x="154" y="300" width="12" height="70" fill="#d4ff00" rx="2" opacity="0.8" />
-
-              {/* Bar 2 */}
-              <line x1="220" y1="210" x2="220" y2="390" stroke="#d4ff00" strokeWidth="1" />
-              <rect x="214" y="240" width="12" height="90" fill="#d4ff00" rx="2" opacity="0.9" />
-
-              {/* Bar 3 */}
-              <line x1="280" y1="290" x2="280" y2="460" stroke="#ff5555" strokeWidth="1" opacity="0.5" />
-              <rect x="274" y="330" width="12" height="80" fill="#ff5555" rx="2" opacity="0.6" />
-
-              {/* Bar 4 */}
-              <line x1="1180" y1="180" x2="1180" y2="360" stroke="#d4ff00" strokeWidth="1" />
-              <rect x="1174" y="220" width="12" height="95" fill="#d4ff00" rx="2" opacity="0.8" />
-
-              {/* Bar 5 */}
-              <line x1="1240" y1="230" x2="1240" y2="410" stroke="#d4ff00" strokeWidth="1" />
-              <rect x="1234" y="260" width="12" height="100" fill="#d4ff00" rx="2" opacity="0.9" />
-
-              {/* Bar 6 */}
-              <line x1="1300" y1="310" x2="1300" y2="480" stroke="#ff5555" strokeWidth="1" opacity="0.5" />
-              <rect x="1294" y="350" width="12" height="75" fill="#ff5555" rx="2" opacity="0.6" />
-            </g>
-
-            {/* Matrix Coordinate Crosses */}
-            <g stroke="#d4ff00" strokeWidth="1" opacity="0.3">
-              <path d="M120 180 h 12 M126 174 v 12" />
-              <path d="M480 140 h 12 M486 134 v 12" />
-              <path d="M960 160 h 12 M966 154 v 12" />
-              <path d="M1320 120 h 12 M1326 114 v 12" />
-              <path d="M240 680 h 12 M246 674 v 12" />
-              <path d="M840 690 h 12 M846 684 v 12" />
-              <path d="M1200 660 h 12 M1206 654 v 12" />
-            </g>
-          </svg>
-        </div>
-
-        {/* Ambient subtle ticker stream watermark in background */}
-        <div className="absolute top-1/4 -left-10 text-[7rem] font-mono font-black text-white/[0.015] select-none tracking-widest uppercase">
-          SPX · NVDA · AAPL · TSLA
-        </div>
-        <div className="absolute bottom-1/4 -right-10 text-[7rem] font-mono font-black text-white/[0.015] select-none tracking-widest uppercase">
-          WHEEL · DELTA · THETA · VEGA
-        </div>
-      </div>
-
+    <div className="min-h-screen app-pattern-bg flex flex-col justify-between text-[#f1f2f4] p-4 sm:p-8 relative">
       {/* Top Bar */}
-      <header className="max-w-[1200px] w-full mx-auto flex items-center justify-between py-2 relative z-10">
-        <Logo size={36} />
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-muted-foreground backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            Terminal Auth Gateway
+      <header className="max-w-[1200px] w-full mx-auto flex items-center justify-between py-3 relative z-10 border-b border-white/[0.06]">
+        <Logo size={32} />
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/[0.03] border border-white/[0.08] text-[11px] font-mono text-zinc-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Market Feeds Online · 15m Delayed
           </span>
         </div>
       </header>
 
       {/* Main Login Card */}
-      <main className="w-full max-w-md mx-auto my-auto py-10 relative z-10">
-        <div className="panel-card p-8 sm:p-10 border border-white/[0.1] shadow-[0_12px_40px_rgba(0,0,0,0.8),0_0_30px_rgba(212,255,0,0.08)] text-center relative overflow-hidden backdrop-blur-md">
-          {/* Neon accent line at top of card */}
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
-
-          {/* Logo & Headline */}
-          <div className="flex justify-center mb-5">
-            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] shadow-[0_0_20px_rgba(212,255,0,0.1)]">
-              <Logo size={42} showText={false} />
-            </div>
+      <main className="w-full max-w-sm mx-auto my-auto py-8 relative z-10">
+        <div className="panel-card p-6 sm:p-8 border border-white/[0.08] text-center bg-[#13151b] shadow-lg">
+          {/* Logo */}
+          <div className="flex justify-center mb-4">
+            <Logo size={36} showText={false} />
           </div>
 
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-white">
-            Sign In to <span className="text-primary">NetWorth.io</span>
+          <h1 className="font-semibold text-lg text-white">
+            Sign in to NetWorth.io
           </h1>
-          <p className="meta-label mt-2 text-muted-foreground font-mono text-xs">
-            Portfolio & Options Terminal Access
+          <p className="text-xs text-zinc-400 mt-1">
+            Portfolio risk & options management
           </p>
 
           {/* Error Message if any */}
           {errorCode && (
-            <div className="mt-6 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs font-mono text-destructive flex items-center gap-2 text-left">
+            <div className="mt-5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive flex items-center gap-2 text-left">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{ERROR_MESSAGES[errorCode] ?? `Authentication error: ${errorCode}`}</span>
             </div>
           )}
 
           {/* Direct Google Sign-In Action */}
-          <div className="mt-8 space-y-4">
+          <div className="mt-6 space-y-3">
             <Button
-              className="w-full font-mono text-xs font-bold uppercase tracking-wider bg-primary text-black hover:bg-primary/90 h-13 py-3.5 shadow-[0_0_20px_rgba(212,255,0,0.25)] transition-all active:scale-[0.98]"
-              size="lg"
+              className="w-full text-xs font-medium bg-emerald-500 text-black hover:bg-emerald-400 h-10 py-2.5 transition-colors cursor-pointer"
+              size="default"
               disabled={!googleEnabled}
               onClick={signIn}
             >
@@ -182,33 +99,33 @@ export default function Login() {
                   opacity=".9"
                 />
               </svg>
-              Sign in with Google
+              Continue with Google
             </Button>
 
             {providers.data && !googleEnabled && (
-              <div className="rounded border border-yellow-500/20 bg-yellow-500/5 p-3 text-xs font-mono text-yellow-400 text-left">
+              <div className="rounded border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-400 text-left">
                 Google OAuth is not configured. Redirecting to default workspace…
               </div>
             )}
           </div>
 
           {/* Security details */}
-          <div className="mt-8 pt-6 border-t border-white/[0.06] flex items-center justify-center gap-4 text-[11px] font-mono text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Read-only sync
+          <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center justify-center gap-3 text-xs text-zinc-400">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Read-only broker sync
             </span>
-            <span className="text-white/20">·</span>
-            <span className="flex items-center gap-1">
-              <Lock className="h-3.5 w-3.5 text-primary" /> Encrypted session
+            <span className="text-zinc-600">·</span>
+            <span className="flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-emerald-400" /> Encrypted session
             </span>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="max-w-[1200px] w-full mx-auto py-4 text-center relative z-10">
-        <p className="font-mono text-[11px] text-muted-foreground">
-          NetWorth.io Terminal · Single Sign-On via Google
+      <footer className="max-w-[1200px] w-full mx-auto py-3 text-center relative z-10 border-t border-white/[0.04]">
+        <p className="text-xs text-zinc-500">
+          NetWorth.io · Secure Portfolio Management
         </p>
       </footer>
     </div>

@@ -56,23 +56,20 @@ export default function Basis() {
   return (
     <div className="p-5 sm:p-8 lg:p-10 space-y-7 max-w-[1550px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-white/[0.08]">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#f0f0f2] uppercase">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
             Basis Improvement
           </h1>
-          <p className="meta-label mt-1.5">
-            Optimal covered calls to reduce cost basis and capture premium.
-          </p>
         </div>
         {data?.mode === "demo" && (
-          <div className="neon-badge shrink-0 self-start md:self-auto">
-            Demo Market Data
+          <div className="terminal-badge shrink-0 self-start md:self-auto text-amber-300 border-amber-500/30 bg-amber-500/10">
+            Demo Data
           </div>
         )}
         {data?.mode === "yahoo" && (
-          <div className="neon-badge shrink-0 self-start md:self-auto">
-            Real quotes · 15m delay
+          <div className="terminal-badge shrink-0 self-start md:self-auto">
+            15m Delay
           </div>
         )}
       </header>
@@ -204,25 +201,39 @@ export default function Basis() {
 
               {/* Right: Key Rationale & Strategy Summary */}
               <div className="flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 lg:pl-6 pt-5 lg:pt-0 space-y-4">
-                <div>
-                  <span className="meta-label block mb-2.5 text-xs">
-                    Strategic Execution
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold text-zinc-300">
+                    Trade Specifications
                   </span>
-                  <div className="p-3.5 rounded bg-white/[0.02] border border-white/[0.06] text-xs font-sans text-zinc-300 space-y-2 leading-relaxed">
-                    <p>
-                      Selling <strong>{current.best.contracts}x {current.symbol} {fmtMoney(current.best.strike)} Calls</strong> ({current.best.dte} DTE, Δ{current.best.delta.toFixed(3)}) captures <strong className="text-primary">{fmtMoney(current.best.premiumTotal)}</strong> in upfront premium.
-                    </p>
-                    <p>
-                      This lowers your cost basis from <strong>{fmtMoney(current.basis)}</strong> to <strong className="text-white">{fmtMoney(current.best.newBasis)}</strong> (<strong className="text-primary">{fmtPct(current.best.yieldPct)}</strong> yield) with an estimated <strong>{(current.best.assignmentProb * 100).toFixed(0)}%</strong> probability of assignment.
-                    </p>
+                  <div className="p-3.5 rounded bg-white/[0.02] border border-white/[0.06] text-xs font-mono text-zinc-300 space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Contract:</span>
+                      <span className="text-white">{current.best.contracts}x {current.symbol} {fmtMoney(current.best.strike)}C</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Expiry / DTE:</span>
+                      <span className="text-white">{fmtDate(current.best.expiry)} ({current.best.dte} DTE)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Delta / Assignment:</span>
+                      <span className="text-white">Δ{current.best.delta.toFixed(3)} ({(current.best.assignmentProb * 100).toFixed(0)}%)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Premium Captured:</span>
+                      <span className="text-emerald-400 font-bold">+{fmtMoney(current.best.premiumTotal)}</span>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t border-white/10">
+                      <span className="text-zinc-500">Basis Reduction:</span>
+                      <span className="text-white font-bold">{fmtMoney(current.basis)} → {fmtMoney(current.best.newBasis)}</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-white/5">
-                  <span className="meta-label block mb-2 text-xs">
-                    Optimization Drivers
+                  <span className="text-xs font-semibold text-zinc-300 block mb-2">
+                    Optimization Rationale
                   </span>
-                  <ul className="space-y-1.5 list-disc pl-4 text-xs text-muted-foreground">
+                  <ul className="space-y-1 list-disc pl-4 text-xs text-zinc-400">
                     {current.best.rationale.map((r, i) => (
                       <li key={i}>{r}</li>
                     ))}

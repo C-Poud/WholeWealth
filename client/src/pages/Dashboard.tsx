@@ -25,14 +25,14 @@ import {
 } from "@/components/ui/dialog";
 
 const COLORS = [
-  "#facc15",
-  "#4ade80",
-  "#60a5fa",
-  "#f472b6",
-  "#a78bfa",
-  "#34d399",
-  "#fb923c",
-  "#22d3ee",
+  "#10b981",
+  "#06b6d4",
+  "#3b82f6",
+  "#6366f1",
+  "#14b8a6",
+  "#f59e0b",
+  "#8b5cf6",
+  "#64748b",
 ];
 
 export default function Dashboard() {
@@ -238,20 +238,17 @@ export default function Dashboard() {
   return (
     <div className="p-5 sm:p-8 lg:p-10 space-y-8 max-w-[1750px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
         <div>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-[#f0f0f2] leading-none uppercase">
-            Portfolio & Watchlist
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+            Dashboard
           </h1>
-          <p className="meta-label mt-2">
-            Holdings, market beta hedge & real-time watchlist
-          </p>
         </div>
         <div className="flex items-center gap-3">
           {deltaData?.hasPositions && (
             <Link
               to="/suggestions"
-              className="px-3.5 py-1.5 rounded border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(212,255,0,0.12)]"
+              className="px-3 py-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5 transition-colors"
             >
               <Scale className="h-3.5 w-3.5" />
               <span>
@@ -262,20 +259,20 @@ export default function Dashboard() {
             </Link>
           )}
           {stats.hasDemo ? (
-            <div className="neon-badge shrink-0 self-start md:self-auto shadow-[0_0_15px_rgba(212,255,0,0.15)]">
-              Demo Data Active
+            <div className="terminal-badge shrink-0 self-start md:self-auto text-amber-300 border-amber-500/30 bg-amber-500/10">
+              Demo Data
             </div>
           ) : (
-            <div className="neon-badge shrink-0 self-start md:self-auto shadow-[0_0_15px_rgba(212,255,0,0.15)]">
-              Live Workspace
+            <div className="terminal-badge shrink-0 self-start md:self-auto">
+              Live
             </div>
           )}
         </div>
       </header>
 
       {error && (
-        <div className="p-4 rounded border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-4">
-          <p className="text-sm text-destructive font-mono">
+        <div className="p-3.5 rounded border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-4">
+          <p className="text-xs text-destructive font-mono">
             Failed to load portfolio: {error.message}
           </p>
           <button
@@ -287,40 +284,40 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Stats & Risk KPIs Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      {/* Stats Grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <div className="stat-card">
-          <div className="meta-label text-xs">Portfolio Value</div>
-          <div className="stat-value text-white text-2xl mt-1 font-bold">
+          <div className="text-xs text-zinc-400">Portfolio Value</div>
+          <div className="text-white text-2xl mt-1 font-bold font-mono">
             {fmtMoney(stats.equityValue + stats.cash)}
           </div>
-          <div className="text-xs text-muted-foreground mt-1.5 font-mono">
+          <div className="text-xs text-zinc-500 mt-1 font-mono">
             {fmtMoney(stats.equityValue)} equity · {fmtMoney(stats.cash)} cash
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="meta-label text-xs">Available Cash</div>
-          <div className="stat-value text-primary text-2xl mt-1 font-bold drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]">
+          <div className="text-xs text-zinc-400">Available Cash</div>
+          <div className="text-emerald-400 text-2xl mt-1 font-bold font-mono">
             {fmtMoney(stats.availableBuyingPower)}
           </div>
-          <div className="text-xs text-muted-foreground mt-1.5 font-mono">
-            {fmtMoney(stats.cash)} ready buying power
+          <div className="text-xs text-zinc-500 mt-1 font-mono">
+            {fmtMoney(stats.cash)} buying power
           </div>
         </div>
 
         {/* SPX Beta Delta */}
         <div className="stat-card">
-          <div className="meta-label text-xs flex items-center justify-between">
-            <span>Portfolio SPX Beta Δ</span>
-            <span className="text-[10px] text-muted-foreground font-mono">β {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}</span>
+          <div className="text-xs text-zinc-400 flex items-center justify-between">
+            <span>Portfolio Beta Δ</span>
+            <span className="text-[10px] text-zinc-500 font-mono">β {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}</span>
           </div>
           <div
-            className={`stat-value text-2xl mt-1 flex items-center gap-1 font-bold ${
+            className={`text-2xl mt-1 flex items-center gap-1 font-bold font-mono ${
               deltaData?.neutral
                 ? "text-white"
                 : (deltaData?.totalDelta ?? 0) > 0
-                  ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]"
+                  ? "text-emerald-400"
                   : "text-red-400"
             }`}
           >
@@ -335,44 +332,44 @@ export default function Dashboard() {
               {(deltaData?.spxBetaDelta ?? 0) >= 0 ? "+" : ""}
               {(deltaData?.spxBetaDelta ?? 0).toFixed(2)}
             </span>
-            <span className="text-xs font-mono text-muted-foreground">Δ</span>
+            <span className="text-xs font-mono text-zinc-500">Δ</span>
           </div>
-          <div className="text-xs text-muted-foreground mt-1.5 font-mono flex items-center justify-between">
+          <div className="text-xs text-zinc-500 mt-1 font-mono flex items-center justify-between">
             <span>
               {((deltaData?.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (deltaData?.spyBetaDelta ?? 0).toFixed(1)} SPY eq.
             </span>
-            <Link to="/suggestions" className="text-primary hover:underline font-bold">
+            <Link to="/suggestions" className="text-emerald-400 hover:underline">
               Hedge →
             </Link>
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="meta-label text-xs">Active Positions</div>
-          <div className="stat-value text-white text-2xl mt-1 font-bold">
+          <div className="text-xs text-zinc-400">Positions</div>
+          <div className="text-white text-2xl mt-1 font-bold font-mono">
             {stats.count}
           </div>
-          <div className="text-xs text-muted-foreground mt-1.5 font-mono">
-            {stats.allocation.length} distinct assets in portfolio
+          <div className="text-xs text-zinc-500 mt-1 font-mono">
+            {stats.allocation.length} holdings
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="meta-label text-xs">Unrealized P&L</div>
+          <div className="text-xs text-zinc-400">Unrealized P&L</div>
           <div
-            className={`stat-value text-2xl mt-1 font-bold ${
-              stats.pnl >= 0 ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]" : "text-red-400"
+            className={`text-2xl mt-1 font-bold font-mono ${
+              stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"
             }`}
           >
             {stats.pnl >= 0 ? `+${fmtMoney(stats.pnl)}` : fmtMoney(stats.pnl)}
           </div>
           {stats.pnlPct != null && (
             <div
-              className={`text-xs font-mono mt-1.5 ${
-                stats.pnl >= 0 ? "text-primary" : "text-red-400"
+              className={`text-xs font-mono mt-1 ${
+                stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"
               }`}
             >
-              {stats.pnl >= 0 ? "+" : ""}{fmtPct(stats.pnlPct)} {stats.pnl >= 0 ? "▲" : "▼"}
+              {stats.pnl >= 0 ? "+" : ""}{fmtPct(stats.pnlPct)}
             </div>
           )}
         </div>

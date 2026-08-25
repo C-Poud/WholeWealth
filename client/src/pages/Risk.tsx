@@ -56,24 +56,21 @@ export default function Risk() {
   return (
     <div className="p-5 sm:p-8 lg:p-10 space-y-7 max-w-[1550px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-white/[0.08]">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#f0f0f2] uppercase">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
             Risk & Expected Moves
           </h1>
-          <p className="meta-label mt-1.5">
-            Implied volatility boundaries, 2σ statistical ranges, and position concentration.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           {data?.mode === "demo" && (
-            <div className="neon-badge shrink-0 self-start md:self-auto">
-              Demo Market Data
+            <div className="terminal-badge shrink-0 self-start md:self-auto text-amber-300 border-amber-500/30 bg-amber-500/10">
+              Demo Data
             </div>
           )}
           {data?.mode === "yahoo" && (
-            <div className="neon-badge shrink-0 self-start md:self-auto">
-              Real quotes · 15m delay
+            <div className="terminal-badge shrink-0 self-start md:self-auto">
+              15m Delay
             </div>
           )}
         </div>
@@ -110,10 +107,10 @@ export default function Risk() {
                 value={current?.symbol}
                 onValueChange={handleSelectSymbol}
               >
-                <SelectTrigger className="w-full sm:w-80 bg-[#141417] border-white/10 font-mono text-xs">
+                <SelectTrigger className="w-full sm:w-80 bg-[#121419] border-white/10 font-mono text-xs text-white">
                   <SelectValue placeholder="Choose a symbol" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#141417] border-white/10 font-mono text-xs">
+                <SelectContent className="bg-[#121419] border-white/10 font-mono text-xs text-white">
                   {reports.map((r) => (
                     <SelectItem key={r.symbol} value={r.symbol}>
                       {r.symbol} · {fmtPct(r.portfolioWeight, 1)} of portfolio
@@ -125,7 +122,7 @@ export default function Risk() {
             {current && (
               <div className="text-xs font-mono text-muted-foreground flex items-center gap-3">
                 <span>IV30: <strong className="text-white">{current.iv30 != null ? `${(current.iv30 * 100).toFixed(1)}%` : "—"}</strong></span>
-                <span>Portfolio Weight: <strong className="text-primary">{fmtPct(current.portfolioWeight, 1)}</strong></span>
+                <span>Portfolio Weight: <strong className="text-emerald-400">{fmtPct(current.portfolioWeight, 1)}</strong></span>
               </div>
             )}
           </div>
@@ -134,11 +131,11 @@ export default function Risk() {
             <div className="panel-box p-6 sm:p-7 space-y-5">
               <div className="flex items-center justify-between flex-wrap gap-2 border-b border-white/10 pb-3.5">
                 <div className="font-display font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-primary" />
+                  <Activity className="h-4 w-4 text-emerald-400" />
                   {current.symbol} {current.description ? `· ${current.description}` : ""}
                 </div>
                 <div className="text-xs font-mono text-muted-foreground">
-                  Risk Level: <span className="text-primary font-bold">{scoreLabel(current.riskScore)}</span>
+                  Risk Level: <span className="text-emerald-400 font-bold">{scoreLabel(current.riskScore)}</span>
                 </div>
               </div>
 
@@ -156,7 +153,7 @@ export default function Risk() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="rounded border border-white/10 bg-white/[0.02] p-4 text-center">
                       <div className="meta-label text-xs">−2σ Boundary</div>
-                      <div className="mt-1 font-mono text-xl sm:text-2xl font-bold text-red-400">
+                      <div className="mt-1 font-mono text-xl sm:text-2xl font-bold text-rose-400">
                         {fmtMoney(current.lower2)}
                       </div>
                       <div className="text-[10px] font-mono text-muted-foreground mt-0.5">
@@ -164,14 +161,14 @@ export default function Risk() {
                       </div>
                     </div>
 
-                    <div className="rounded bg-primary p-4 text-center text-black shadow-[0_0_15px_rgba(212,255,0,0.2)]">
-                      <div className="font-mono text-[10px] uppercase tracking-wider font-bold opacity-80">
+                    <div className="rounded border border-emerald-500/30 bg-emerald-500/10 p-4 text-center text-white">
+                      <div className="font-mono text-[10px] uppercase tracking-wider font-semibold text-emerald-400">
                         Spot Price
                       </div>
-                      <div className="mt-1 font-mono text-xl sm:text-2xl font-bold">
+                      <div className="mt-1 font-mono text-xl sm:text-2xl font-bold text-white">
                         {fmtMoney(current.spot)}
                       </div>
-                      <div className="text-[10px] font-mono opacity-80 mt-0.5">
+                      <div className="text-[10px] font-mono text-zinc-400 mt-0.5">
                         Current reference
                       </div>
                     </div>
@@ -191,15 +188,15 @@ export default function Risk() {
                   <div className="p-3.5 rounded bg-white/[0.02] border border-white/5 space-y-2">
                     <div className="flex font-mono text-[10px] text-muted-foreground">
                       <span className="w-[15%] text-center">2.5%</span>
-                      <span className="flex-1 text-center text-primary font-bold">
+                      <span className="flex-1 text-center text-emerald-400 font-semibold">
                         95% Probable Expected Range (2σ)
                       </span>
                       <span className="w-[15%] text-center">2.5%</span>
                     </div>
-                    <div className="flex h-2.5 overflow-hidden rounded-full bg-white/5">
-                      <div className="w-[15%] bg-white/10" />
-                      <div className="flex-1 bg-primary/70" />
-                      <div className="w-[15%] bg-white/10" />
+                    <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
+                      <div className="w-[15%] bg-white/5" />
+                      <div className="flex-1 bg-emerald-500/80" />
+                      <div className="w-[15%] bg-white/5" />
                     </div>
                     <div className="flex justify-between font-mono text-xs text-muted-foreground">
                       <span>{fmtMoney(current.lower2)}</span>
@@ -226,7 +223,7 @@ export default function Risk() {
                     {current.probBelowBasis != null && (
                       <div>
                         <span className="text-[10px] block text-muted-foreground/70">Prob. Below Basis:</span>
-                        <span className="text-primary font-bold">{fmtPct(current.probBelowBasis, 0)}</span>
+                        <span className="text-emerald-400 font-bold">{fmtPct(current.probBelowBasis, 0)}</span>
                       </div>
                     )}
                   </div>

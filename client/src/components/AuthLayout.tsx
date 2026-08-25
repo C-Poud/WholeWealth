@@ -9,6 +9,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Briefcase,
+  Compass,
   LayoutDashboard,
   Lightbulb,
   LogOut,
@@ -25,6 +26,7 @@ import { trpc } from "@/providers/trpc";
 import { AuthLayoutSkeleton } from "./AuthLayoutSkeleton";
 import { Button } from "./ui/button";
 import { Logo } from "./Logo";
+import { OnboardingTour, startAppTour } from "./OnboardingTour";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -287,8 +289,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     <div className="text-[11px] text-muted-foreground truncate">{user?.email}</div>
                   </div>
                   <DropdownMenuItem
+                    onClick={() => startAppTour()}
+                    className="cursor-pointer text-zinc-300 hover:text-white focus:text-white focus:bg-white/10 text-xs font-mono mt-1"
+                  >
+                    <Compass className="mr-2 h-3.5 w-3.5 text-emerald-400" />
+                    <span>Product Tour</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={logout}
-                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 text-xs font-mono mt-1"
+                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 text-xs font-mono mt-0.5"
                   >
                     <LogOut className="mr-2 h-3.5 w-3.5" />
                     <span>Sign out</span>
@@ -373,7 +382,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               })}
             </nav>
 
-            <div className="p-3 border-t border-white/10">
+            <div className="p-3 border-t border-white/10 space-y-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  startAppTour();
+                }}
+                className="w-full h-9 rounded-md flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-mono border border-white/10 cursor-pointer"
+              >
+                <Compass className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Product Tour</span>
+              </button>
               <button
                 type="button"
                 onClick={logout}
@@ -393,6 +413,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
+
+      {/* ── INTERACTIVE ONBOARDING TOUR (Auto-opens on first sign in) ── */}
+      <OnboardingTour />
     </div>
   );
 }

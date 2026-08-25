@@ -15,7 +15,10 @@ import {
   FolderPlus,
   X,
   PieChart as PieIcon,
+  Compass,
 } from "lucide-react";
+import { startAppTour } from "@/components/OnboardingTour";
+import { ConnectBrokerCard } from "@/components/ConnectBrokerCard";
 import {
   Dialog,
   DialogContent,
@@ -284,6 +287,9 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Broker Connection Recommendation */}
+      <ConnectBrokerCard variant={positions.length === 0 ? "card" : "compact"} />
+
       {/* Stats Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <div className="stat-card">
@@ -403,18 +409,27 @@ export default function Dashboard() {
                 </div>
 
                 {positions.length === 0 ? (
-                  <div className="py-14 text-center space-y-3">
-                    <Briefcase className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
-                    <p className="text-sm font-mono text-white font-semibold">No active positions</p>
+                  <div className="py-14 text-center space-y-3 font-mono">
+                    <Briefcase className="h-10 w-10 mx-auto text-muted-foreground/40 stroke-1" />
+                    <p className="text-sm text-white font-semibold">No active positions</p>
                     <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                      Connect a brokerage or load demo data in Portfolio menu.
+                      Your workspace is clean. Import your broker statements or add lots in Portfolio.
                     </p>
-                    <Link
-                      to="/portfolio"
-                      className="inline-block mt-2 rounded bg-primary px-4 py-2 text-xs font-mono font-bold text-black hover:bg-primary/90 uppercase tracking-wider shadow-[0_0_15px_rgba(212,255,0,0.25)]"
-                    >
-                      Open Portfolio
-                    </Link>
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <Link
+                        to="/portfolio"
+                        className="inline-block rounded bg-primary px-4 py-2 text-xs font-mono font-bold text-black hover:bg-primary/90 uppercase tracking-wider shadow-[0_0_15px_rgba(212,255,0,0.25)]"
+                      >
+                        Open Portfolio
+                      </Link>
+                      <button
+                        onClick={() => startAppTour()}
+                        className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/5 px-3 py-2 text-xs font-mono text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Compass className="h-3.5 w-3.5 text-emerald-400" />
+                        Take Tour
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">

@@ -4,7 +4,6 @@ import type { InsertUser, User } from "@db/schema";
 import { getDb } from "./connection";
 import { env } from "../lib/env";
 import {
-  ensureUserDemoData,
   getIdentity,
   listAccounts,
   listPositions,
@@ -75,10 +74,6 @@ export async function upsertUser(data: InsertUser) {
         .insert(schema.users)
         .values(values)
         .onDuplicateKeyUpdate({ set: updateSet });
-      const user = await findUserByUnionId(data.unionId);
-      if (user) {
-        await ensureUserDemoData(user.id);
-      }
       return;
     } catch (err) {
       console.warn("[users] upsertUser db error, falling back to memory:", err);
@@ -105,7 +100,6 @@ export async function upsertUser(data: InsertUser) {
       lastSignInAt: new Date(),
     };
     inMemoryUsers.push(newUser);
-    await ensureUserDemoData(newUser.id);
   }
 }
 

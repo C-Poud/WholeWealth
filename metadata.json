@@ -1,6 +1,6 @@
 {
   "name": "NetWorth.io",
-  "description": "Portfolio and analytics toolkit for holdings, risk metrics, live watchlists, and investment suggestions.",
+  "description": "Portfolio and options analytics toolkit with live broker sync, VolatilityBox expected move models, dynamic probability cones, and risk metrics.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

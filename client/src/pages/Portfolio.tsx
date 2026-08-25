@@ -25,7 +25,10 @@ import {
   Building2,
   Edit2,
   Briefcase,
+  Compass,
 } from "lucide-react";
+import { startAppTour } from "@/components/OnboardingTour";
+import { ConnectBrokerCard } from "@/components/ConnectBrokerCard";
 
 export default function Portfolio() {
   const utils = trpc.useUtils();
@@ -244,20 +247,40 @@ export default function Portfolio() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs border-white/10 hover:bg-white/5 cursor-pointer"
-            onClick={() => syncMut.mutate()}
-            disabled={!st?.registered || syncMut.isPending}
-          >
-            <RefreshCw
-              className={`h-3.5 w-3.5 mr-1.5 ${syncMut.isPending ? "animate-spin" : ""}`}
-            />
-            {syncMut.isPending ? "Syncing…" : "Sync Broker"}
-          </Button>
+          {!st?.registered ? (
+            <Button
+              size="sm"
+              className="text-xs font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer"
+              onClick={() =>
+                connectMut.mutate({ origin: window.location.origin })
+              }
+              disabled={!st?.configured || connectMut.isPending}
+            >
+              <Link2 className="h-3.5 w-3.5 mr-1" />
+              {connectMut.isPending ? "Connecting…" : "Connect Broker"}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-white/10 hover:bg-white/5 cursor-pointer"
+              onClick={() => syncMut.mutate()}
+              disabled={syncMut.isPending}
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 mr-1.5 ${syncMut.isPending ? "animate-spin" : ""}`}
+              />
+              {syncMut.isPending ? "Syncing…" : "Sync Broker"}
+            </Button>
+          )}
         </div>
       </header>
+
+      {/* Broker Connection Recommendation */}
+      <ConnectBrokerCard
+        variant={positions.length === 0 ? "card" : "compact"}
+        onOpenManual={() => setManualOpen(true)}
+      />
 
       {/* Summary KPI section */}
       {positions.length > 0 && (
@@ -317,9 +340,36 @@ export default function Portfolio() {
         {positions.length === 0 ? (
           <div className="text-center py-12 space-y-3 font-mono">
             <Briefcase className="h-10 w-10 mx-auto text-muted-foreground/40 stroke-1" />
-            <p className="text-sm text-muted-foreground">
-              No positions in portfolio yet — connect a brokerage, import a CSV, or load demo positions below.
+            <p className="text-sm font-semibold text-white">Your portfolio is clean and ready</p>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              No positions loaded. Connect your brokerage account, import a statement CSV, or add lots manually.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+              <Button
+                size="sm"
+                className="text-xs font-mono font-semibold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
+                onClick={() => fileRef.current?.click()}
+                disabled={importMut.isPending}
+              >
+                <Upload className="h-3.5 w-3.5 mr-1" /> Import CSV
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer"
+                onClick={() => setManualOpen(true)}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Manual Entry
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs font-mono text-zinc-400 hover:text-white cursor-pointer"
+                onClick={() => startAppTour()}
+              >
+                <Compass className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Product Tour
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">

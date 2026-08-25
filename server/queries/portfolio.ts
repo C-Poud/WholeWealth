@@ -17,43 +17,10 @@ import { DEMO_POSITIONS, demoSpot } from "../snaptrade/demo";
 const inMemorySettings = new Map<string, string>();
 const inMemoryIdentities = new Map<number, SnaptradeIdentity>();
 let nextAccountId = 1;
-const inMemoryAccounts: BrokerAccount[] = [
-  {
-    id: nextAccountId++,
-    userId: 1,
-    snaptradeAccountId: null,
-    name: "Primary Trading",
-    institution: "Interactive Brokers",
-    number: "U***8492",
-    cash: 25480.0,
-    currency: "USD",
-    enabled: true,
-    source: "demo",
-    lastSyncedAt: new Date(),
-    createdAt: new Date(),
-  },
-];
+const inMemoryAccounts: BrokerAccount[] = [];
 
 let nextPositionId = 1;
-const inMemoryPositions: Position[] = DEMO_POSITIONS.map((p) => ({
-  id: nextPositionId++,
-  userId: 1,
-  accountId: 1,
-  symbol: p.symbol,
-  description: p.description,
-  assetType: "stock" as const,
-  quantity: p.quantity,
-  costBasis: p.costBasis,
-  price: demoSpot(p.symbol),
-  currency: "USD",
-  source: "demo" as const,
-  optionType: null,
-  strike: null,
-  expiry: null,
-  rawSymbol: null,
-  updatedAt: new Date(),
-  createdAt: new Date(),
-}));
+const inMemoryPositions: Position[] = [];
 
 // ---- settings --------------------------------------------------------------
 
@@ -159,7 +126,6 @@ export async function deleteIdentity(userId: number) {
 // ---- accounts --------------------------------------------------------------
 
 export async function listAccounts(userId: number): Promise<BrokerAccount[]> {
-  await ensureUserDemoData(userId);
   const db = getDb();
   if (db) {
     try {
@@ -385,7 +351,6 @@ export async function getOrCreateImportAccount(userId: number): Promise<BrokerAc
 
 /** All positions for a user, excluding ones in accounts they've disabled. */
 export async function listPositions(userId: number): Promise<Position[]> {
-  await ensureUserDemoData(userId);
   const db = getDb();
   let rows: Position[] = [];
   if (db) {
@@ -772,42 +737,7 @@ export async function resetUserPortfolioData(userId: number) {
   }
 }
 
-/** Ensures that a new user starts with demo data by default. */
-export async function ensureUserDemoData(userId: number) {
-  // 1. If user has a SnapTrade identity registered, never auto-seed demo data
-  const identity = await getIdentity(userId);
-  if (identity) return;
-
-  // 2. Check if user already has positions or accounts in DB
-  const db = getDb();
-  if (db) {
-    try {
-      const [dbPositions, dbAccounts] = await Promise.all([
-        db
-          .select({ id: positions.id })
-          .from(positions)
-          .where(eq(positions.userId, userId))
-          .limit(1),
-        db
-          .select({ id: brokerAccounts.id, source: brokerAccounts.source })
-          .from(brokerAccounts)
-          .where(eq(brokerAccounts.userId, userId)),
-      ]);
-
-      if (dbPositions.length > 0) return;
-      if (dbAccounts.some((a) => a.source === "snaptrade" || a.source === "import")) return;
-    } catch (err) {
-      console.warn("[portfolio] ensureUserDemoData db check error, fallback to memory:", err);
-    }
-  }
-
-  // Check in-memory state
-  const memPositions = inMemoryPositions.filter((p) => p.userId === userId);
-  if (memPositions.length > 0) return;
-
-  const memAccounts = inMemoryAccounts.filter((a) => a.userId === userId);
-  if (memAccounts.some((a) => a.source === "snaptrade" || a.source === "import")) return;
-
-  // Auto-seed demo portfolio for this new user
-  await seedDemoData(userId);
+/** Ensures that a user has data only if explicitly requested (no-op: all users start with 0 positions). */
+export async function ensureUserDemoData(_userId: number) {
+  // First time users start clean with zero positions.
 }

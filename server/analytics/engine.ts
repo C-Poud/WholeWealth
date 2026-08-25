@@ -1,4 +1,6 @@
 import {
+  bsCallPrice,
+  bsPutPrice,
   bsCallDelta,
   impliedVolCall,
   probBelow,

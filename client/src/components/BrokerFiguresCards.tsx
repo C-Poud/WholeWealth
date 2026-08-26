@@ -94,21 +94,14 @@ export function BrokerFiguresCards({
     );
   }
 
-  // Fallback defaults matching the exact broker report figures from the screenshot
-  const totalValueFormatted = data?.totalAccountValueFormatted || "$19,000.34";
+  const totalValueFormatted = data?.totalAccountValueFormatted ?? "$0.00";
   const cashList = data?.cashBalances && data.cashBalances.length > 0
     ? data.cashBalances
-    : [
-        { currency: "AUD", amount: 15.64, formatted: "A$15.64" },
-        { currency: "USD", amount: 174.14, formatted: "$174.14" },
-      ];
+    : [{ currency: "USD", amount: 0, formatted: "$0.00" }];
 
   const buyingPowerList = data?.buyingPowerBalances && data.buyingPowerBalances.length > 0
     ? data.buyingPowerBalances
-    : [
-        { currency: "AUD", amount: 15.64, formatted: "A$15.64" },
-        { currency: "USD", amount: 174.14, formatted: "$174.14" },
-      ];
+    : [{ currency: "USD", amount: 0, formatted: "$0.00" }];
 
   return (
     <div className={`space-y-1.5 ${className}`}>

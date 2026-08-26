@@ -221,6 +221,18 @@ export async function listAccounts(
   });
 }
 
+export async function getAccount(
+  config: SnaptradeConfig,
+  accountId: string,
+  userId: string,
+  userSecret: string,
+) {
+  return snaptradeRequest<SnaptradeAccount>(config, {
+    path: `/accounts/${accountId}`,
+    query: { userId, userSecret },
+  });
+}
+
 export interface SnaptradeBalanceResponse {
   total?: { amount?: number | null; currency?: string | null } | number | null;
   cash?: number | null | Array<{ amount?: number | null; currency?: string | null }>;

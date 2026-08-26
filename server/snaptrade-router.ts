@@ -17,6 +17,7 @@ import {
   getSnaptradeConfig,
   listAllAccountPositions,
   listAccounts as stListAccounts,
+  getAccountBalances,
   registerSnaptradeUser,
   SnaptradeError,
 } from "./snaptrade/client";
@@ -172,8 +173,30 @@ export const snaptradeRouter = createRouter({
 
     for (const acc of accounts) {
       const isAussie = isAussieBroker(acc.institution_name, acc.name);
-      let rawCash = num(acc.balance?.total?.amount);
+      let rawCash: number | null = null;
       let accCurrency = String(acc.balance?.total?.currency ?? "USD").toUpperCase();
+
+      // Fetch actual cash balance from SnapTrade /balances endpoint
+      try {
+        const balData = await getAccountBalances(
+          config,
+          acc.id,
+          identity.snaptradeUserId,
+          identity.userSecret,
+        );
+        const balList: any[] = Array.isArray(balData) ? balData : balData ? [balData] : [];
+        for (const b of balList) {
+          if (!b) continue;
+          const curr = String(b.currency?.code ?? b.currency ?? accCurrency).toUpperCase();
+          const cashVal = typeof b.cash === "number" ? b.cash : (b.cash?.amount ?? b.amount ?? null);
+          if (cashVal != null && Number.isFinite(Number(cashVal))) {
+            rawCash = (rawCash ?? 0) + Number(cashVal);
+            accCurrency = curr;
+          }
+        }
+      } catch (err) {
+        console.warn(`[snaptrade-sync] Could not fetch balances for account ${acc.id}:`, err);
+      }
 
       // If pulling AUD on a US broker (not an Aussie broker), convert AUD to USD.
       // If it's an Aussie broker pulling AUD, leave it untouched.

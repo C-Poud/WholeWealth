@@ -53,7 +53,7 @@ const TICKER_ACCENT_COLORS = [
   { bg: "bg-teal-500/15", border: "border-teal-500/30", text: "text-teal-400" },
 ];
 
-function getTickerColor(symbol: string) {
+function _getTickerColor(symbol: string) {
   let hash = 0;
   for (let i = 0; i < symbol.length; i++) {
     hash = symbol.charCodeAt(i) + ((hash << 5) - hash);

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/providers/trpc";
-import { fmtMoney, fmtPct } from "@/lib/format";
+import { fmtMoney } from "@/lib/format";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   TrendingUp,
@@ -11,6 +11,7 @@ import {
   Calculator,
   ShieldCheck,
   Search,
+  Scale,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -269,16 +270,16 @@ export function PortfolioGreeksPanel({ onSelectSymbol }: PortfolioGreeksPanelPro
           </div>
         </div>
 
-        {/* Card 4: Effective Portfolio Beta & Hedging Guide */}
+        {/* Card 4: Portfolio Beta (vs SPX) & Hedging Guide */}
         <div className="panel-box p-4 sm:p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-semibold text-zinc-300 flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Effective Beta & Hedge
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Portfolio Beta (vs SPX)
             </span>
           </div>
 
           <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-            {greeks.effectivePortfolioBeta.toFixed(2)}x{" "}
+            {greeks.effectivePortfolioBeta.toFixed(2)}β{" "}
             <span className="text-xs font-normal text-zinc-400">vs SPX</span>
           </div>
 
@@ -639,7 +640,6 @@ export function PortfolioGreeksPanel({ onSelectSymbol }: PortfolioGreeksPanelPro
               <tbody className="divide-y divide-white/[0.04]">
                 {filteredPositions.map((p, idx) => {
                   const isStock = p.assetType === "stock" || p.assetType === "etf";
-                  const isOption = p.assetType === "option";
                   const calcString = isStock
                     ? `${p.quantity} × 1 × 1`
                     : `${p.quantity} × ${p.contractDelta.toFixed(2)} × ${p.multiplier}`;

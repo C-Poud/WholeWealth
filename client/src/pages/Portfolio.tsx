@@ -302,20 +302,20 @@ export default function Portfolio() {
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] sm:text-xs text-sky-400 flex items-center gap-1">
-                <Zap className="h-3.5 w-3.5" /> SPX Beta Delta
+                <Zap className="h-3.5 w-3.5" /> Portfolio Beta (vs SPX)
               </span>
               <span className="text-[10px] text-zinc-500 group-hover:text-sky-400 flex items-center transition-colors">
                 View Greeks <ArrowUpRight className="h-3 w-3 ml-0.5" />
               </span>
             </div>
             <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
-              {greeksQuery.data?.greeks?.totalSpxBetaDelta != null
-                ? `${greeksQuery.data.greeks.totalSpxBetaDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.totalSpxBetaDelta.toFixed(2)} Δ`
+              {greeksQuery.data?.greeks?.effectivePortfolioBeta != null
+                ? `${greeksQuery.data.greeks.effectivePortfolioBeta.toFixed(2)}β`
                 : "—"}
             </div>
             <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
-              {greeksQuery.data?.greeks?.totalSpyBetaDelta != null
-                ? `${greeksQuery.data.greeks.totalSpyBetaDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.totalSpyBetaDelta.toFixed(1)} Δ SPY · ${greeksQuery.data.greeks.effectivePortfolioBeta.toFixed(2)}β`
+              {greeksQuery.data?.greeks?.totalSpxBetaDelta != null
+                ? `${greeksQuery.data.greeks.totalSpxBetaDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.totalSpxBetaDelta.toFixed(2)} Δ SPX (${greeksQuery.data.greeks.totalSpyBetaDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.totalSpyBetaDelta.toFixed(1)} SPY)`
                 : "S&P 500 sensitivity"}
             </div>
           </div>

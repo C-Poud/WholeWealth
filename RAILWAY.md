@@ -3,8 +3,7 @@
 ## 1. Create the project
 
 1. Railway dashboard → **New Project** → **Deploy from GitHub repo** → pick `dash`.
-2. In the service **Settings → Source**, set **Root Directory** to `app`
-   (the code lives in the `app/` subfolder of the repo).
+2. In the service **Settings → Source**, ensure **Root Directory** is empty or set to `/` (all files including `Dockerfile` are located at the repository root).
 3. Railway detects the `Dockerfile` automatically (also pinned in `railway.json`).
 
 ## 2. Add a MySQL database

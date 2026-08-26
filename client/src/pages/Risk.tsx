@@ -19,7 +19,6 @@ import {
   ShieldAlert,
   Activity,
   Zap,
-  TrendingUp,
   Shield,
   ArrowUpRight,
   ArrowDownRight,
@@ -360,23 +359,12 @@ export default function Risk() {
 
                   {/* Volatility Cone Chart */}
                   {current.iv30 != null && current.iv30 > 0 && (
-                    <div className="p-4 rounded-lg bg-black/40 border border-white/10 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-bold font-mono text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <TrendingUp className="h-4 w-4 text-sky-400" />
-                          Probability Cone & Expected Move Envelopes ({current.symbol})
-                        </h3>
-                        <span className="text-xs font-mono text-zinc-400">
-                          30D Implied Vol: <strong className="text-white">{(current.iv30 * 100).toFixed(1)}%</strong>
-                        </span>
-                      </div>
-                      <VolatilityConeChart
-                        spot={current.spot}
-                        iv={current.iv30}
-                        dte={current.dte}
-                        symbol={current.symbol}
-                      />
-                    </div>
+                    <VolatilityConeChart
+                      spot={current.spot}
+                      iv={current.iv30}
+                      dte={current.dte}
+                      symbol={current.symbol}
+                    />
                   )}
 
                   {/* Volatility Box Levels Matrix & ATM Straddle */}

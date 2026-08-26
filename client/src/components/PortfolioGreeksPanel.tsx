@@ -2,16 +2,23 @@ import { useState, useMemo } from "react";
 import { trpc } from "@/providers/trpc";
 import { fmtMoney } from "@/lib/format";
 import { CompanyLogo } from "@/components/CompanyLogo";
+import { HistoricalForwardIvCone } from "@/components/HistoricalForwardIvCone";
 import {
   TrendingUp,
+  TrendingDown,
   Activity,
   Zap,
   Info,
   Layers,
-  Calculator,
   ShieldCheck,
   Search,
   Scale,
+  Sliders,
+  Sparkles,
+  Calendar,
+  ArrowRight,
+  RotateCcw,
+  Target,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -27,7 +34,12 @@ export function PortfolioGreeksPanel({ onSelectSymbol }: PortfolioGreeksPanelPro
   const [viewMode, setViewMode] = useState<"underlyings" | "positions">("underlyings");
   const [filterType, setFilterType] = useState<"all" | "covered" | "unhedged" | "options">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFormulaDetails, setShowFormulaDetails] = useState(true);
+  
+  // Interactive Expected Move Prediction States
+  const [selectedConeSymbol, setSelectedConeSymbol] = useState<string>("NFLX");
+  const [horizonDte, setHorizonDte] = useState<number>(30); // 1, 7, 30, 45, 90
+  const [marketMovePct, setMarketMovePct] = useState<number>(1.0); // Interactive slider (-10% to +10%)
+  const [showAssetMatrix, setShowAssetMatrix] = useState<boolean>(true);
 
   const greeks = data?.greeks;
 
@@ -302,116 +314,408 @@ export function PortfolioGreeksPanel({ onSelectSymbol }: PortfolioGreeksPanelPro
         </div>
       </div>
 
-      {/* Core Formula & Calculation Methodology Banner */}
-      <div className="panel-box p-5 sm:p-6 bg-[#0f1118] border border-white/10 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Calculator className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-bold font-display text-white">
-                How Portfolio Delta is Calculated
-              </h3>
-              <p className="text-xs text-zinc-400">
-                Converting every position into its equivalent number of underlying shares: <span className="font-mono text-emerald-400">Portfolio Delta = Σ (quantity × delta × multiplier)</span>
-              </p>
-            </div>
+      {/* Historical & Forward IV Cone Visualizer */}
+      <div className="space-y-3">
+        {/* Symbol Quick Switcher */}
+        <div className="flex items-center justify-between flex-wrap gap-2 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-mono text-zinc-400 flex-wrap">
+            <span className="font-bold text-white uppercase tracking-wider text-[11px] mr-1">Underlying Cone:</span>
+            {["NFLX", "SPX", "SPY", ...greeks.underlyings.map((u) => u.symbol).filter((s) => s !== "NFLX" && s !== "SPX" && s !== "SPY")].slice(0, 8).map((sym) => (
+              <button
+                key={sym}
+                onClick={() => setSelectedConeSymbol(sym)}
+                className={`px-2.5 py-1 rounded text-xs font-mono font-bold transition-all ${
+                  selectedConeSymbol === sym
+                    ? "bg-[#facc15] text-black shadow-sm"
+                    : "bg-black/50 text-zinc-400 hover:text-white border border-white/10 hover:border-white/20"
+                }`}
+              >
+                {sym}
+              </button>
+            ))}
           </div>
-
-          <button
-            onClick={() => setShowFormulaDetails(!showFormulaDetails)}
-            className="text-xs text-sky-400 hover:text-sky-300 font-mono flex items-center gap-1 self-start sm:self-auto"
-          >
-            {showFormulaDetails ? "Hide Worked Example" : "Show Worked Example & Rules"}
-          </button>
         </div>
 
-        {showFormulaDetails && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-lg bg-black/40 border border-white/[0.06] space-y-1.5">
-                <div className="font-bold text-white flex items-center gap-1.5 font-mono">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Stock & ETF Positions
+        {(() => {
+          const under = greeks.underlyings.find((u) => u.symbol === selectedConeSymbol);
+          let spot = under?.spot;
+          let iv = 0.32;
+          if (selectedConeSymbol === "SPX") {
+            spot = greeks.benchmark.spxSpot || 5800;
+            iv = 0.145;
+          } else if (selectedConeSymbol === "SPY") {
+            spot = greeks.benchmark.spySpot || 580;
+            iv = 0.145;
+          } else if (selectedConeSymbol === "NFLX") {
+            spot = spot || 80.14;
+            iv = 0.32;
+          } else {
+            spot = spot || 150;
+            iv = (under?.beta ?? 1) > 1.3 ? 0.42 : 0.28;
+          }
+
+          return (
+            <HistoricalForwardIvCone
+              symbol={selectedConeSymbol}
+              spot={spot}
+              iv={iv}
+            />
+          );
+        })()}
+      </div>
+
+      {/* Interactive Expected Move & P&L Prediction Simulator */}
+      {(() => {
+        const benchmarkIv = 0.145; // ~14.5% standard index implied volatility
+        const expMoveFrac = benchmarkIv * Math.sqrt(horizonDte / 365);
+        const expMovePct = +(expMoveFrac * 100).toFixed(2);
+
+        const spxSpot = greeks.benchmark.spxSpot || 5800;
+        const spySpot = greeks.benchmark.spySpot || 580;
+        const totalPortfolioValue =
+          greeks.totalPortfolioValue > 0
+            ? greeks.totalPortfolioValue
+            : greeks.underlyings.reduce((sum, u) => sum + u.marketValue, 0) || 100000;
+
+        // Calculations for selected marketMovePct
+        const predictedPnl = (marketMovePct / 100) * greeks.totalDollarDelta;
+        const predictedPortfolioValue = totalPortfolioValue + predictedPnl;
+        const predictedReturnPct = (predictedPnl / totalPortfolioValue) * 100;
+        const predictedSpx = spxSpot * (1 + marketMovePct / 100);
+        const predictedSpy = spySpot * (1 + marketMovePct / 100);
+
+        // 1-Sigma Expected Move scenario outcomes
+        const upperExpPnl = (expMovePct / 100) * greeks.totalDollarDelta;
+        const lowerExpPnl = -(expMovePct / 100) * greeks.totalDollarDelta;
+        const upperSpx = spxSpot * (1 + expMoveFrac);
+        const lowerSpx = spxSpot * (1 - expMoveFrac);
+
+        // Horizon labels
+        const horizonOptions = [
+          { dte: 1, label: "1 Day (Next Close)" },
+          { dte: 7, label: "1 Week (7 DTE)" },
+          { dte: 30, label: "1 Month (30 DTE)" },
+          { dte: 45, label: "45 Days (Options Cycle)" },
+          { dte: 90, label: "1 Quarter (90 DTE)" },
+        ];
+
+        return (
+          <div className="panel-box p-5 sm:p-6 bg-gradient-to-b from-[#0f121a] to-[#0a0c12] border border-sky-500/20 space-y-5">
+            {/* Header & Horizon Selector */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                    <Sliders className="h-4 w-4" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold font-display text-white flex items-center gap-2">
+                    Interactive Expected Move & P&L Predictor
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/20">
+                      Live Simulation
+                    </span>
+                  </h3>
                 </div>
-                <div className="font-mono text-emerald-300 text-[11px] bg-emerald-950/30 p-1.5 rounded border border-emerald-500/20">
-                  Stock contribution = shares × 1 (multiplier = 1, delta = 1)
-                </div>
-                <p className="text-zinc-400 text-[11px] leading-relaxed">
-                  Long shares carry delta of +1.0; short shares carry delta of -1.0. Multiplier is 1.
+                <p className="text-xs text-zinc-400">
+                  Simulate portfolio dollar outcomes across 1-Sigma statistical expected moves (IV × √(DTE / 365)) or custom market shocks.
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg bg-black/40 border border-white/[0.06] space-y-1.5">
-                <div className="font-bold text-white flex items-center gap-1.5 font-mono">
-                  <span className="h-2 w-2 rounded-full bg-sky-400" /> Option Contracts
-                </div>
-                <div className="font-mono text-sky-300 text-[11px] bg-sky-950/30 p-1.5 rounded border border-sky-500/20">
-                  Option contribution = contracts × option delta × contract multiplier (100)
-                </div>
-                <p className="text-zinc-400 text-[11px] leading-relaxed">
-                  Use negative quantities for short positions. Calls have positive delta (0 to +1); puts have negative delta (0 to -1).
-                </p>
+              {/* Time Horizon Selector Pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1 mr-1">
+                  <Calendar className="h-3.5 w-3.5 text-zinc-500" /> Horizon:
+                </span>
+                {horizonOptions.map((opt) => (
+                  <button
+                    key={opt.dte}
+                    onClick={() => setHorizonDte(opt.dte)}
+                    className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all ${
+                      horizonDte === opt.dte
+                        ? "bg-sky-500 text-black font-bold shadow-lg shadow-sky-500/20"
+                        : "bg-black/50 text-zinc-400 hover:text-white border border-white/10 hover:border-white/20"
+                    }`}
+                  >
+                    {opt.label.split(" ")[0]} {opt.label.includes("Day") || opt.label.includes("Week") ? opt.label.split(" ")[1] : ""}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Standard Example Walkthrough */}
-            <div className="p-4 rounded-lg bg-black/50 border border-white/[0.08] space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold uppercase text-zinc-300">
-                  Worked Example Walkthrough
-                </span>
-                <span className="text-[11px] font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                  Total Delta = +240 Shares
-                </span>
+            {/* Interactive Slider & Expected Move Scale */}
+            <div className="space-y-3 p-4 sm:p-5 rounded-xl bg-black/40 border border-white/[0.08]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <Target className="h-4 w-4 text-sky-400" />
+                  <span>S&P 500 Simulated Move:</span>
+                  <span
+                    className={`text-sm font-bold px-2 py-0.5 rounded ${
+                      marketMovePct > 0
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        : marketMovePct < 0
+                        ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                        : "bg-white/10 text-white"
+                    }`}
+                  >
+                    {marketMovePct >= 0 ? "+" : ""}
+                    {marketMovePct.toFixed(1)}%
+                  </span>
+                  <span className="text-zinc-500 text-[11px]">
+                    (SPX {spxSpot.toFixed(0)} → {predictedSpx.toFixed(0)} pts)
+                  </span>
+                </div>
+
+                <div className="text-[11px] text-zinc-400 flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-sky-950/40 text-sky-300 border border-sky-500/20">
+                    ±{expMovePct}% Expected Range (68.2% Prob)
+                  </span>
+                  <button
+                    onClick={() => setMarketMovePct(0)}
+                    className="p-1 text-zinc-400 hover:text-white hover:bg-white/10 rounded transition-colors"
+                    title="Reset to 0% Flat"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left font-mono text-[11px]">
-                  <thead>
-                    <tr className="border-b border-white/10 text-zinc-400 text-[10px] uppercase">
-                      <th className="pb-1.5">Position</th>
-                      <th className="pb-1.5">Formula (Quantity × Delta × Multiplier)</th>
-                      <th className="pb-1.5 text-right">Delta Contribution</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.04] text-zinc-300">
-                    <tr>
-                      <td className="py-1.5 font-semibold text-white">Long 200 shares</td>
-                      <td className="py-1.5 text-zinc-400">200 × 1 × 1</td>
-                      <td className="py-1.5 text-right font-bold text-emerald-400">+200</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 font-semibold text-white">Long 3 calls, delta 0.50</td>
-                      <td className="py-1.5 text-zinc-400">3 × 0.50 × 100</td>
-                      <td className="py-1.5 text-right font-bold text-emerald-400">+150</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 font-semibold text-white">Long 2 puts, delta −0.25</td>
-                      <td className="py-1.5 text-zinc-400">2 × (−0.25) × 100</td>
-                      <td className="py-1.5 text-right font-bold text-rose-400">−50</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 font-semibold text-white">Short 1 call, delta 0.60</td>
-                      <td className="py-1.5 text-zinc-400">−1 × 0.60 × 100</td>
-                      <td className="py-1.5 text-right font-bold text-rose-400">−60</td>
-                    </tr>
-                    <tr className="border-t border-white/10 font-bold bg-white/[0.02]">
-                      <td className="py-2 text-white">Total Portfolio Delta</td>
-                      <td className="py-2 text-zinc-300">200 + 150 − 50 − 60</td>
-                      <td className="py-2 text-right text-emerald-400 text-xs">+240 shares</td>
-                    </tr>
-                  </tbody>
-                </table>
+              {/* Slider Input */}
+              <div className="relative pt-2 pb-1">
+                <input
+                  type="range"
+                  min="-10.0"
+                  max="10.0"
+                  step="0.1"
+                  value={marketMovePct}
+                  onChange={(e) => setMarketMovePct(parseFloat(e.target.value))}
+                  className="w-full h-2.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-sky-400 focus:outline-none"
+                />
+
+                {/* Range Labels & 1-Sigma Zone */}
+                <div className="flex justify-between text-[10px] font-mono text-zinc-500 mt-1.5">
+                  <span className="text-rose-400">-10% Crash</span>
+                  <span className="text-rose-300 font-semibold">-1σ Exp ({(-expMovePct).toFixed(1)}%)</span>
+                  <span className="text-zinc-400 font-semibold">0% Base</span>
+                  <span className="text-emerald-300 font-semibold">+1σ Exp (+{expMovePct.toFixed(1)}%)</span>
+                  <span className="text-emerald-400">+10% Rally</span>
+                </div>
               </div>
 
-              <div className="p-2.5 rounded bg-sky-950/20 border border-sky-500/20 text-xs text-sky-200 leading-relaxed font-sans">
-                <strong>Real-World Meaning:</strong> The portfolio has approximately <strong>+240 shares</strong> of net delta exposure. A $1 increase in the underlying would theoretically increase the portfolio’s value by about <strong>+$240</strong>, while a $1 decrease would reduce it by about <strong>-$240</strong> (an approximation because option delta changes dynamically as spot price moves).
+              {/* Scenario Preset Buttons */}
+              <div className="flex items-center gap-1.5 pt-2 flex-wrap text-[11px] font-mono">
+                <span className="text-zinc-500 text-[10px] uppercase mr-1">Presets:</span>
+                <button
+                  onClick={() => setMarketMovePct(-expMovePct)}
+                  className="px-2 py-0.5 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors"
+                >
+                  -1σ Expected ({-expMovePct}%)
+                </button>
+                <button
+                  onClick={() => setMarketMovePct(-2.0)}
+                  className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors"
+                >
+                  -2.0% Dip
+                </button>
+                <button
+                  onClick={() => setMarketMovePct(-1.0)}
+                  className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors"
+                >
+                  -1.0% Mild Drop
+                </button>
+                <button
+                  onClick={() => setMarketMovePct(0)}
+                  className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors"
+                >
+                  0.0% Flat
+                </button>
+                <button
+                  onClick={() => setMarketMovePct(1.0)}
+                  className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors"
+                >
+                  +1.0% Mild Up
+                </button>
+                <button
+                  onClick={() => setMarketMovePct(2.0)}
+                  className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors"
+                >
+                  +2.0% Rally
+                </button>
+                <button
+                  onClick={() => setMarketMovePct(expMovePct)}
+                  className="px-2 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors"
+                >
+                  +1σ Expected (+{expMovePct}%)
+                </button>
+                <button
+                  onClick={() => setMarketMovePct(-7.0)}
+                  className="px-2 py-0.5 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 transition-colors"
+                >
+                  -7.0% Black Swan
+                </button>
               </div>
+            </div>
+
+            {/* Dynamic Prediction Outcome Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Card 1: Projected Dollar P&L */}
+              <div
+                className={`p-4 rounded-xl border transition-all ${
+                  predictedPnl > 0
+                    ? "bg-emerald-950/20 border-emerald-500/30"
+                    : predictedPnl < 0
+                    ? "bg-rose-950/20 border-rose-500/30"
+                    : "bg-white/[0.02] border-white/10"
+                }`}
+              >
+                <div className="text-[11px] font-mono uppercase text-zinc-400 flex items-center justify-between">
+                  <span>Projected Dollar P&L</span>
+                  {predictedPnl >= 0 ? (
+                    <TrendingUp className="h-4 w-4 text-emerald-400" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4 text-rose-400" />
+                  )}
+                </div>
+                <div
+                  className={`text-2xl sm:text-3xl font-mono font-bold mt-1.5 ${
+                    predictedPnl > 0
+                      ? "text-emerald-400"
+                      : predictedPnl < 0
+                      ? "text-rose-400"
+                      : "text-white"
+                  }`}
+                >
+                  {predictedPnl >= 0 ? "+" : "−"}
+                  {fmtMoney(Math.abs(predictedPnl))}
+                </div>
+                <div className="text-[11px] font-mono text-zinc-400 mt-1">
+                  Sensitivity: {marketMovePct >= 0 ? "+" : ""}
+                  {marketMovePct.toFixed(1)}% SPX move
+                </div>
+              </div>
+
+              {/* Card 2: Simulated Portfolio Value */}
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10">
+                <div className="text-[11px] font-mono uppercase text-zinc-400">Simulated Portfolio Value</div>
+                <div className="text-2xl sm:text-3xl font-mono font-bold text-white mt-1.5">
+                  {fmtMoney(predictedPortfolioValue)}
+                </div>
+                <div
+                  className={`text-[11px] font-mono mt-1 ${
+                    predictedReturnPct >= 0 ? "text-emerald-400" : "text-rose-400"
+                  }`}
+                >
+                  {predictedReturnPct >= 0 ? "+" : ""}
+                  {predictedReturnPct.toFixed(2)}% net portfolio return
+                </div>
+              </div>
+
+              {/* Card 3: 1-Sigma Expected Move Range */}
+              <div className="p-4 rounded-xl bg-sky-950/20 border border-sky-500/20">
+                <div className="text-[11px] font-mono uppercase text-sky-400 flex items-center justify-between">
+                  <span>{horizonDte}D Expected Range (68%)</span>
+                  <Sparkles className="h-3.5 w-3.5" />
+                </div>
+                <div className="text-sm font-mono font-bold text-white mt-2 space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-rose-400">Lower (-{expMovePct}%):</span>
+                    <span className="text-rose-300">−{fmtMoney(Math.abs(lowerExpPnl))}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-400">Upper (+{expMovePct}%):</span>
+                    <span className="text-emerald-300">+{fmtMoney(upperExpPnl)}</span>
+                  </div>
+                </div>
+                <div className="text-[10px] font-mono text-zinc-400 mt-1">
+                  SPX Range: {lowerSpx.toFixed(0)} to {upperSpx.toFixed(0)} pts
+                </div>
+              </div>
+
+              {/* Card 4: SPX Benchmark Delta & Spot */}
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10">
+                <div className="text-[11px] font-mono uppercase text-zinc-400">Target Benchmark Level</div>
+                <div className="text-2xl sm:text-3xl font-mono font-bold text-sky-400 mt-1.5">
+                  {predictedSpx.toFixed(0)}{" "}
+                  <span className="text-xs font-normal text-zinc-400 font-sans">SPX</span>
+                </div>
+                <div className="text-[11px] font-mono text-zinc-400 mt-1">
+                  SPY ${predictedSpy.toFixed(2)} · {greeks.totalSpxBetaDelta >= 0 ? "+" : ""}
+                  {greeks.totalSpxBetaDelta.toFixed(2)} Total SPX Δ
+                </div>
+              </div>
+            </div>
+
+            {/* Asset-Level Expected Move Matrix Toggle */}
+            <div className="pt-1">
+              <button
+                onClick={() => setShowAssetMatrix(!showAssetMatrix)}
+                className="text-xs text-sky-400 hover:text-sky-300 font-mono flex items-center gap-1.5"
+              >
+                {showAssetMatrix ? "Hide Asset-by-Asset Impact Matrix" : "Show Asset-by-Asset Impact Matrix"}
+                <ArrowRight className={`h-3 w-3 transition-transform ${showAssetMatrix ? "rotate-90" : ""}`} />
+              </button>
+
+              {showAssetMatrix && (
+                <div className="mt-3 overflow-x-auto rounded-lg border border-white/[0.08] bg-black/50 p-3">
+                  <table className="w-full text-left font-mono text-xs">
+                    <thead>
+                      <tr className="border-b border-white/10 text-[10px] uppercase text-zinc-400">
+                        <th className="pb-2">Asset</th>
+                        <th className="pb-2 text-right">Beta</th>
+                        <th className="pb-2 text-right">Current Spot</th>
+                        <th className="pb-2 text-right">Predicted Price</th>
+                        <th className="pb-2 text-right">Expected Move</th>
+                        <th className="pb-2 text-right text-sky-400">Asset P&L Impact</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.04] text-zinc-300">
+                      {greeks.underlyings.map((u) => {
+                        const assetMovePct = marketMovePct * u.beta;
+                        const predictedAssetSpot = u.spot * (1 + assetMovePct / 100);
+                        const assetPnl = marketMovePct * u.spx1PctDollarImpact;
+
+                        return (
+                          <tr key={u.symbol} className="hover:bg-white/[0.02]">
+                            <td className="py-2">
+                              <div className="flex items-center gap-2">
+                                <CompanyLogo symbol={u.symbol} size="xs" />
+                                <span className="font-bold text-white">{u.symbol}</span>
+                              </div>
+                            </td>
+                            <td className="py-2 text-right text-zinc-400">{u.beta.toFixed(2)}β</td>
+                            <td className="py-2 text-right text-zinc-400">{fmtMoney(u.spot)}</td>
+                            <td className="py-2 text-right font-bold text-white">
+                              {fmtMoney(predictedAssetSpot)}
+                            </td>
+                            <td className="py-2 text-right">
+                              <span
+                                className={`text-[11px] font-bold ${
+                                  assetMovePct > 0
+                                    ? "text-emerald-400"
+                                    : assetMovePct < 0
+                                    ? "text-rose-400"
+                                    : "text-zinc-400"
+                                }`}
+                              >
+                                {assetMovePct >= 0 ? "+" : ""}
+                                {assetMovePct.toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="py-2 text-right font-bold">
+                              <span className={assetPnl >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                                {assetPnl >= 0 ? "+" : "−"}
+                                {fmtMoney(Math.abs(assetPnl))}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        );
+      })()}
 
       {/* Main Breakdown Section with View Toggle */}
       <div className="panel-box p-4 sm:p-6 space-y-4">

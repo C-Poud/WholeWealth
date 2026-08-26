@@ -3,8 +3,9 @@
 ## 1. Create the project
 
 1. Railway dashboard → **New Project** → **Deploy from GitHub repo** → pick `dash`.
-2. In the service **Settings → Source**, ensure **Root Directory** is empty or set to `/` (all files including `Dockerfile` are located at the repository root).
-3. Railway detects the `Dockerfile` automatically (also pinned in `railway.json`).
+2. In the service **Settings → Source**, ensure **Root Directory** is empty (or `/`).
+3. Railway automatically builds and starts the application via **Nixpacks** using `npm run build` and `npm start` (or Dockerfile if selected in settings).
+
 
 ## 2. Add a MySQL database
 

@@ -214,7 +214,11 @@ export async function getWatchlistQuotes(
         try {
           const j = await fetchJson(
 <<<<<<< HEAD
+<<<<<<< HEAD
             `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`,
+=======
+            `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=ytd&interval=1d`,
+>>>>>>> parent of 04ecc8d (14)
 =======
             `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=ytd&interval=1d`,
 >>>>>>> parent of 04ecc8d (14)
@@ -227,7 +231,10 @@ export async function getWatchlistQuotes(
             const changePct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
             
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> parent of 04ecc8d (14)
             // Calculate YTD change % from start of year close prices
             const closePrices: (number | null)[] = j?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
             const firstValidClose = closePrices.find((c) => typeof c === "number" && c > 0);

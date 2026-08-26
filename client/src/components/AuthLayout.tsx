@@ -137,6 +137,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 =======
             size="default"
             className="w-full bg-emerald-500 text-black font-mono font-semibold uppercase tracking-wider hover:bg-emerald-400"
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
           >
             Retry now
@@ -209,6 +212,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 =======
                   <span className="font-semibold tracking-tight text-sm text-white">
                     NetWorth<span className="text-emerald-400 font-medium">.io</span>
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
                   </span>
                 </div>
@@ -234,7 +240,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     {/* Active Accent Bar */}
                     {isActive && (
 <<<<<<< HEAD
+<<<<<<< HEAD
                       <span className="absolute left-0 inset-y-2 w-1 rounded-r bg-primary shadow-[0_0_8px_#d4ff00]" />
+=======
+                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-emerald-400" />
+>>>>>>> parent of 04ecc8d (14)
 =======
                       <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-emerald-400" />
 >>>>>>> parent of 04ecc8d (14)
@@ -246,7 +256,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                         className={`h-4 w-4 transition-transform duration-150 group-hover:scale-110 ${
                           isActive
 <<<<<<< HEAD
+<<<<<<< HEAD
                             ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.4)]"
+=======
+                            ? "text-emerald-400"
+>>>>>>> parent of 04ecc8d (14)
 =======
                             ? "text-emerald-400"
 >>>>>>> parent of 04ecc8d (14)
@@ -414,17 +428,23 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     className={`w-full h-11 rounded-lg flex items-center px-3 gap-3 transition-colors cursor-pointer ${
                       isActive
 <<<<<<< HEAD
+<<<<<<< HEAD
                         ? "bg-primary/15 text-primary font-bold border border-primary/30 shadow-[0_0_12px_rgba(212,255,0,0.15)]"
                         : "text-muted-foreground hover:text-white hover:bg-white/5"
                     }`}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
 =======
+=======
+>>>>>>> parent of 04ecc8d (14)
                         ? "bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
                         : "text-zinc-300 hover:text-white hover:bg-white/5 active:bg-white/10"
                     }`}
                   >
                     <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
                     <span className="text-xs font-mono">{item.label}</span>
                   </button>

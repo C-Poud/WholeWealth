@@ -122,6 +122,9 @@
     --sidebar-accent-foreground: 220 15% 96%;
     --sidebar-border: 224 16% 12%;
     --sidebar-ring: 158 64% 52%;
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
   }
 }
@@ -140,9 +143,12 @@
   }
   ::selection {
 <<<<<<< HEAD
+<<<<<<< HEAD
     background: #d4ff00;
     color: #000000;
 =======
+=======
+>>>>>>> parent of 04ecc8d (14)
     background: rgba(16, 185, 129, 0.3);
     color: #ffffff;
 >>>>>>> parent of 04ecc8d (14)

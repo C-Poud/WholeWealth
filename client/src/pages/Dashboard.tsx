@@ -20,6 +20,9 @@ import {
 <<<<<<< HEAD
 =======
   Compass,
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
 } from "lucide-react";
 import {
@@ -31,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 
 const COLORS = [
+<<<<<<< HEAD
 <<<<<<< HEAD
   "#facc15",
   "#4ade80",
@@ -54,6 +58,18 @@ const POPULAR_WHEEL_TICKERS = [
   "GOOGL",
 ];
 
+=======
+  "#10b981",
+  "#06b6d4",
+  "#3b82f6",
+  "#6366f1",
+  "#14b8a6",
+  "#f59e0b",
+  "#8b5cf6",
+  "#64748b",
+];
+
+>>>>>>> parent of 04ecc8d (14)
 =======
   "#10b981",
   "#06b6d4",
@@ -291,7 +307,11 @@ export default function Dashboard() {
             <Link
               to="/suggestions"
 <<<<<<< HEAD
+<<<<<<< HEAD
               className="px-3.5 py-1.5 rounded border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(212,255,0,0.12)]"
+=======
+              className="px-2.5 py-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5 transition-colors"
+>>>>>>> parent of 04ecc8d (14)
 =======
               className="px-2.5 py-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5 transition-colors"
 >>>>>>> parent of 04ecc8d (14)
@@ -350,6 +370,9 @@ export default function Dashboard() {
         <div className="stat-card p-3.5 sm:p-5">
           <div className="text-[11px] sm:text-xs text-zinc-400">Available Cash</div>
           <div className="text-emerald-400 text-lg sm:text-2xl mt-1 font-bold font-mono truncate">
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
             {fmtMoney(stats.availableBuyingPower)}
           </div>
@@ -391,7 +414,11 @@ export default function Dashboard() {
               {((deltaData?.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (deltaData?.spyBetaDelta ?? 0).toFixed(1)} SPY eq.
             </span>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <Link to="/suggestions" className="text-primary hover:underline font-bold">
+=======
+            <Link to="/suggestions" className="text-emerald-400 hover:underline shrink-0 ml-1">
+>>>>>>> parent of 04ecc8d (14)
 =======
             <Link to="/suggestions" className="text-emerald-400 hover:underline shrink-0 ml-1">
 >>>>>>> parent of 04ecc8d (14)
@@ -567,6 +594,9 @@ export default function Dashboard() {
                   </div>
                   <span className="text-xs font-mono text-muted-foreground">
                     Total <span className="text-white font-semibold">{fmtMoney(stats.equityValue + stats.cash)}</span>
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
                   </span>
                 </div>
@@ -688,6 +718,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         <div className="w-full space-y-4">
 <<<<<<< HEAD
+<<<<<<< HEAD
           <div className="panel-box p-6 sm:p-8 overflow-hidden">
             {/* Header & Watchlist Selector */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-5">
@@ -714,6 +745,10 @@ export default function Dashboard() {
 =======
           <div className="panel-box p-4 sm:p-7 overflow-hidden">
             {/* Header & Watchlist Selector */}
+=======
+          <div className="panel-box p-4 sm:p-7 overflow-hidden">
+            {/* Header & Watchlist Selector */}
+>>>>>>> parent of 04ecc8d (14)
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-4 sm:mb-5">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
@@ -897,7 +932,11 @@ export default function Dashboard() {
                 <p className="text-xs font-mono text-white">Watchlist is empty</p>
                 <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
 <<<<<<< HEAD
+<<<<<<< HEAD
                   Add tickers above to track IV Rank, 52-Week range & run Basis analysis.
+=======
+                  Add tickers above to track live prices, IV Rank, YTD performance, and 52-week High/Low.
+>>>>>>> parent of 04ecc8d (14)
 =======
                   Add tickers above to track live prices, IV Rank, YTD performance, and 52-week High/Low.
 >>>>>>> parent of 04ecc8d (14)
@@ -912,17 +951,23 @@ export default function Dashboard() {
                       <th className="pb-2.5 font-normal meta-label text-right">Price</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Day Chg</th>
 <<<<<<< HEAD
+<<<<<<< HEAD
                       <th className="pb-2.5 font-normal meta-label text-center">IV Rank</th>
                       <th className="pb-2.5 font-normal meta-label text-center min-w-[120px]">52-Week</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Beta</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Basis / Risk</th>
 =======
+=======
+>>>>>>> parent of 04ecc8d (14)
                       <th className="pb-2.5 font-normal meta-label text-center hidden md:table-cell">IVR</th>
                       <th className="pb-2.5 font-normal meta-label text-right hidden sm:table-cell">YTD</th>
                       <th className="pb-2.5 font-normal meta-label text-right hidden lg:table-cell">High</th>
                       <th className="pb-2.5 font-normal meta-label text-right hidden lg:table-cell">Low</th>
                       <th className="pb-2.5 font-normal meta-label text-center hidden md:table-cell min-w-[130px]">52W Range</th>
                       <th className="pb-2.5 font-normal meta-label text-right w-8"></th>
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
                     </tr>
                   </thead>
@@ -940,6 +985,9 @@ export default function Dashboard() {
 <<<<<<< HEAD
 =======
                       const ytd = item.ytdChangePct;
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
 
                       return (
@@ -948,6 +996,7 @@ export default function Dashboard() {
                           className="hover:bg-white/[0.03] transition-colors group"
                         >
 <<<<<<< HEAD
+<<<<<<< HEAD
                           {/* Ticker Symbol */}
                           <td className="py-2.5">
                             <div className="font-bold text-white text-sm">
@@ -955,12 +1004,17 @@ export default function Dashboard() {
                             </div>
                             <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[110px]">
 =======
+=======
+>>>>>>> parent of 04ecc8d (14)
                           {/* Ticker Symbol & Name */}
                           <td className="py-2.5 sm:py-3">
                             <div className="font-bold text-white text-sm">
                               {item.symbol}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[110px] sm:max-w-[140px]">
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
                               {item.name}
                             </div>
@@ -968,7 +1022,11 @@ export default function Dashboard() {
 
                           {/* Price */}
 <<<<<<< HEAD
+<<<<<<< HEAD
                           <td className="py-2.5 text-right font-medium text-white text-xs">
+=======
+                          <td className="py-2.5 sm:py-3 text-right font-medium text-white text-xs">
+>>>>>>> parent of 04ecc8d (14)
 =======
                           <td className="py-2.5 sm:py-3 text-right font-medium text-white text-xs">
 >>>>>>> parent of 04ecc8d (14)
@@ -978,7 +1036,11 @@ export default function Dashboard() {
                           {/* Day Change */}
                           <td
 <<<<<<< HEAD
+<<<<<<< HEAD
                             className={`py-2.5 text-right font-medium text-xs ${
+=======
+                            className={`py-2.5 sm:py-3 text-right font-medium text-xs ${
+>>>>>>> parent of 04ecc8d (14)
 =======
                             className={`py-2.5 sm:py-3 text-right font-medium text-xs ${
 >>>>>>> parent of 04ecc8d (14)
@@ -987,6 +1049,7 @@ export default function Dashboard() {
                           >
                             {item.price ? (
                               <>
+<<<<<<< HEAD
 <<<<<<< HEAD
                                 {item.change >= 0 ? "+" : ""}
                                 {item.change.toFixed(2)}
@@ -1004,12 +1067,23 @@ export default function Dashboard() {
                                   {item.changePct.toFixed(2)}%
                                 </div>
 >>>>>>> parent of 04ecc8d (14)
+=======
+                                <div>
+                                  {item.change >= 0 ? "+" : ""}
+                                  {item.change.toFixed(2)}
+                                </div>
+                                <div className="text-[10px]">
+                                  {item.changePct >= 0 ? "+" : ""}
+                                  {item.changePct.toFixed(2)}%
+                                </div>
+>>>>>>> parent of 04ecc8d (14)
                               </>
                             ) : (
                               "—"
                             )}
                           </td>
 
+<<<<<<< HEAD
 <<<<<<< HEAD
                           {/* IV Rank */}
                           <td className="py-2.5 text-center">
@@ -1021,11 +1095,16 @@ export default function Dashboard() {
                                   : "Moderate IV Rank"
                               }
 =======
+=======
+>>>>>>> parent of 04ecc8d (14)
                           {/* IVR (IV Rank) - hidden on mobile */}
                           <td className="py-2.5 sm:py-3 text-center hidden md:table-cell">
                             <span
                               className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${ivColor}`}
                               title={`Implied Volatility Rank: ${iv}%`}
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
                             >
                               {iv}%
@@ -1033,9 +1112,12 @@ export default function Dashboard() {
                           </td>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                           {/* 52-Week Range */}
                           <td className="py-2.5 px-2">
 =======
+=======
+>>>>>>> parent of 04ecc8d (14)
                           {/* YTD Return - hidden on very small mobile */}
                           <td
                             className={`py-2.5 sm:py-3 text-right font-medium text-xs hidden sm:table-cell ${
@@ -1061,6 +1143,9 @@ export default function Dashboard() {
 
                           {/* 52W Range Visual - hidden on mobile */}
                           <td className="py-2.5 sm:py-3 px-3 hidden md:table-cell">
+<<<<<<< HEAD
+>>>>>>> parent of 04ecc8d (14)
+=======
 >>>>>>> parent of 04ecc8d (14)
                             <div className="w-full flex flex-col items-center gap-1">
                               <div className="w-full bg-white/[0.08] h-1.5 rounded-full overflow-hidden relative">
@@ -1071,9 +1156,15 @@ export default function Dashboard() {
                               </div>
                               <div className="w-full flex justify-between text-[9px] text-muted-foreground font-mono">
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "L"}</span>
                                 <span className="text-white/80 font-bold">{pos52}%</span>
                                 <span>{item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "H"}</span>
+=======
+                                <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "Low"}</span>
+                                <span className="text-white/80 font-bold">{pos52}%</span>
+                                <span>{item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "High"}</span>
+>>>>>>> parent of 04ecc8d (14)
 =======
                                 <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "Low"}</span>
                                 <span className="text-white/80 font-bold">{pos52}%</span>

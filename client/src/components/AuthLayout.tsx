@@ -131,8 +131,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </p>
           <Button
             onClick={() => refresh()}
+<<<<<<< HEAD
             size="lg"
             className="w-full bg-primary text-black font-mono font-bold uppercase tracking-wider hover:bg-primary/90 shadow-[0_0_15px_rgba(212,255,0,0.2)]"
+=======
+            size="default"
+            className="w-full bg-emerald-500 text-black font-mono font-semibold uppercase tracking-wider hover:bg-emerald-400"
+>>>>>>> parent of 04ecc8d (14)
           >
             Retry now
           </Button>
@@ -189,6 +194,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
                   }`}
                 >
+<<<<<<< HEAD
                   <span className="font-display font-extrabold tracking-tight text-sm text-white uppercase tracking-wider">
                     NetWorth<span className="text-primary font-mono">.io</span>
                   </span>
@@ -200,6 +206,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     }`}
                   >
                     {isPinned ? "PINNED" : "PRO"}
+=======
+                  <span className="font-semibold tracking-tight text-sm text-white">
+                    NetWorth<span className="text-emerald-400 font-medium">.io</span>
+>>>>>>> parent of 04ecc8d (14)
                   </span>
                 </div>
               </button>
@@ -223,7 +233,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   >
                     {/* Active Accent Bar */}
                     {isActive && (
+<<<<<<< HEAD
                       <span className="absolute left-0 inset-y-2 w-1 rounded-r bg-primary shadow-[0_0_8px_#d4ff00]" />
+=======
+                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-emerald-400" />
+>>>>>>> parent of 04ecc8d (14)
                     )}
 
                     {/* Fixed Icon Container (Anchored at exact same location always) */}
@@ -231,7 +245,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       <item.icon
                         className={`h-4 w-4 transition-transform duration-150 group-hover:scale-110 ${
                           isActive
+<<<<<<< HEAD
                             ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.4)]"
+=======
+                            ? "text-emerald-400"
+>>>>>>> parent of 04ecc8d (14)
                             : "opacity-75 group-hover:opacity-100"
                         }`}
                       />
@@ -360,7 +378,29 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               </button>
             </div>
 
+<<<<<<< HEAD
             <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
+=======
+            <div className="p-3 border-b border-white/[0.06] bg-[#0f1117]/50">
+              <div className="flex items-center gap-2.5">
+                <Avatar className="h-8 w-8 border border-white/10">
+                  {user?.avatar ? (
+                    <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
+                  ) : null}
+                  <AvatarFallback className="text-xs font-semibold bg-emerald-500/20 text-emerald-400">
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-white truncate">{user?.name || "Workspace User"}</div>
+                  <div className="text-[10px] text-zinc-400 font-mono truncate">{user?.email || "Terminal"}</div>
+                </div>
+              </div>
+            </div>
+
+            <nav className="flex-1 py-3 px-3 space-y-1.5 overflow-y-auto">
+              <div className="px-2 pb-1 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Navigation</div>
+>>>>>>> parent of 04ecc8d (14)
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -373,18 +413,41 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     }}
                     className={`w-full h-11 rounded-lg flex items-center px-3 gap-3 transition-colors cursor-pointer ${
                       isActive
+<<<<<<< HEAD
                         ? "bg-primary/15 text-primary font-bold border border-primary/30 shadow-[0_0_12px_rgba(212,255,0,0.15)]"
                         : "text-muted-foreground hover:text-white hover:bg-white/5"
                     }`}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
+=======
+                        ? "bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                        : "text-zinc-300 hover:text-white hover:bg-white/5 active:bg-white/10"
+                    }`}
+                  >
+                    <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
+>>>>>>> parent of 04ecc8d (14)
                     <span className="text-xs font-mono">{item.label}</span>
                   </button>
                 );
               })}
             </nav>
 
+<<<<<<< HEAD
             <div className="p-3 border-t border-white/10">
+=======
+            <div className="p-3 border-t border-white/10 space-y-2 bg-[#090a0d]">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  startAppTour();
+                }}
+                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-300 text-xs font-mono border border-emerald-500/25 cursor-pointer transition-colors"
+              >
+                <Compass className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Product Tour</span>
+              </button>
+>>>>>>> parent of 04ecc8d (14)
               <button
                 type="button"
                 onClick={logout}
@@ -395,6 +458,52 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               </button>
             </div>
           </aside>
+<<<<<<< HEAD
+=======
+
+          {/* Fixed Mobile Bottom Navigation Bar (< 768px) */}
+          <nav
+            aria-label="Mobile Navigation"
+            className="fixed bottom-0 inset-x-0 z-40 h-16 bg-[#090a0d]/95 backdrop-blur-lg border-t border-white/[0.08] flex items-center justify-around px-1 pb-[env(safe-area-inset-bottom,0px)]"
+          >
+            {visibleMenuItems.slice(0, 5).map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
+                    isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+                  )}
+                  <item.icon className={`h-4 w-4 mb-1 transition-transform ${isActive ? "scale-110 text-emerald-400" : ""}`} />
+                  <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
+                    {item.label === "Risk Analysis" ? "Risk" : item.label === "Career Optimizer" ? "Career" : item.label}
+                  </span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => navigate("/settings")}
+              className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
+                location.pathname === "/settings" ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              {location.pathname === "/settings" && (
+                <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+              )}
+              <Settings className={`h-4 w-4 mb-1 transition-transform ${location.pathname === "/settings" ? "scale-110 text-emerald-400" : ""}`} />
+              <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
+                Settings
+              </span>
+            </button>
+          </nav>
+>>>>>>> parent of 04ecc8d (14)
         </>
       )}
 

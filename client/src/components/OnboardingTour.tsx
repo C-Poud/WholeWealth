@@ -229,11 +229,11 @@ export function OnboardingTour({
         {/* Header Strip with Progress */}
         <div className="bg-[#090a0d] border-b border-white/[0.08] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-white">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <Icon className="h-4 w-4" />
             </div>
             <div>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 font-semibold">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">
                 {step.badge}
               </span>
               <div className="text-xs text-zinc-400 font-medium">Quick Product Walkthrough</div>
@@ -249,9 +249,9 @@ export function OnboardingTour({
                   onClick={() => setCurrentStep(idx)}
                   className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
                     idx === currentStep
-                      ? "w-6 bg-white"
+                      ? "w-6 bg-emerald-400"
                       : idx < currentStep
-                        ? "w-2 bg-white/50"
+                        ? "w-2 bg-emerald-400/40"
                         : "w-2 bg-white/10 hover:bg-white/20"
                   }`}
                   title={`Go to step ${idx + 1}`}
@@ -275,13 +275,13 @@ export function OnboardingTour({
         <div className="p-6 sm:p-8 space-y-6">
           {/* Main Visual Representation */}
           <div className="rounded-lg border border-white/[0.08] bg-[#07080a] p-5 relative overflow-hidden">
-            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
 
             {step.visual === "welcome" && (
               <div className="space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-white/[0.06] text-zinc-400 text-[11px]">
-                  <span className="flex items-center gap-1.5 text-white font-semibold">
-                    <Sparkles className="h-3.5 w-3.5 text-zinc-300" /> Clean Terminal Initialization
+                  <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                    <Sparkles className="h-3.5 w-3.5" /> Clean Terminal Initialization
                   </span>
                   <span className="text-zinc-500">Status: Active</span>
                 </div>
@@ -289,7 +289,7 @@ export function OnboardingTour({
                   <div className="p-2.5 rounded bg-white/[0.02] border border-white/[0.06]">
                     <div className="text-[10px] text-zinc-500 uppercase">Positions</div>
                     <div className="text-sm font-bold text-white mt-0.5">0</div>
-                    <div className="text-[10px] text-zinc-400 mt-0.5">Ready for import</div>
+                    <div className="text-[10px] text-emerald-400 mt-0.5">Ready for import</div>
                   </div>
                   <div className="p-2.5 rounded bg-white/[0.02] border border-white/[0.06]">
                     <div className="text-[10px] text-zinc-500 uppercase">Portfolio Δ</div>
@@ -298,7 +298,7 @@ export function OnboardingTour({
                   </div>
                   <div className="p-2.5 rounded bg-white/[0.02] border border-white/[0.06]">
                     <div className="text-[10px] text-zinc-500 uppercase">Risk Engine</div>
-                    <div className="text-sm font-bold text-white mt-0.5">Online</div>
+                    <div className="text-sm font-bold text-emerald-400 mt-0.5">Online</div>
                     <div className="text-[10px] text-zinc-400 mt-0.5">Black-Scholes</div>
                   </div>
                 </div>
@@ -309,25 +309,25 @@ export function OnboardingTour({
               <div className="space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-white/[0.06] text-zinc-400 text-[11px]">
                   <span className="text-white font-semibold flex items-center gap-1.5">
-                    <Briefcase className="h-3.5 w-3.5 text-zinc-300" /> Three Ways to Add Data
+                    <Briefcase className="h-3.5 w-3.5 text-emerald-400" /> Three Ways to Add Data
                   </span>
-                  <span className="text-zinc-300 text-[10px]">API Sync Recommended</span>
+                  <span className="text-emerald-400 text-[10px]">API Sync Recommended</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <button
                     type="button"
                     onClick={() => connectMut.mutate({ origin: window.location.origin })}
                     disabled={connectMut.isPending}
-                    className="p-2.5 rounded bg-white/5 border border-white/20 hover:bg-white/10 hover:border-white/40 transition-all text-left group cursor-pointer flex flex-col justify-between"
+                    className="p-2.5 rounded bg-emerald-950/30 border border-emerald-500/40 hover:bg-emerald-900/40 hover:border-emerald-400 transition-all text-left group cursor-pointer flex flex-col justify-between"
                   >
                     <div>
-                      <Link2 className="h-4 w-4 text-white mb-1 group-hover:scale-110 transition-transform" />
+                      <Link2 className="h-4 w-4 text-emerald-400 mb-1 group-hover:scale-110 transition-transform" />
                       <div className="font-semibold text-white text-[11px] flex items-center gap-1">
                         SnapTrade API
                       </div>
                       <div className="text-[9px] text-zinc-400 mt-0.5">20+ Brokerages</div>
                     </div>
-                    <div className="mt-2 text-[9px] font-bold text-zinc-200 group-hover:underline">
+                    <div className="mt-2 text-[9px] font-bold text-emerald-400 group-hover:underline">
                       {connectMut.isPending ? "Connecting…" : "Connect Now →"}
                     </div>
                   </button>
@@ -358,7 +358,7 @@ export function OnboardingTour({
             {step.visual === "greeks" && (
               <div className="space-y-2.5 font-mono text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-                  <span className="text-[11px] text-white font-semibold">
+                  <span className="text-[11px] text-emerald-400 font-semibold">
                     First-Order Derivative Condition: Δ_p = 0
                   </span>
                   <span className="text-[10px] text-zinc-500 font-sans">SPX Beta Weighted</span>
@@ -366,7 +366,7 @@ export function OnboardingTour({
                 <div className="bg-black/40 rounded p-2.5 border border-white/[0.06] flex items-center justify-between text-xs">
                   <div>
                     <span className="text-zinc-400">Total Beta Delta:</span>{" "}
-                    <span className="font-bold text-white">+0.00 Δ</span>
+                    <span className="font-bold text-emerald-400">+0.00 Δ</span>
                   </div>
                   <div className="text-right">
                     <span className="text-zinc-500 text-[11px]">1σ Down Stress:</span>{" "}
@@ -382,11 +382,11 @@ export function OnboardingTour({
                   <span className="text-white font-semibold text-[11px]">
                     Actionable Quantitative Hedging Strategies
                   </span>
-                  <span className="text-[10px] text-zinc-300 font-semibold">Δ → 0.00</span>
+                  <span className="text-[10px] text-emerald-400 font-semibold">Δ → 0.00</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="p-2 rounded bg-white/[0.02] border border-white/[0.06]">
-                    <div className="text-white font-bold text-[11px]">Covered Calls</div>
+                    <div className="text-emerald-400 font-bold text-[11px]">Covered Calls</div>
                     <div className="text-[10px] text-zinc-400">Income on long lots (Δ &gt; 0)</div>
                   </div>
                   <div className="p-2 rounded bg-white/[0.02] border border-white/[0.06]">
@@ -419,7 +419,7 @@ export function OnboardingTour({
 
             {step.visual === "finish" && (
               <div className="text-center py-2 space-y-3">
-                <div className="inline-flex p-3 rounded-full bg-white/10 border border-white/20 text-white mb-1">
+                <div className="inline-flex p-3 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-1">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <h4 className="text-sm font-semibold text-white">Your Workspace is Initialized & Clean</h4>
@@ -432,7 +432,7 @@ export function OnboardingTour({
                     type="button"
                     onClick={() => connectMut.mutate({ origin: window.location.origin })}
                     disabled={connectMut.isPending}
-                    className="text-xs font-mono font-bold bg-white text-black hover:bg-zinc-200 cursor-pointer shadow-[0_0_12px_rgba(255,255,255,0.15)]"
+                    className="text-xs font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.25)]"
                   >
                     <Link2 className="h-3.5 w-3.5 mr-1" />
                     {connectMut.isPending ? "Connecting…" : "Connect Broker via SnapTrade"}
@@ -447,7 +447,7 @@ export function OnboardingTour({
             <h3 className="text-xl font-bold tracking-tight text-white font-sans">
               {step.title}
             </h3>
-            <p className="text-xs font-mono text-zinc-400 font-medium">
+            <p className="text-xs font-mono text-emerald-400 font-medium">
               {step.subtitle}
             </p>
             <p className="text-sm text-zinc-300 leading-relaxed font-sans pt-1">
@@ -483,7 +483,7 @@ export function OnboardingTour({
               <Button
                 size="sm"
                 onClick={() => handleActionClick(step.primaryActionRoute)}
-                className="text-xs font-mono font-bold bg-white text-black hover:bg-zinc-200 uppercase tracking-wider shadow-[0_0_15px_rgba(255,255,255,0.2)] cursor-pointer"
+                className="text-xs font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer"
               >
                 {step.primaryActionLabel || "Get Started"} <ArrowRight className="h-3.5 w-3.5 ml-1" />
               </Button>
@@ -491,7 +491,7 @@ export function OnboardingTour({
               <Button
                 size="sm"
                 onClick={handleNext}
-                className="text-xs font-mono font-semibold bg-white text-black hover:bg-zinc-200 cursor-pointer"
+                className="text-xs font-mono font-semibold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
               >
                 Next <ArrowRight className="h-3.5 w-3.5 ml-1" />
               </Button>

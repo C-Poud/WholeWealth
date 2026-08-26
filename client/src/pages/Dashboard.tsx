@@ -17,6 +17,10 @@ import {
   FolderPlus,
   X,
   PieChart as PieIcon,
+<<<<<<< HEAD
+=======
+  Compass,
+>>>>>>> parent of 04ecc8d (14)
 } from "lucide-react";
 import {
   Dialog,
@@ -27,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 
 const COLORS = [
+<<<<<<< HEAD
   "#facc15",
   "#4ade80",
   "#60a5fa",
@@ -49,6 +54,18 @@ const POPULAR_WHEEL_TICKERS = [
   "GOOGL",
 ];
 
+=======
+  "#10b981",
+  "#06b6d4",
+  "#3b82f6",
+  "#6366f1",
+  "#14b8a6",
+  "#f59e0b",
+  "#8b5cf6",
+  "#64748b",
+];
+
+>>>>>>> parent of 04ecc8d (14)
 export default function Dashboard() {
   const { data, isLoading, error, refetch } = trpc.portfolio.overview.useQuery();
   const { data: deltaData } = trpc.suggestions.spxNeutral.useQuery();
@@ -273,7 +290,11 @@ export default function Dashboard() {
           {deltaData?.hasPositions && (
             <Link
               to="/suggestions"
+<<<<<<< HEAD
               className="px-3.5 py-1.5 rounded border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(212,255,0,0.12)]"
+=======
+              className="px-2.5 py-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5 transition-colors"
+>>>>>>> parent of 04ecc8d (14)
             >
               <Scale className="h-3.5 w-3.5" />
               <span>
@@ -321,9 +342,15 @@ export default function Dashboard() {
           </div>
         </div>
 
+<<<<<<< HEAD
         <div className="stat-card">
           <div className="meta-label text-xs">Available Buying Power</div>
           <div className="stat-value text-primary text-2xl mt-1 font-bold drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]">
+=======
+        <div className="stat-card p-3.5 sm:p-5">
+          <div className="text-[11px] sm:text-xs text-zinc-400">Available Cash</div>
+          <div className="text-emerald-400 text-lg sm:text-2xl mt-1 font-bold font-mono truncate">
+>>>>>>> parent of 04ecc8d (14)
             {fmtMoney(stats.availableBuyingPower)}
           </div>
           <div className="text-xs text-muted-foreground mt-1.5 font-mono">
@@ -363,7 +390,11 @@ export default function Dashboard() {
             <span>
               {((deltaData?.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (deltaData?.spyBetaDelta ?? 0).toFixed(1)} SPY eq.
             </span>
+<<<<<<< HEAD
             <Link to="/suggestions" className="text-primary hover:underline font-bold">
+=======
+            <Link to="/suggestions" className="text-emerald-400 hover:underline shrink-0 ml-1">
+>>>>>>> parent of 04ecc8d (14)
               Hedge →
             </Link>
           </div>
@@ -517,12 +548,26 @@ export default function Dashboard() {
           </div>
 
           {/* Allocation Pie Chart Section */}
+<<<<<<< HEAD
           <div className="xl:col-span-5 space-y-4">
             <div className="panel-box p-6 sm:p-8 overflow-hidden">
               <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5">
                 <div className="flex items-center gap-2.5">
                   <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
                     <PieIcon className="h-4 w-4 text-primary" /> Capital Allocation
+=======
+          <div className="xl:col-span-2 flex flex-col">
+            <div className="panel-box p-4 sm:p-7 overflow-hidden flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3 min-h-[34px]">
+                  <div className="flex items-center gap-2">
+                    <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
+                      <PieIcon className="h-4 w-4 text-primary" /> Capital Allocation
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono text-muted-foreground">
+                    Total <span className="text-white font-semibold">{fmtMoney(stats.equityValue + stats.cash)}</span>
+>>>>>>> parent of 04ecc8d (14)
                   </span>
                 </div>
                 <span className="text-xs font-mono text-muted-foreground">
@@ -642,6 +687,7 @@ export default function Dashboard() {
         {/* ROW 2: TARGET WATCHLIST (Full Width)                                      */}
         {/* ========================================================================= */}
         <div className="w-full space-y-4">
+<<<<<<< HEAD
           <div className="panel-box p-6 sm:p-8 overflow-hidden">
             {/* Header & Watchlist Selector */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-5">
@@ -665,6 +711,33 @@ export default function Dashboard() {
                     </button>
                   ))}
                 </div>
+=======
+          <div className="panel-box p-4 sm:p-7 overflow-hidden">
+            {/* Header & Watchlist Selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-4 sm:mb-5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
+                  <Sparkles className="h-4 w-4 text-primary" /> Watchlist
+                </span>
+                {/* Watchlist switcher buttons when multiple lists exist */}
+                {watchlists && watchlists.length > 1 && (
+                  <div className="flex items-center gap-1 bg-white/[0.03] p-0.5 rounded border border-white/[0.08] overflow-x-auto max-w-full">
+                    {watchlists.map((w) => (
+                      <button
+                        key={w.id}
+                        onClick={() => setSelectedWatchlistId(w.id)}
+                        className={`px-2.5 py-1 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap ${
+                          activeWlId === w.id
+                            ? "bg-primary text-black"
+                            : "text-muted-foreground hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        {w.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+>>>>>>> parent of 04ecc8d (14)
               </div>
 
               {/* Action Buttons: New List & Add Ticker */}
@@ -823,7 +896,11 @@ export default function Dashboard() {
                 <Sparkles className="h-7 w-7 mx-auto text-muted-foreground" />
                 <p className="text-xs font-mono text-white">Watchlist is empty</p>
                 <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+<<<<<<< HEAD
                   Add tickers above to track IV Rank, 52-Week range & run Basis analysis.
+=======
+                  Add tickers above to track live prices, IV Rank, YTD performance, and 52-week High/Low.
+>>>>>>> parent of 04ecc8d (14)
                 </p>
               </div>
             ) : (
@@ -834,10 +911,19 @@ export default function Dashboard() {
                       <th className="pb-2.5 font-normal meta-label">Ticker</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Price</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Day Chg</th>
+<<<<<<< HEAD
                       <th className="pb-2.5 font-normal meta-label text-center">IV Rank</th>
                       <th className="pb-2.5 font-normal meta-label text-center min-w-[120px]">52-Week</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Beta</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Basis / Risk</th>
+=======
+                      <th className="pb-2.5 font-normal meta-label text-center hidden md:table-cell">IVR</th>
+                      <th className="pb-2.5 font-normal meta-label text-right hidden sm:table-cell">YTD</th>
+                      <th className="pb-2.5 font-normal meta-label text-right hidden lg:table-cell">High</th>
+                      <th className="pb-2.5 font-normal meta-label text-right hidden lg:table-cell">Low</th>
+                      <th className="pb-2.5 font-normal meta-label text-center hidden md:table-cell min-w-[130px]">52W Range</th>
+                      <th className="pb-2.5 font-normal meta-label text-right w-8"></th>
+>>>>>>> parent of 04ecc8d (14)
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.03]">
@@ -851,47 +937,80 @@ export default function Dashboard() {
                             : "bg-blue-400/15 text-blue-300 border-blue-400/30";
 
                       const pos52 = item.fiftyTwoWeekPos ?? 50;
+<<<<<<< HEAD
+=======
+                      const ytd = item.ytdChangePct;
+>>>>>>> parent of 04ecc8d (14)
 
                       return (
                         <tr
                           key={item.id}
                           className="hover:bg-white/[0.03] transition-colors group"
                         >
+<<<<<<< HEAD
                           {/* Ticker Symbol */}
                           <td className="py-2.5">
                             <div className="font-bold text-white text-sm">
                               {item.symbol}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[110px]">
+=======
+                          {/* Ticker Symbol & Name */}
+                          <td className="py-2.5 sm:py-3">
+                            <div className="font-bold text-white text-sm">
+                              {item.symbol}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[110px] sm:max-w-[140px]">
+>>>>>>> parent of 04ecc8d (14)
                               {item.name}
                             </div>
                           </td>
 
                           {/* Price */}
+<<<<<<< HEAD
                           <td className="py-2.5 text-right font-medium text-white text-xs">
+=======
+                          <td className="py-2.5 sm:py-3 text-right font-medium text-white text-xs">
+>>>>>>> parent of 04ecc8d (14)
                             {item.price ? fmtMoney(item.price) : "—"}
                           </td>
 
                           {/* Day Change */}
                           <td
+<<<<<<< HEAD
                             className={`py-2.5 text-right font-medium text-xs ${
+=======
+                            className={`py-2.5 sm:py-3 text-right font-medium text-xs ${
+>>>>>>> parent of 04ecc8d (14)
                               item.change >= 0 ? "text-primary" : "text-red-400"
                             }`}
                           >
                             {item.price ? (
                               <>
+<<<<<<< HEAD
                                 {item.change >= 0 ? "+" : ""}
                                 {item.change.toFixed(2)}
                                 <div className="text-[10px]">
                                   {item.changePct >= 0 ? "+" : ""}
                                   {item.changePct.toFixed(1)}%
                                 </div>
+=======
+                                <div>
+                                  {item.change >= 0 ? "+" : ""}
+                                  {item.change.toFixed(2)}
+                                </div>
+                                <div className="text-[10px]">
+                                  {item.changePct >= 0 ? "+" : ""}
+                                  {item.changePct.toFixed(2)}%
+                                </div>
+>>>>>>> parent of 04ecc8d (14)
                               </>
                             ) : (
                               "—"
                             )}
                           </td>
 
+<<<<<<< HEAD
                           {/* IV Rank */}
                           <td className="py-2.5 text-center">
                             <span
@@ -901,13 +1020,48 @@ export default function Dashboard() {
                                   ? "High IV Rank — prime for selling options premium"
                                   : "Moderate IV Rank"
                               }
+=======
+                          {/* IVR (IV Rank) - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 text-center hidden md:table-cell">
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${ivColor}`}
+                              title={`Implied Volatility Rank: ${iv}%`}
+>>>>>>> parent of 04ecc8d (14)
                             >
                               {iv}%
                             </span>
                           </td>
 
+<<<<<<< HEAD
                           {/* 52-Week Range */}
                           <td className="py-2.5 px-2">
+=======
+                          {/* YTD Return - hidden on very small mobile */}
+                          <td
+                            className={`py-2.5 sm:py-3 text-right font-medium text-xs hidden sm:table-cell ${
+                              ytd == null
+                                ? "text-muted-foreground"
+                                : ytd >= 0
+                                  ? "text-primary"
+                                  : "text-red-400"
+                            }`}
+                          >
+                            {ytd != null ? `${ytd >= 0 ? "+" : ""}${ytd.toFixed(2)}%` : "—"}
+                          </td>
+
+                          {/* 52W High - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 text-right font-medium text-white/90 text-xs hidden lg:table-cell">
+                            {item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "—"}
+                          </td>
+
+                          {/* 52W Low - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 text-right font-medium text-muted-foreground text-xs hidden lg:table-cell">
+                            {item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "—"}
+                          </td>
+
+                          {/* 52W Range Visual - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 px-3 hidden md:table-cell">
+>>>>>>> parent of 04ecc8d (14)
                             <div className="w-full flex flex-col items-center gap-1">
                               <div className="w-full bg-white/[0.08] h-1.5 rounded-full overflow-hidden relative">
                                 <div
@@ -916,13 +1070,20 @@ export default function Dashboard() {
                                 />
                               </div>
                               <div className="w-full flex justify-between text-[9px] text-muted-foreground font-mono">
+<<<<<<< HEAD
                                 <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "L"}</span>
                                 <span className="text-white/80 font-bold">{pos52}%</span>
                                 <span>{item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "H"}</span>
+=======
+                                <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "Low"}</span>
+                                <span className="text-white/80 font-bold">{pos52}%</span>
+                                <span>{item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "High"}</span>
+>>>>>>> parent of 04ecc8d (14)
                               </div>
                             </div>
                           </td>
 
+<<<<<<< HEAD
                           {/* Beta */}
                           <td className="py-2.5 text-right text-white font-bold text-xs">
                             {item.beta ? item.beta.toFixed(2) : "1.00"}
@@ -959,6 +1120,22 @@ export default function Dashboard() {
                                 <X className="h-3 w-3" />
                               </button>
                             </div>
+=======
+                          {/* Remove Action */}
+                          <td className="py-2.5 sm:py-3 text-right">
+                            <button
+                              onClick={() =>
+                                removeSymbolMut.mutate({
+                                  watchlistId: item.watchlistId,
+                                  symbol: item.symbol,
+                                })
+                              }
+                              className="p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                              title="Remove from watchlist"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+>>>>>>> parent of 04ecc8d (14)
                           </td>
                         </tr>
                       );

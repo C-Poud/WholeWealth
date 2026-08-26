@@ -213,7 +213,11 @@ export async function getWatchlistQuotes(
         const sym = rawSym.toUpperCase();
         try {
           const j = await fetchJson(
+<<<<<<< HEAD
             `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`,
+=======
+            `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=ytd&interval=1d`,
+>>>>>>> parent of 04ecc8d (14)
           );
           const meta = j?.chart?.result?.[0]?.meta;
           const px = meta?.regularMarketPrice;
@@ -222,6 +226,16 @@ export async function getWatchlistQuotes(
             const change = +(px - prevClose).toFixed(2);
             const changePct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
             
+<<<<<<< HEAD
+=======
+            // Calculate YTD change % from start of year close prices
+            const closePrices: (number | null)[] = j?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
+            const firstValidClose = closePrices.find((c) => typeof c === "number" && c > 0);
+            const ytdChangePct = firstValidClose
+              ? +(((px - firstValidClose) / firstValidClose) * 100).toFixed(2)
+              : changePct;
+
+>>>>>>> parent of 04ecc8d (14)
             const high52 = meta?.fiftyTwoWeekHigh ? +meta.fiftyTwoWeekHigh.toFixed(2) : null;
             const low52 = meta?.fiftyTwoWeekLow ? +meta.fiftyTwoWeekLow.toFixed(2) : null;
             let pos52: number | null = null;

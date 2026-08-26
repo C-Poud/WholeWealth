@@ -49,6 +49,8 @@ export default function Portfolio() {
   const status = trpc.snaptrade.status.useQuery();
   const overview = trpc.portfolio.overview.useQuery();
 
+  const isBrokerConnected = Boolean(status.data?.registered && (status.data.accountCount > 0));
+
   const invalidateAll = async () => {
     await Promise.all([
       utils.portfolio.overview.invalidate(),
@@ -464,16 +466,31 @@ export default function Portfolio() {
       {/* Clean Quick Actions Strip */}
       <div className="panel-box p-3.5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            className="text-xs font-medium bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
-            onClick={() =>
-              connectMut.mutate({ origin: window.location.origin })
-            }
-            disabled={!st?.configured || connectMut.isPending}
-          >
-            <Link2 className="h-3.5 w-3.5 mr-1" /> Connect Broker
-          </Button>
+          {!isBrokerConnected ? (
+            <Button
+              size="sm"
+              className="text-xs font-medium bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
+              onClick={() =>
+                connectMut.mutate({ origin: window.location.origin })
+              }
+              disabled={!st?.configured || connectMut.isPending}
+            >
+              <Link2 className="h-3.5 w-3.5 mr-1" /> Connect Broker
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 cursor-pointer"
+              onClick={() => syncMut.mutate()}
+              disabled={syncMut.isPending}
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 mr-1.5 ${syncMut.isPending ? "animate-spin" : ""}`}
+              />
+              {syncMut.isPending ? "Syncing…" : "Sync Broker"}
+            </Button>
+          )}
 
           <input
             ref={fileRef}
@@ -489,43 +506,50 @@ export default function Portfolio() {
           <Button
             size="sm"
             variant="outline"
-            className="text-xs border-white/10 hover:bg-white/5 cursor-pointer"
+            className="text-xs border-white/10 hover:bg-white/5 cursor-pointer text-zinc-300"
             onClick={() => fileRef.current?.click()}
             disabled={importMut.isPending}
           >
-            <Upload className="h-3.5 w-3.5 mr-1" />
+            <Upload className="h-3.5 w-3.5 mr-1 text-zinc-400" />
             {importMut.isPending ? "Importing…" : "Import CSV"}
           </Button>
 
           <Button
             size="sm"
             variant="outline"
-            className="text-xs border-white/10 hover:bg-white/5 cursor-pointer"
-            onClick={() => setManualOpen(true)}
+            className="text-xs border-white/10 hover:bg-white/5 cursor-pointer text-zinc-300"
+            onClick={() => {
+              setPrefilledSymbol("");
+              setManualOpen(true);
+            }}
           >
-            <Plus className="h-3.5 w-3.5 mr-1 text-primary" /> Manual Entry
+            <Plus className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Add Position
           </Button>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-xs text-zinc-400 hover:text-white cursor-pointer"
-            onClick={() => demoMut.mutate()}
-            disabled={demoMut.isPending}
-          >
-            <FlaskConical className="h-3.5 w-3.5 mr-1" /> Demo Data
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-xs text-zinc-500 hover:text-red-400 cursor-pointer"
-            onClick={() => clearDemoMut.mutate()}
-            disabled={clearDemoMut.isPending}
-          >
-            Clear Demo
-          </Button>
+          {!isBrokerConnected && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs text-zinc-400 hover:text-white cursor-pointer"
+                onClick={() => demoMut.mutate()}
+                disabled={demoMut.isPending}
+              >
+                <FlaskConical className="h-3.5 w-3.5 mr-1" /> Demo Data
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs text-zinc-500 hover:text-red-400 cursor-pointer"
+                onClick={() => clearDemoMut.mutate()}
+                disabled={clearDemoMut.isPending}
+              >
+                Clear Demo
+              </Button>
+            </>
+          )}
           {st?.registered && (
             <Button
               size="sm"

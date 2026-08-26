@@ -32,6 +32,7 @@ interface AddPositionModalProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   accounts?: Array<{ id: number; name: string; institution?: string | null }>;
+  initialSymbol?: string;
 }
 
 const POPULAR_QUICK_PICKS = [
@@ -50,9 +51,10 @@ export function AddPositionModal({
   onOpenChange,
   onSuccess,
   accounts = [],
+  initialSymbol = "",
 }: AddPositionModalProps) {
-  const [query, setQuery] = useState("");
-  const [selectedSymbol, setSelectedSymbol] = useState<string>("");
+  const [query, setQuery] = useState(initialSymbol || "");
+  const [selectedSymbol, setSelectedSymbol] = useState<string>(initialSymbol || "");
   const [quantity, setQuantity] = useState<string>("100");
   const [costBasis, setCostBasis] = useState<string>("");
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
@@ -61,6 +63,13 @@ export function AddPositionModal({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open && initialSymbol) {
+      setSelectedSymbol(initialSymbol.toUpperCase());
+      setQuery(initialSymbol.toUpperCase());
+    }
+  }, [open, initialSymbol]);
 
   // Search suggestions query with fast response
   const searchQuery = trpc.portfolio.searchSymbols.useQuery(

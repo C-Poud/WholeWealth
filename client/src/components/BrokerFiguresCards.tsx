@@ -86,8 +86,12 @@ export function BrokerFiguresCards({
 
   if (isLoading && !data) {
     return (
-      <div className={`grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 ${className}`}>
-        {[1, 2, 3, 4].map((i) => (
+      <div
+        className={`grid grid-cols-1 ${
+          isBrokerConnected ? "md:grid-cols-3" : "md:grid-cols-2 lg:grid-cols-4"
+        } gap-3 sm:gap-4 ${className}`}
+      >
+        {[...Array(isBrokerConnected ? 3 : 4)].map((_, i) => (
           <Skeleton key={i} className="h-28 rounded-lg bg-white/[0.04] border border-white/[0.08]" />
         ))}
       </div>
@@ -108,7 +112,7 @@ export function BrokerFiguresCards({
       {showSyncButton && (
         <div className="flex items-center justify-between px-1">
           <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400">
-            Broker Reported Balances & Integration
+            {isBrokerConnected ? "Broker Reported Balances" : "Broker Reported Balances & Integration"}
           </span>
           <button
             type="button"
@@ -122,8 +126,14 @@ export function BrokerFiguresCards({
         </div>
       )}
 
-      {/* Single Unified Institutional Banner Container - All in Same Row */}
-      <div className="rounded-lg border border-white/[0.08] bg-[#111318] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/[0.06] overflow-hidden">
+      {/* Single Unified Institutional Banner Container - Responsive Grid */}
+      <div
+        className={`rounded-lg border border-white/[0.08] bg-[#111318] grid grid-cols-1 ${
+          isBrokerConnected
+            ? "md:grid-cols-3 divide-y md:divide-y-0 md:divide-x"
+            : "md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x"
+        } divide-white/[0.06] overflow-hidden`}
+      >
         {/* Section 1: Total Account Value */}
         <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="text-xs sm:text-[13px] text-zinc-400 font-sans">
@@ -171,81 +181,71 @@ export function BrokerFiguresCards({
           </div>
         </div>
 
-        {/* Section 4: Broker Connection & Action Bar (in the SAME ROW) */}
-        <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2 bg-white/[0.01]">
-          <div className="flex items-center justify-between">
-            <span className="text-xs sm:text-[13px] text-zinc-400 font-sans flex items-center gap-1.5">
-              <Link2 className="h-3.5 w-3.5 text-zinc-400" />
-              Broker Integration
-            </span>
-            {isBrokerConnected ? (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400">
-                <CheckCircle2 className="h-3 w-3" /> Connected
+        {/* Section 4: Broker Connection & Action Bar (Removed if broker is connected) */}
+        {!isBrokerConnected && (
+          <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2 bg-white/[0.01]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs sm:text-[13px] text-zinc-400 font-sans flex items-center gap-1.5">
+                <Link2 className="h-3.5 w-3.5 text-zinc-400" />
+                Broker Integration
               </span>
-            ) : (
               <span className="text-[10px] font-mono text-zinc-400">
                 SnapTrade OAuth
               </span>
-            )}
-          </div>
+            </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Button
-              size="sm"
-              onClick={() => connectMut.mutate({ origin: window.location.origin })}
-              disabled={connectMut.isPending}
-              className="w-full text-xs font-mono font-semibold bg-white text-black hover:bg-zinc-200 cursor-pointer h-8"
-            >
-              <Link2 className="h-3 w-3 mr-1.5" />
-              {connectMut.isPending
-                ? "Connecting..."
-                : isBrokerConnected
-                  ? "Manage / Add Broker"
-                  : "Connect Broker via SnapTrade"}
-            </Button>
-
-            <div className="flex items-center gap-1.5">
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".csv,.xlsx,.xls"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) onFile(f);
-                  e.target.value = "";
-                }}
-              />
+            <div className="flex flex-col gap-1.5">
               <Button
                 size="sm"
-                variant="outline"
-                onClick={() => fileRef.current?.click()}
-                disabled={importMut.isPending}
-                className="flex-1 text-[11px] font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer h-7 px-2"
+                onClick={() => connectMut.mutate({ origin: window.location.origin })}
+                disabled={connectMut.isPending}
+                className="w-full text-xs font-mono font-semibold bg-white text-black hover:bg-zinc-200 cursor-pointer h-8"
               >
-                <Upload className="h-3 w-3 mr-1 text-zinc-400" />
-                {importMut.isPending ? "Importing…" : "Upload CSV"}
+                <Link2 className="h-3 w-3 mr-1.5" />
+                {connectMut.isPending ? "Connecting..." : "Connect Broker via SnapTrade"}
               </Button>
 
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => syncMut.mutate()}
-                disabled={syncMut.isPending}
-                className="text-[11px] font-mono text-zinc-400 hover:text-white cursor-pointer h-7 px-2"
-              >
-                <RefreshCw className={`h-3 w-3 mr-1 ${syncMut.isPending ? "animate-spin text-sky-400" : ""}`} />
-                Sync
-              </Button>
+              <div className="flex items-center gap-1.5">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) onFile(f);
+                    e.target.value = "";
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={importMut.isPending}
+                  className="flex-1 text-[11px] font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer h-7 px-2"
+                >
+                  <Upload className="h-3 w-3 mr-1 text-zinc-400" />
+                  {importMut.isPending ? "Importing…" : "Upload CSV"}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => syncMut.mutate()}
+                  disabled={syncMut.isPending}
+                  className="text-[11px] font-mono text-zinc-400 hover:text-white cursor-pointer h-7 px-2"
+                >
+                  <RefreshCw className={`h-3 w-3 mr-1 ${syncMut.isPending ? "animate-spin text-sky-400" : ""}`} />
+                  Sync
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-[10px] font-mono text-zinc-400 truncate">
+              Direct OAuth · IBKR, Schwab, Fidelity +20
             </div>
           </div>
-
-          <div className="text-[10px] font-mono text-zinc-400 truncate">
-            {isBrokerConnected
-              ? `${st?.accountCount} account(s) synced`
-              : "Direct OAuth · IBKR, Schwab, Fidelity +20"}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

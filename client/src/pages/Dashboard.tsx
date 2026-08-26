@@ -22,6 +22,7 @@ import {
 import { startAppTour } from "@/components/OnboardingTour";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { BrokerFiguresCards } from "@/components/BrokerFiguresCards";
+import { AddWatchlistTickerModal } from "@/components/AddWatchlistTickerModal";
 import {
   Dialog,
   DialogContent,
@@ -68,7 +69,6 @@ export default function Dashboard() {
 
   // Watchlist state & queries
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<number | undefined>(undefined);
-  const [tickerInput, setTickerInput] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isNewListOpen, setIsNewListOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -98,14 +98,6 @@ export default function Dashboard() {
     onSuccess: () => {
       utils.watchlist.list.invalidate();
       setSelectedWatchlistId(undefined);
-    },
-  });
-
-  const addSymbolMut = trpc.watchlist.addSymbol.useMutation({
-    onSuccess: () => {
-      utils.watchlist.get.invalidate({ watchlistId: activeWlId });
-      setTickerInput("");
-      setIsAddOpen(false);
     },
   });
 
@@ -224,15 +216,6 @@ export default function Dashboard() {
       hasDemo: positions.some((p) => p.source === "demo"),
     };
   }, [data]);
-
-  const handleAddSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeWlId || !tickerInput.trim()) return;
-    addSymbolMut.mutate({
-      watchlistId: activeWlId,
-      symbol: tickerInput.trim().toUpperCase(),
-    });
-  };
 
   const handleCreateList = (e: React.FormEvent) => {
     e.preventDefault();
@@ -788,51 +771,15 @@ export default function Dashboard() {
                   </DialogContent>
                 </Dialog>
 
-                {/* Add Ticker Modal */}
-                <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                  <DialogTrigger asChild>
-                    <button className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:brightness-110 transition-all cursor-pointer">
-                      <Plus className="h-3.5 w-3.5" />
-                      <span>+ Ticker</span>
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-[#12141a] border-white/10 text-white sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="font-display font-bold uppercase tracking-wide">
-                        Add Ticker to Watchlist
-                      </DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleAddSubmit} className="space-y-4 mt-2">
-                      <div>
-                        <label className="meta-label block mb-1.5">Ticker Symbol</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. NVDA, AAPL, TSLA, SPY, AMD"
-                          value={tickerInput}
-                          onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
-                          required
-                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono uppercase placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400"
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setIsAddOpen(false)}
-                          className="px-4 py-2 rounded bg-white/5 hover:bg-white/10 text-xs font-mono text-muted-foreground uppercase cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={addSymbolMut.isPending}
-                          className="px-4 py-2 rounded bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-mono text-xs font-bold uppercase hover:brightness-110 disabled:opacity-50 cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)]"
-                        >
-                          {addSymbolMut.isPending ? "Adding..." : "Add to List"}
-                        </button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                {/* Add Ticker Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsAddOpen(true)}
+                  className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:brightness-110 transition-all cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>+ Ticker</span>
+                </button>
 
                 {/* Delete List button */}
                 {watchlists && watchlists.length > 1 && activeWlId && (
@@ -868,6 +815,16 @@ export default function Dashboard() {
                 <p className="text-xs text-zinc-400 max-w-sm mx-auto">
                   Add high-conviction symbols to stream real-time price quotes, Tastylive IV Rank, YTD trajectory, and 52-week percentile channels.
                 </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-mono font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:brightness-110 transition-all cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>+ Add Stock / ETF Ticker</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 mt-2">
@@ -1050,6 +1007,18 @@ export default function Dashboard() {
         </div>
 
       </div>
+
+      {activeWlId && (
+        <AddWatchlistTickerModal
+          open={isAddOpen}
+          onOpenChange={setIsAddOpen}
+          watchlistId={activeWlId}
+          watchlistName={watchlists?.find((w) => w.id === activeWlId)?.name}
+          onSuccess={() => {
+            utils.watchlist.get.invalidate({ watchlistId: activeWlId });
+          }}
+        />
+      )}
     </div>
   );
 }

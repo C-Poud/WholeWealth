@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { toast } from "sonner";
-import { useSearchParams } from "react-router";
+import { useSearchParams, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,9 @@ import {
   Edit2,
   Briefcase,
   Compass,
+  Zap,
+  Activity,
+  ArrowUpRight,
 } from "lucide-react";
 import { startAppTour } from "@/components/OnboardingTour";
 import { AddPositionModal } from "@/components/AddPositionModal";
@@ -33,6 +36,7 @@ import { BrokerFiguresCards } from "@/components/BrokerFiguresCards";
 
 export default function Portfolio() {
   const utils = trpc.useUtils();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const fileRef = useRef<HTMLInputElement>(null);
   const [manualOpen, setManualOpen] = useState(false);
@@ -48,6 +52,7 @@ export default function Portfolio() {
 
   const status = trpc.snaptrade.status.useQuery();
   const overview = trpc.portfolio.overview.useQuery();
+  const greeksQuery = trpc.analytics.portfolioGreeks.useQuery(undefined, { staleTime: 30_000 });
 
   const isBrokerConnected = Boolean(status.data?.registered && (status.data.accountCount > 0));
 
@@ -57,6 +62,7 @@ export default function Portfolio() {
       utils.snaptrade.status.invalidate(),
       utils.analytics.basisSuggestions.invalidate(),
       utils.analytics.riskReports.invalidate(),
+      utils.analytics.portfolioGreeks.invalidate(),
     ]);
   };
 
@@ -269,7 +275,7 @@ export default function Portfolio() {
 
       {/* Summary KPI section */}
       {positions.length > 0 && (
-        <section className="rounded-lg border border-white/[0.08] bg-[#111318] grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] overflow-hidden">
+        <section className="rounded-lg border border-white/[0.08] bg-[#111318] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] overflow-hidden">
           <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
             <div className="text-[11px] sm:text-xs text-zinc-400">Capital at Work</div>
             <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
@@ -287,6 +293,54 @@ export default function Portfolio() {
             </div>
             <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
               {fmtNum(metrics.coveredShares, 0)}/{fmtNum(metrics.roundLotShares, 0)} sh · {metrics.shortCallCount} CC / {metrics.shortPutCount} CSP
+            </div>
+          </div>
+
+          <div
+            onClick={() => navigate("/risk?tab=greeks")}
+            className="p-4 sm:p-5 flex flex-col justify-between space-y-2 hover:bg-white/[0.02] cursor-pointer transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] sm:text-xs text-sky-400 flex items-center gap-1">
+                <Zap className="h-3.5 w-3.5" /> SPX Beta Delta
+              </span>
+              <span className="text-[10px] text-zinc-500 group-hover:text-sky-400 flex items-center transition-colors">
+                View Greeks <ArrowUpRight className="h-3 w-3 ml-0.5" />
+              </span>
+            </div>
+            <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
+              {greeksQuery.data?.greeks?.totalSpxBetaDelta != null
+                ? `${greeksQuery.data.greeks.totalSpxBetaDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.totalSpxBetaDelta.toFixed(2)} Δ`
+                : "—"}
+            </div>
+            <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
+              {greeksQuery.data?.greeks?.totalSpyBetaDelta != null
+                ? `${greeksQuery.data.greeks.totalSpyBetaDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.totalSpyBetaDelta.toFixed(1)} Δ SPY · ${greeksQuery.data.greeks.effectivePortfolioBeta.toFixed(2)}β`
+                : "S&P 500 sensitivity"}
+            </div>
+          </div>
+
+          <div
+            onClick={() => navigate("/risk?tab=greeks")}
+            className="p-4 sm:p-5 flex flex-col justify-between space-y-2 hover:bg-white/[0.02] cursor-pointer transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] sm:text-xs text-zinc-300 flex items-center gap-1">
+                <Activity className="h-3.5 w-3.5 text-emerald-400" /> Portfolio Net Delta
+              </span>
+              <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 flex items-center transition-colors">
+                Greeks <ArrowUpRight className="h-3 w-3 ml-0.5" />
+              </span>
+            </div>
+            <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
+              {greeksQuery.data?.greeks?.netPortfolioDelta != null
+                ? `${greeksQuery.data.greeks.netPortfolioDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.netPortfolioDelta.toFixed(0)} Shares`
+                : "—"}
+            </div>
+            <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
+              {greeksQuery.data?.greeks?.totalOptionDelta != null && greeksQuery.data.greeks.totalOptionDelta !== 0
+                ? `${greeksQuery.data.greeks.totalOptionDelta >= 0 ? "+" : ""}${greeksQuery.data.greeks.totalOptionDelta.toFixed(0)} Δ options hedge`
+                : "Raw share directional"}
             </div>
           </div>
         </section>

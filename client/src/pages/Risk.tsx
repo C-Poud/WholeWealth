@@ -13,6 +13,7 @@ import { ScoreBar } from "@/components/Gauges";
 import { fmtMoney, fmtPct } from "@/lib/format";
 import { VolatilityConeChart } from "@/components/VolatilityConeChart";
 import { VolatilityBoxCalculator } from "@/components/VolatilityBoxCalculator";
+import { PortfolioGreeksPanel } from "@/components/PortfolioGreeksPanel";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   ShieldAlert,
@@ -24,6 +25,7 @@ import {
   ArrowDownRight,
   BookOpen,
   Calculator,
+  Scale,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -44,7 +46,8 @@ function scoreTextColor(s: number): string {
 export default function Risk() {
   const [searchParams, setSearchParams] = useSearchParams();
   const paramSym = searchParams.get("symbol");
-  const [activeTab, setActiveTab] = useState<string>("portfolio");
+  const paramTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<string>(paramTab || "greeks");
 
   const { data, isLoading, error, refetch } = trpc.analytics.riskReports.useQuery();
 
@@ -151,11 +154,18 @@ export default function Risk() {
         <div className="overflow-x-auto -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
           <TabsList className="bg-[#121419] border border-white/10 p-1 inline-flex w-auto min-w-full sm:min-w-0">
             <TabsTrigger
+              value="greeks"
+              className="text-xs font-mono data-[state=active]:bg-white/10 data-[state=active]:text-white whitespace-nowrap"
+            >
+              <Scale className="h-3.5 w-3.5 mr-1.5 text-sky-400" />
+              SPX Delta & Greeks
+            </TabsTrigger>
+            <TabsTrigger
               value="portfolio"
               className="text-xs font-mono data-[state=active]:bg-white/10 data-[state=active]:text-white whitespace-nowrap"
             >
               <Activity className="h-3.5 w-3.5 mr-1.5 text-sky-400" />
-              Portfolio Risk ({reports.length})
+              Volatility Box & VaR ({reports.length})
             </TabsTrigger>
             <TabsTrigger
               value="simulator"
@@ -169,10 +179,20 @@ export default function Risk() {
               className="text-xs font-mono data-[state=active]:bg-white/10 data-[state=active]:text-white whitespace-nowrap"
             >
               <BookOpen className="h-3.5 w-3.5 mr-1.5 text-sky-400" />
-              Expected Move Methodology
+              Methodology & Research
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {/* Tab 0: SPX Beta-Weighted Delta & Portfolio Greeks Breakdown */}
+        <TabsContent value="greeks" className="space-y-6">
+          <PortfolioGreeksPanel
+            onSelectSymbol={(sym) => {
+              handleSelectSymbol(sym);
+              setActiveTab("portfolio");
+            }}
+          />
+        </TabsContent>
 
         {/* Tab 1: Portfolio Holdings Risk Analysis */}
         <TabsContent value="portfolio" className="space-y-5 sm:space-y-6">
@@ -648,6 +668,39 @@ export default function Risk() {
                   <li>• <strong className="font-mono text-amber-300">R2 / S2 (±2σ)</strong>: 95.4% Volatility Resistance & Support (Ideal for credit spread wings)</li>
                   <li>• <strong className="font-mono text-sky-300">R1 / S1 (±1σ)</strong>: 68.2% Standard Expected Range (Covered call & cash-secured put target)</li>
                 </ul>
+              </div>
+
+              {/* 4. Greeks: SPX Delta vs. Portfolio Delta */}
+              <div className="p-4 rounded-lg bg-black/40 border border-sky-500/30 space-y-3 font-mono text-xs">
+                <div className="text-sky-400 font-bold text-sm">
+                  4. SPX Delta (Beta-Weighted) vs. Portfolio Delta (Net Share Exposure)
+                </div>
+                <div className="space-y-3 text-zinc-300 font-sans">
+                  <div>
+                    <strong className="text-white">Portfolio Delta (Net Share Delta):</strong>
+                    <p className="text-zinc-400 text-xs mt-1">
+                      Calculated by converting every position into its equivalent number of underlying shares, then adding them together:
+                    </p>
+                    <div className="p-2.5 my-1.5 rounded bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 font-mono text-xs">
+                      Portfolio Delta = Σ (quantity × delta × multiplier)
+                    </div>
+                    <ul className="text-xs text-zinc-400 space-y-1 list-disc pl-4 mt-1 font-sans">
+                      <li><strong>Stocks / ETFs</strong>: multiplier = 1, delta = +1.0 (long) or -1.0 (short) → <em>Stock contribution = shares × 1</em></li>
+                      <li><strong>Options</strong>: multiplier = 100 → <em>Option contribution = contracts × option delta × 100</em></li>
+                      <li><strong>Short Positions</strong>: Use negative quantities (e.g. short 1 call = −1 × delta × 100)</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <strong className="text-white">SPX Delta (Beta-Weighted):</strong>
+                    <p className="text-zinc-400 text-xs mt-1">
+                      Measures sensitivity of portfolio value to a $1 move in the S&P 500 index (SPX), weighting each position by its dollar spot price ratio to SPX and statistical beta ($\beta$):
+                    </p>
+                    <div className="p-2.5 my-1.5 rounded bg-sky-950/40 border border-sky-500/20 text-sky-200 font-mono text-xs">
+                      SPX Delta = Σ [ (Position Delta × Spot Price / SPX Spot) × Beta ]
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

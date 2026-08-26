@@ -7,6 +7,7 @@ import {
   estimateIv30,
   scanCoveredCalls,
 } from "./analytics/engine";
+import { calculatePortfolioGreeks } from "./analytics/betaGreeks";
 
 export const analyticsRouter = createRouter({
   /**
@@ -179,4 +180,34 @@ export const analyticsRouter = createRouter({
       });
       return { report, mode: market.mode };
     }),
+
+  /**
+   * Portfolio Greeks, SPX Beta-Weighted Delta, and Net Delta Breakdown across all positions.
+   */
+  portfolioGreeks: authedQuery.query(async ({ ctx }) => {
+    const rows = await listPositions(ctx.user.id);
+    if (rows.length === 0) {
+      return {
+        mode: "demo" as const,
+        greeks: calculatePortfolioGreeks({ positions: [], spots: {} }),
+        errors: [] as string[],
+      };
+    }
+
+    const symbols = [...new Set([...rows.map((p) => p.symbol), "SPY"])];
+    const market = await resolveMarketData(ctx.user.id, symbols);
+
+    const greeks = calculatePortfolioGreeks({
+      positions: rows,
+      spots: market.spots,
+      chains: market.chains,
+      spySpot: market.spots["SPY"],
+    });
+
+    return {
+      mode: market.mode,
+      greeks,
+      errors: market.errors,
+    };
+  }),
 });

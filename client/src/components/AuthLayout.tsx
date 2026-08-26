@@ -132,7 +132,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <Button
             onClick={() => refresh()}
             size="default"
-            className="w-full bg-emerald-500 text-black font-mono font-semibold uppercase tracking-wider hover:bg-emerald-400"
+            className="w-full bg-white text-black font-mono font-semibold uppercase tracking-wider hover:bg-zinc-200"
           >
             Retry now
           </Button>
@@ -190,7 +190,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   }`}
                 >
                   <span className="font-semibold tracking-tight text-sm text-white">
-                    NetWorth<span className="text-emerald-400 font-medium">.io</span>
+                    NetWorth<span className="text-zinc-400 font-medium">.io</span>
                   </span>
                 </div>
               </button>
@@ -214,7 +214,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   >
                     {/* Active Accent Bar */}
                     {isActive && (
-                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-emerald-400" />
+                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-white" />
                     )}
 
                     {/* Fixed Icon Container */}
@@ -222,7 +222,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       <item.icon
                         className={`h-4 w-4 transition-transform duration-100 ${
                           isActive
-                            ? "text-emerald-400"
+                            ? "text-white"
                             : "opacity-75 group-hover:opacity-100"
                         }`}
                       />
@@ -374,7 +374,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   {user?.avatar ? (
                     <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
                   ) : null}
-                  <AvatarFallback className="text-xs font-semibold bg-emerald-500/20 text-emerald-400">
+                  <AvatarFallback className="text-xs font-semibold bg-white/10 text-white">
                     {user?.name?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
@@ -399,11 +399,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     }}
                     className={`w-full h-11 rounded-lg flex items-center px-3.5 gap-3 transition-all cursor-pointer ${
                       isActive
-                        ? "bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                        ? "bg-white/10 text-white font-semibold border border-white/15"
                         : "text-zinc-300 hover:text-white hover:bg-white/5 active:bg-white/10"
                     }`}
                   >
-                    <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
+                    <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : "text-zinc-400"}`} />
                     <span className="text-xs font-mono">{item.label}</span>
                   </button>
                 );
@@ -417,9 +417,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   setMobileOpen(false);
                   startAppTour();
                 }}
-                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-300 text-xs font-mono border border-emerald-500/25 cursor-pointer transition-colors"
+                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 active:bg-white/15 text-zinc-200 text-xs font-mono border border-white/10 cursor-pointer transition-colors"
               >
-                <Compass className="h-3.5 w-3.5 text-emerald-400" />
+                <Compass className="h-3.5 w-3.5 text-zinc-300" />
                 <span>Product Tour</span>
               </button>
               <button
@@ -446,13 +446,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   type="button"
                   onClick={() => navigate(item.path)}
                   className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
-                    isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+                    isActive ? "text-white font-semibold" : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
                   {isActive && (
-                    <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+                    <span className="absolute top-0 inset-x-4 h-0.5 bg-white rounded-full" />
                   )}
-                  <item.icon className={`h-4 w-4 mb-1 transition-transform ${isActive ? "scale-110 text-emerald-400" : ""}`} />
+                  <item.icon className={`h-4 w-4 mb-1 transition-transform ${isActive ? "scale-110 text-white" : ""}`} />
                   <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
                     {item.label === "Risk Analysis" ? "Risk" : item.label === "Career Optimizer" ? "Career" : item.label}
                   </span>
@@ -463,13 +463,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => navigate("/settings")}
               className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
-                location.pathname === "/settings" ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+                location.pathname === "/settings" ? "text-white font-semibold" : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               {location.pathname === "/settings" && (
-                <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+                <span className="absolute top-0 inset-x-4 h-0.5 bg-white rounded-full" />
               )}
-              <Settings className={`h-4 w-4 mb-1 transition-transform ${location.pathname === "/settings" ? "scale-110 text-emerald-400" : ""}`} />
+              <Settings className={`h-4 w-4 mb-1 transition-transform ${location.pathname === "/settings" ? "scale-110 text-white" : ""}`} />
               <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
                 Settings
               </span>

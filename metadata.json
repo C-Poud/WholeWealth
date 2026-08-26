@@ -1,6 +1,6 @@
 {
   "name": "NetWorth.io",
-  "description": "Portfolio and options toolkit for covered calls, cash-secured puts, basis tracking, risk analytics, and trade suggestions.",
+  "description": "Portfolio and options analytics toolkit with live broker sync, VolatilityBox expected move models, dynamic probability cones, and risk metrics.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

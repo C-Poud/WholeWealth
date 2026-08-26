@@ -55,6 +55,7 @@ export const watchlistRouter = createRouter({
             price: q?.price ?? null,
             change: q?.change ?? 0,
             changePct: q?.changePct ?? 0,
+            ytdChangePct: q?.ytdChangePct ?? null,
             dayHigh: q?.dayHigh ?? null,
             dayLow: q?.dayLow ?? null,
             volume: q?.volume ?? null,
@@ -63,7 +64,10 @@ export const watchlistRouter = createRouter({
             fiftyTwoWeekLow: q?.fiftyTwoWeekLow ?? null,
             fiftyTwoWeekPos: q?.fiftyTwoWeekPos ?? null,
             ivRank: q?.ivRank ?? null,
+            ivPercentile: q?.ivPercentile ?? null,
             iv30: q?.iv30 ?? null,
+            iv52wHigh: q?.iv52wHigh ?? null,
+            iv52wLow: q?.iv52wLow ?? null,
             createdAt: item.createdAt,
           };
         }),

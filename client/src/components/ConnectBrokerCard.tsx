@@ -94,12 +94,12 @@ export function ConnectBrokerCard({
     return (
       <div className="flex items-center justify-between p-3 rounded-lg border border-white/[0.08] bg-[#0c0d12] text-xs font-mono">
         <span className="text-zinc-400 flex items-center gap-2">
-          <Link2 className="h-3.5 w-3.5 text-emerald-400" />
+          <Link2 className="h-3.5 w-3.5 text-zinc-300" />
           <span>Broker connection recommended for live quantitative Greek modeling</span>
         </span>
         <button
           onClick={() => setIsDismissed(false)}
-          className="text-emerald-400 hover:text-emerald-300 underline text-[11px] cursor-pointer"
+          className="text-zinc-300 hover:text-white underline text-[11px] cursor-pointer"
         >
           Show Connect Options
         </button>
@@ -111,10 +111,10 @@ export function ConnectBrokerCard({
     return (
       <div
         id="connect-broker-compact-card"
-        className={`p-4 rounded-xl border border-emerald-500/20 bg-gradient-to-r from-emerald-950/20 via-[#0e1015] to-[#0e1015] flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${className}`}
+        className={`p-4 rounded-xl border border-white/[0.1] bg-[#12141a] flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${className}`}
       >
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shrink-0">
+          <div className="p-2 rounded-lg bg-white/[0.06] border border-white/10 text-white shrink-0">
             <Building2 className="h-4 w-4" />
           </div>
           <div className="space-y-0.5">
@@ -122,7 +122,7 @@ export function ConnectBrokerCard({
               <span className="text-xs font-bold text-white font-sans">
                 Recommended: Connect Your Brokerage
               </span>
-              <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">
+              <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 bg-white/10 text-zinc-300 rounded border border-white/10">
                 Live Sync
               </span>
             </div>
@@ -137,7 +137,7 @@ export function ConnectBrokerCard({
             size="sm"
             onClick={() => connectMut.mutate({ origin: window.location.origin })}
             disabled={connectMut.isPending}
-            className="text-xs font-mono font-semibold bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.25)] cursor-pointer"
+            className="text-xs font-mono font-semibold bg-white text-black hover:bg-zinc-200 cursor-pointer"
           >
             <Link2 className="h-3.5 w-3.5 mr-1" />
             {connectMut.isPending ? "Connecting..." : "Connect Broker"}
@@ -157,17 +157,14 @@ export function ConnectBrokerCard({
   return (
     <section
       id="connect-broker-recommendation-card"
-      className={`rounded-xl border border-emerald-500/30 bg-gradient-to-b from-[#11141c] via-[#0c0d12] to-[#090a0d] p-5 sm:p-8 shadow-2xl relative overflow-hidden ${className}`}
+      className={`rounded-xl border border-white/[0.1] bg-[#12141a] p-5 sm:p-8 shadow-xl relative overflow-hidden ${className}`}
     >
-      {/* Glow decorative element */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/[0.04] rounded-full blur-3xl pointer-events-none" />
-
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 sm:pb-6 border-b border-white/[0.08]">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5">
-              <Zap className="h-3 w-3" /> Recommended Step
+            <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-zinc-300 px-2 py-0.5 rounded bg-white/[0.06] border border-white/10 flex items-center gap-1.5">
+              <Zap className="h-3 w-3 text-zinc-400" /> Recommended Step
             </span>
             <span className="text-xs font-mono text-zinc-400 hidden sm:inline">Direct Brokerage Integration</span>
           </div>
@@ -192,8 +189,8 @@ export function ConnectBrokerCard({
       {/* Feature / Value Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 my-5 sm:my-6">
         <div className="p-3.5 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-1.5 sm:space-y-2">
-          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <Zap className="h-4 w-4" />
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-white/[0.06] border border-white/10 flex items-center justify-center text-white">
+            <Zap className="h-4 w-4 text-zinc-300" />
           </div>
           <div className="text-sm font-semibold text-white font-sans">Zero Manual Entry</div>
           <p className="text-xs text-zinc-400 font-sans leading-normal">
@@ -202,8 +199,8 @@ export function ConnectBrokerCard({
         </div>
 
         <div className="p-3.5 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-1.5 sm:space-y-2">
-          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-            <TrendingUp className="h-4 w-4" />
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-white/[0.06] border border-white/10 flex items-center justify-center text-white">
+            <TrendingUp className="h-4 w-4 text-zinc-300" />
           </div>
           <div className="text-sm font-semibold text-white font-sans">Institutional Greeks</div>
           <p className="text-xs text-zinc-400 font-sans leading-normal">
@@ -212,8 +209,8 @@ export function ConnectBrokerCard({
         </div>
 
         <div className="p-3.5 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-1.5 sm:space-y-2">
-          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-            <Lock className="h-4 w-4" />
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-white/[0.06] border border-white/10 flex items-center justify-center text-white">
+            <Lock className="h-4 w-4 text-zinc-300" />
           </div>
           <div className="text-sm font-semibold text-white font-sans">Bank-Grade Security</div>
           <p className="text-xs text-zinc-400 font-sans leading-normal">
@@ -225,7 +222,7 @@ export function ConnectBrokerCard({
       {/* Supported Brokers Logos / Pills - hidden on mobile to optimize layout */}
       <div className="hidden sm:block space-y-2.5 pb-6 border-b border-white/[0.08]">
         <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium flex items-center gap-1.5">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Supported Brokerages (20+ Integrations)
+          <ShieldCheck className="h-3.5 w-3.5 text-zinc-300" /> Supported Brokerages (20+ Integrations)
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {SUPPORTED_BROKERS.map((b) => (
@@ -233,7 +230,7 @@ export function ConnectBrokerCard({
               key={b.name}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-zinc-300"
             >
-              <CheckCircle2 className="h-3 w-3 text-emerald-400/80" />
+              <CheckCircle2 className="h-3 w-3 text-zinc-400" />
               {b.name}
             </span>
           ))}
@@ -248,7 +245,7 @@ export function ConnectBrokerCard({
             size="lg"
             onClick={() => connectMut.mutate({ origin: window.location.origin })}
             disabled={connectMut.isPending}
-            className="w-full sm:w-auto text-xs sm:text-sm font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.35)] px-5 sm:px-6 cursor-pointer"
+            className="w-full sm:w-auto text-xs sm:text-sm font-mono font-bold bg-white text-black hover:bg-zinc-200 uppercase tracking-wider px-5 sm:px-6 cursor-pointer"
           >
             <Link2 className="h-4 w-4 mr-2" />
             {connectMut.isPending ? "Opening Portal..." : "Connect Broker via SnapTrade"}
@@ -273,7 +270,7 @@ export function ConnectBrokerCard({
             disabled={importMut.isPending}
             className="w-full sm:w-auto text-xs sm:text-sm font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer"
           >
-            <Upload className="h-4 w-4 mr-2 text-cyan-400" />
+            <Upload className="h-4 w-4 mr-2 text-zinc-300" />
             {importMut.isPending ? "Importing..." : "Upload Statement CSV"}
           </Button>
 
@@ -284,7 +281,7 @@ export function ConnectBrokerCard({
               onClick={onOpenManual}
               className="w-full sm:w-auto text-xs sm:text-sm font-mono text-zinc-400 hover:text-white cursor-pointer"
             >
-              <Layers className="h-4 w-4 mr-2 text-amber-400" />
+              <Layers className="h-4 w-4 mr-2 text-zinc-400" />
               Manual Entry
             </Button>
           )}

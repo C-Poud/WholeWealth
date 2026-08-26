@@ -9,7 +9,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Briefcase,
-  Coins,
+  Compass,
   LayoutDashboard,
   Lightbulb,
   LogOut,
@@ -26,14 +26,14 @@ import { trpc } from "@/providers/trpc";
 import { AuthLayoutSkeleton } from "./AuthLayoutSkeleton";
 import { Button } from "./ui/button";
 import { Logo } from "./Logo";
+import { OnboardingTour, startAppTour } from "./OnboardingTour";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Briefcase, label: "Portfolio", path: "/portfolio" },
-  { icon: Coins, label: "Basis Improvement", path: "/basis" },
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
   { icon: Lightbulb, label: "Suggestions", path: "/suggestions" },
-  { icon: Rocket, label: "Career Optimiser", path: "/career" },
+  { icon: Rocket, label: "Career Optimizer", path: "/career" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
@@ -120,27 +120,19 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen app-dot-grid">
-        <div className="flex flex-col items-center gap-6 p-8 max-w-md w-full bg-[#111113] border border-white/10 rounded-xl shadow-[0_0_30px_rgba(212,255,0,0.08)]">
-          <Logo size={44} />
-          <h1 className="text-xl font-bold tracking-tight text-center text-white mt-2">
+      <div className="flex items-center justify-center min-h-screen app-pattern-bg">
+        <div className="flex flex-col items-center gap-5 p-8 max-w-md w-full bg-[#0f1014] border border-white/10 rounded-lg shadow-xl">
+          <Logo size={40} />
+          <h1 className="text-lg font-bold tracking-tight text-center text-white mt-1">
             Preparing your workspace…
           </h1>
           <p className="text-xs font-mono text-muted-foreground text-center max-w-sm">
-            The terminal is initializing market feeds. This takes a brief moment.
+            The terminal is initializing market feeds and security session.
           </p>
           <Button
             onClick={() => refresh()}
-<<<<<<< HEAD
-            size="lg"
-            className="w-full bg-primary text-black font-mono font-bold uppercase tracking-wider hover:bg-primary/90 shadow-[0_0_15px_rgba(212,255,0,0.2)]"
-=======
             size="default"
-            className="w-full bg-emerald-500 text-black font-mono font-semibold uppercase tracking-wider hover:bg-emerald-400"
-<<<<<<< HEAD
->>>>>>> parent of 04ecc8d (14)
-=======
->>>>>>> parent of 04ecc8d (14)
+            className="w-full bg-white text-black font-mono font-semibold uppercase tracking-wider hover:bg-zinc-200"
           >
             Retry now
           </Button>
@@ -156,73 +148,56 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   const isExpanded = isPinned || isHovered;
 
   return (
-    <div className="min-h-screen flex bg-[#0a0a0b] text-[#f0f0f2] antialiased overflow-x-hidden">
+    <div className="min-h-screen flex app-pattern-bg text-[#f1f2f4] antialiased overflow-x-hidden">
       {/* ── DESKTOP SIDEBAR (Hardware Accelerated, Smooth Transitions) ── */}
       {!isMobile && (
         <>
           {/* Static Spacer when pinned to push main content smoothly */}
           <div
-            className="hidden md:block shrink-0 transition-[width] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
-            style={{ width: isPinned ? "240px" : "68px" }}
+            className="hidden md:block shrink-0 transition-[width] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{ width: isPinned ? "230px" : "64px" }}
           />
 
           {/* Floating / Anchored Sidebar Container */}
           <aside
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className={`fixed inset-y-0 left-0 z-40 hidden md:flex flex-col bg-[#0e0e11] border-r border-white/[0.08] transition-[width,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] select-none ${
+            className={`fixed inset-y-0 left-0 z-40 hidden md:flex flex-col bg-[#0b0c0f] border-r border-white/[0.08] transition-[width] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] select-none ${
               isExpanded
-                ? "w-[240px] shadow-[12px_0_35px_-4px_rgba(0,0,0,0.7),0_0_25px_rgba(212,255,0,0.06)]"
-                : "w-[68px] shadow-[4px_0_20px_rgba(0,0,0,0.4)]"
+                ? "w-[230px] shadow-[4px_0_24px_rgba(0,0,0,0.6)]"
+                : "w-[64px]"
             }`}
           >
             {/* Header / Logo - Click to toggle sidebar pin */}
-            <div className="h-16 shrink-0 flex items-center px-2.5 border-b border-white/[0.06] overflow-hidden">
+            <div className="h-14 shrink-0 flex items-center px-2 border-b border-white/[0.06] overflow-hidden">
               <button
                 type="button"
                 onClick={() => setIsPinned(prev => !prev)}
-                className="flex items-center w-full h-11 px-1 rounded-lg hover:bg-white/[0.05] active:scale-[0.98] transition-all cursor-pointer group focus:outline-none focus-visible:ring-1 focus-visible:ring-primary text-left"
+                className="flex items-center w-full h-10 px-1 rounded-md hover:bg-white/[0.04] active:scale-[0.98] transition-all cursor-pointer group focus:outline-none text-left"
                 title={isPinned ? "Sidebar pinned. Click logo to unpin (Ctrl+B)" : "Click logo to pin sidebar open (Ctrl+B)"}
                 aria-label={isPinned ? "Unpin sidebar" : "Pin sidebar open"}
               >
-                <div className="w-[44px] h-full flex items-center justify-center shrink-0">
-                  <Logo size={34} showText={false} isPinned={isPinned} />
+                <div className="w-[42px] h-full flex items-center justify-center shrink-0">
+                  <Logo size={32} showText={false} isPinned={isPinned} />
                 </div>
 
                 {/* Sliding/Fading Text Label */}
                 <div
-                  className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ml-1 ${
+                  className={`overflow-hidden whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ml-1 ${
                     isExpanded
                       ? "opacity-100 translate-x-0 max-w-[160px] pointer-events-auto"
                       : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
                   }`}
                 >
-<<<<<<< HEAD
-                  <span className="font-display font-extrabold tracking-tight text-sm text-white uppercase tracking-wider">
-                    NetWorth<span className="text-primary font-mono">.io</span>
-                  </span>
-                  <span
-                    className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded transition-all ${
-                      isPinned
-                        ? "text-black bg-primary border border-primary font-black shadow-[0_0_10px_rgba(212,255,0,0.4)]"
-                        : "text-primary bg-primary/10 border border-primary/30 shadow-[0_0_8px_rgba(212,255,0,0.15)] group-hover:bg-primary/20"
-                    }`}
-                  >
-                    {isPinned ? "PINNED" : "PRO"}
-=======
                   <span className="font-semibold tracking-tight text-sm text-white">
-                    NetWorth<span className="text-emerald-400 font-medium">.io</span>
-<<<<<<< HEAD
->>>>>>> parent of 04ecc8d (14)
-=======
->>>>>>> parent of 04ecc8d (14)
+                    NetWorth<span className="text-zinc-400 font-medium">.io</span>
                   </span>
                 </div>
               </button>
             </div>
 
             {/* Navigation Menu Links */}
-            <nav className="flex-1 py-3 px-2 space-y-1.5 overflow-y-auto overflow-x-hidden scrollbar-none">
+            <nav className="flex-1 py-2.5 px-2 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-none">
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -230,40 +205,24 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     key={item.path}
                     type="button"
                     onClick={() => navigate(item.path)}
-                    className={`relative w-full h-11 rounded-lg flex items-center transition-all duration-150 group cursor-pointer ${
+                    className={`relative w-full h-10 rounded-md flex items-center transition-colors duration-100 group cursor-pointer ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-medium shadow-[inset_0_0_15px_rgba(212,255,0,0.06)] border border-primary/25"
-                        : "text-muted-foreground hover:text-white hover:bg-white/[0.04]"
+                        ? "bg-white/[0.08] text-white font-medium border border-white/10"
+                        : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
                     }`}
                     title={!isExpanded ? item.label : undefined}
                   >
                     {/* Active Accent Bar */}
                     {isActive && (
-<<<<<<< HEAD
-<<<<<<< HEAD
-                      <span className="absolute left-0 inset-y-2 w-1 rounded-r bg-primary shadow-[0_0_8px_#d4ff00]" />
-=======
-                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-emerald-400" />
->>>>>>> parent of 04ecc8d (14)
-=======
-                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-emerald-400" />
->>>>>>> parent of 04ecc8d (14)
+                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-white" />
                     )}
 
-                    {/* Fixed Icon Container (Anchored at exact same location always) */}
-                    <div className="w-[50px] h-full flex items-center justify-center shrink-0">
+                    {/* Fixed Icon Container */}
+                    <div className="w-[46px] h-full flex items-center justify-center shrink-0">
                       <item.icon
-                        className={`h-4 w-4 transition-transform duration-150 group-hover:scale-110 ${
+                        className={`h-4 w-4 transition-transform duration-100 ${
                           isActive
-<<<<<<< HEAD
-<<<<<<< HEAD
-                            ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.4)]"
-=======
-                            ? "text-emerald-400"
->>>>>>> parent of 04ecc8d (14)
-=======
-                            ? "text-emerald-400"
->>>>>>> parent of 04ecc8d (14)
+                            ? "text-white"
                             : "opacity-75 group-hover:opacity-100"
                         }`}
                       />
@@ -271,13 +230,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
                     {/* Sliding/Fading Text Label */}
                     <div
-                      className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center ${
+                      className={`overflow-hidden whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center ${
                         isExpanded
-                          ? "opacity-100 translate-x-0 max-w-[160px] pointer-events-auto"
+                          ? "opacity-100 translate-x-0 max-w-[150px] pointer-events-auto"
                           : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
                       }`}
                     >
-                      <span className="text-xs font-mono tracking-tight leading-none truncate">
+                      <span className="text-xs font-medium tracking-normal leading-none truncate">
                         {item.label}
                       </span>
                     </div>
@@ -287,20 +246,20 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </nav>
 
             {/* Footer / User Profile */}
-            <div className="shrink-0 p-2.5 border-t border-white/[0.06] bg-[#0c0c0e]/80">
+            <div className="shrink-0 p-2 border-t border-white/[0.06] bg-[#090a0d]">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="w-full h-12 rounded-lg flex items-center hover:bg-white/[0.06] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer px-1 group"
+                    className="w-full h-11 rounded-md flex items-center hover:bg-white/[0.06] transition-colors focus:outline-none cursor-pointer px-1 group"
                   >
                     {/* Fixed Avatar */}
-                    <div className="w-[46px] h-full flex items-center justify-center shrink-0">
-                      <Avatar className="h-8 w-8 border border-white/10 group-hover:border-primary/40 transition-colors">
+                    <div className="w-[42px] h-full flex items-center justify-center shrink-0">
+                      <Avatar className="h-7 w-7 border border-white/10 group-hover:border-white/20 transition-colors">
                         {user?.avatar ? (
                           <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
                         ) : null}
-                        <AvatarFallback className="text-xs font-mono font-bold bg-white/10 text-white group-hover:text-primary">
+                        <AvatarFallback className="text-[11px] font-medium bg-white/10 text-white group-hover:text-emerald-400">
                           {user?.name?.charAt(0).toUpperCase() || "N"}
                         </AvatarFallback>
                       </Avatar>
@@ -308,30 +267,37 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
                     {/* User Metadata */}
                     <div
-                      className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex-1 text-left ${
+                      className={`overflow-hidden whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] flex-1 text-left ${
                         isExpanded
-                          ? "opacity-100 translate-x-0 max-w-[150px] pointer-events-auto ml-1"
+                          ? "opacity-100 translate-x-0 max-w-[140px] pointer-events-auto ml-1"
                           : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
                       }`}
                     >
-                      <div className="text-[9px] font-mono text-muted-foreground/70 uppercase leading-none mb-0.5">
-                        Workspace
+                      <div className="text-[10px] text-zinc-400 leading-none mb-0.5">
+                        Account
                       </div>
-                      <div className="text-xs font-mono text-white/90 truncate leading-tight">
-                        {user?.email || user?.name || "trader@networth.io"}
+                      <div className="text-xs text-zinc-200 truncate leading-tight font-medium">
+                        {user?.name || user?.email || "Workspace User"}
                       </div>
                     </div>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="top" className="w-52 bg-[#111113] border-white/10 text-white shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                <DropdownMenuContent align="end" side="top" className="w-52 bg-[#0f1014] border-white/10 text-white shadow-xl">
                   <div className="px-2.5 py-2 border-b border-white/10 font-mono text-xs">
                     <div className="text-muted-foreground text-[10px] uppercase">Signed in as</div>
                     <div className="font-semibold text-white truncate">{user?.name || "Workspace User"}</div>
                     <div className="text-[11px] text-muted-foreground truncate">{user?.email}</div>
                   </div>
                   <DropdownMenuItem
+                    onClick={() => startAppTour()}
+                    className="cursor-pointer text-zinc-300 hover:text-white focus:text-white focus:bg-white/10 text-xs font-mono mt-1"
+                  >
+                    <Compass className="mr-2 h-3.5 w-3.5 text-emerald-400" />
+                    <span>Product Tour</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={logout}
-                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 text-xs font-mono mt-1"
+                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 text-xs font-mono mt-0.5"
                   >
                     <LogOut className="mr-2 h-3.5 w-3.5" />
                     <span>Sign out</span>
@@ -347,22 +313,31 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {isMobile && (
         <>
           {/* Top Mobile Bar */}
-          <header className="fixed top-0 inset-x-0 h-14 z-30 flex items-center justify-between px-3 bg-[#0c0c0e]/95 border-b border-white/[0.08] backdrop-blur">
-            <div className="flex items-center gap-3">
+          <header className="fixed top-0 inset-x-0 h-14 z-30 flex items-center justify-between px-3.5 bg-[#0c0c0e]/95 border-b border-white/[0.08] backdrop-blur-md">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="h-9 w-9 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10 flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(212,255,0,0.06)]"
-                aria-label="Open Navigation"
+                className="h-9 w-9 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10 active:bg-white/20 flex items-center justify-center cursor-pointer transition-colors"
+                aria-label="Open Navigation Drawer"
               >
                 <Menu className="h-4 w-4" />
               </button>
-              <Logo size={28} showText={true} />
+              <Logo size={26} showText={true} />
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-primary font-bold px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
-                {activeMenuItem?.label ?? "Dashboard"}
+              <button
+                type="button"
+                onClick={() => startAppTour()}
+                className="h-8 px-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono font-medium flex items-center gap-1 active:bg-emerald-500/20"
+                title="Open Product Tour"
+              >
+                <Compass className="h-3 w-3" />
+                <span>Tour</span>
+              </button>
+              <span className="text-[11px] font-mono text-zinc-300 font-medium px-2 py-1 rounded bg-white/5 border border-white/10 truncate max-w-[110px]">
+                {activeMenuItem?.label ?? "Terminal"}
               </span>
             </div>
           </header>
@@ -371,37 +346,35 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           {mobileOpen && (
             <div
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm transition-opacity"
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm transition-opacity"
             />
           )}
 
           {/* Slide-out Drawer */}
           <aside
-            className={`fixed inset-y-0 left-0 z-50 w-[270px] bg-[#0e0e11] border-r border-white/10 flex flex-col transition-transform duration-250 ease-out shadow-[10px_0_30px_rgba(0,0,0,0.9)] ${
+            className={`fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-[#0c0d10] border-r border-white/10 flex flex-col transition-transform duration-200 ease-out shadow-2xl ${
               mobileOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.08]">
-              <Logo size={32} showText={true} />
+            <div className="h-14 flex items-center justify-between px-4 border-b border-white/[0.08] bg-[#0a0b0e]">
+              <Logo size={28} showText={true} />
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="h-8 w-8 rounded-md hover:bg-white/10 text-muted-foreground hover:text-white flex items-center justify-center cursor-pointer"
+                className="h-9 w-9 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white flex items-center justify-center cursor-pointer"
+                aria-label="Close Drawer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-<<<<<<< HEAD
-            <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
-=======
             <div className="p-3 border-b border-white/[0.06] bg-[#0f1117]/50">
               <div className="flex items-center gap-2.5">
                 <Avatar className="h-8 w-8 border border-white/10">
                   {user?.avatar ? (
                     <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
                   ) : null}
-                  <AvatarFallback className="text-xs font-semibold bg-emerald-500/20 text-emerald-400">
+                  <AvatarFallback className="text-xs font-semibold bg-white/10 text-white">
                     {user?.name?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
@@ -414,7 +387,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
             <nav className="flex-1 py-3 px-3 space-y-1.5 overflow-y-auto">
               <div className="px-2 pb-1 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Navigation</div>
->>>>>>> parent of 04ecc8d (14)
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -425,36 +397,19 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       setMobileOpen(false);
                       navigate(item.path);
                     }}
-                    className={`w-full h-11 rounded-lg flex items-center px-3 gap-3 transition-colors cursor-pointer ${
+                    className={`w-full h-11 rounded-lg flex items-center px-3.5 gap-3 transition-all cursor-pointer ${
                       isActive
-<<<<<<< HEAD
-<<<<<<< HEAD
-                        ? "bg-primary/15 text-primary font-bold border border-primary/30 shadow-[0_0_12px_rgba(212,255,0,0.15)]"
-                        : "text-muted-foreground hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    <item.icon className="h-4 w-4 shrink-0" />
-=======
-=======
->>>>>>> parent of 04ecc8d (14)
-                        ? "bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                        ? "bg-white/10 text-white font-semibold border border-white/15"
                         : "text-zinc-300 hover:text-white hover:bg-white/5 active:bg-white/10"
                     }`}
                   >
-                    <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
-<<<<<<< HEAD
->>>>>>> parent of 04ecc8d (14)
-=======
->>>>>>> parent of 04ecc8d (14)
+                    <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : "text-zinc-400"}`} />
                     <span className="text-xs font-mono">{item.label}</span>
                   </button>
                 );
               })}
             </nav>
 
-<<<<<<< HEAD
-            <div className="p-3 border-t border-white/10">
-=======
             <div className="p-3 border-t border-white/10 space-y-2 bg-[#090a0d]">
               <button
                 type="button"
@@ -462,24 +417,21 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   setMobileOpen(false);
                   startAppTour();
                 }}
-                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-300 text-xs font-mono border border-emerald-500/25 cursor-pointer transition-colors"
+                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 active:bg-white/15 text-zinc-200 text-xs font-mono border border-white/10 cursor-pointer transition-colors"
               >
-                <Compass className="h-3.5 w-3.5 text-emerald-400" />
+                <Compass className="h-3.5 w-3.5 text-zinc-300" />
                 <span>Product Tour</span>
               </button>
->>>>>>> parent of 04ecc8d (14)
               <button
                 type="button"
                 onClick={logout}
-                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-mono border border-destructive/20 cursor-pointer"
+                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 active:bg-destructive/30 text-destructive text-xs font-mono border border-destructive/20 cursor-pointer transition-colors"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 <span>Sign out</span>
               </button>
             </div>
           </aside>
-<<<<<<< HEAD
-=======
 
           {/* Fixed Mobile Bottom Navigation Bar (< 768px) */}
           <nav
@@ -494,13 +446,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   type="button"
                   onClick={() => navigate(item.path)}
                   className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
-                    isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+                    isActive ? "text-white font-semibold" : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
                   {isActive && (
-                    <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+                    <span className="absolute top-0 inset-x-4 h-0.5 bg-white rounded-full" />
                   )}
-                  <item.icon className={`h-4 w-4 mb-1 transition-transform ${isActive ? "scale-110 text-emerald-400" : ""}`} />
+                  <item.icon className={`h-4 w-4 mb-1 transition-transform ${isActive ? "scale-110 text-white" : ""}`} />
                   <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
                     {item.label === "Risk Analysis" ? "Risk" : item.label === "Career Optimizer" ? "Career" : item.label}
                   </span>
@@ -511,28 +463,30 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => navigate("/settings")}
               className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
-                location.pathname === "/settings" ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+                location.pathname === "/settings" ? "text-white font-semibold" : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               {location.pathname === "/settings" && (
-                <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+                <span className="absolute top-0 inset-x-4 h-0.5 bg-white rounded-full" />
               )}
-              <Settings className={`h-4 w-4 mb-1 transition-transform ${location.pathname === "/settings" ? "scale-110 text-emerald-400" : ""}`} />
+              <Settings className={`h-4 w-4 mb-1 transition-transform ${location.pathname === "/settings" ? "scale-110 text-white" : ""}`} />
               <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
                 Settings
               </span>
             </button>
           </nav>
->>>>>>> parent of 04ecc8d (14)
         </>
       )}
 
       {/* ── MAIN VIEWPORT ── */}
-      <main className={`flex-1 min-w-0 transition-all ${isMobile ? "pt-14" : ""}`}>
+      <main className={`flex-1 min-w-0 transition-all ${isMobile ? "pt-14 pb-20" : ""}`}>
         <div key={location.pathname} className="page-fade">
           {children}
         </div>
       </main>
+
+      {/* ── INTERACTIVE ONBOARDING TOUR (Auto-opens on first sign in) ── */}
+      <OnboardingTour />
     </div>
   );
 }

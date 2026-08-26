@@ -1,11 +1,11 @@
-# Deploying WheelDesk on Railway
+# Deploying NetWorth.io on Railway
 
 ## 1. Create the project
 
 1. Railway dashboard → **New Project** → **Deploy from GitHub repo** → pick `dash`.
-2. In the service **Settings → Source**, set **Root Directory** to `app`
-   (the code lives in the `app/` subfolder of the repo).
-3. Railway detects the `Dockerfile` automatically (also pinned in `railway.json`).
+2. In the service **Settings → Source**, ensure **Root Directory** is empty (or `/`).
+3. Railway automatically builds and starts the application via **Nixpacks** using `npm run build` and `npm start` (or Dockerfile if selected in settings).
+
 
 ## 2. Add a MySQL database
 

@@ -18,15 +18,22 @@ import {
 } from "./queries/portfolio";
 import { parsePositionsFile } from "./import/parser";
 import { DEMO_POSITIONS } from "./snaptrade/demo";
+import { getBrokerFiguresForUser } from "./snaptrade/balances";
 
 export const portfolioRouter = createRouter({
-  /** Positions + accounts for the signed-in user. */
+  /** Positions + accounts + broker reported figures for the signed-in user. */
   overview: authedQuery.query(async ({ ctx }) => {
-    const [rows, accounts] = await Promise.all([
+    const [rows, accounts, brokerFigures] = await Promise.all([
       listPositions(ctx.user.id),
       listAccounts(ctx.user.id),
+      getBrokerFiguresForUser(ctx.user.id),
     ]);
-    return { positions: rows, accounts };
+    return { positions: rows, accounts, brokerFigures };
+  }),
+
+  /** Pull latest broker-reported figures (Total Value, Multi-currency cash and buying power) */
+  brokerFigures: authedQuery.query(async ({ ctx }) => {
+    return await getBrokerFiguresForUser(ctx.user.id);
   }),
 
   /** Search symbols with ticker autocomplete & recommendations */

@@ -73,11 +73,13 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    background-color: #0d0e12;
+    background-color: #0b0c10;
     color: #f3f4f6;
     overflow-x: hidden;
-    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.065) 1px, transparent 0);
-    background-size: 24px 24px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
     background-attachment: fixed;
   }
   ::selection {
@@ -90,34 +92,36 @@
 .app-pattern-bg,
 .app-dot-grid,
 .login-animated-bg {
-  background-color: #0d0e12;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.065) 1px, transparent 0);
-  background-size: 24px 24px;
+  background-color: #0b0c10;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
   background-attachment: fixed;
 }
 
 /* Institutional Cards */
 .stat-card {
-  background-color: #13151b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  background-color: #111318;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
   padding: 1.25rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .stat-card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .panel-card, .panel-box {
-  background-color: #13151b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  background-color: #111318;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
   transition: border-color 0.15s ease;
 }
 .panel-card:hover, .panel-box:hover {
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .glow-yellow {

@@ -11,8 +11,8 @@ export function ScoreBar({
 }) {
   const pct = Math.max(0, Math.min(100, (score / 10) * 100));
   const gradient = invert
-    ? "linear-gradient(90deg,#22c55e,#eab308,#f97316,#ef4444)"
-    : "linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e)";
+    ? "linear-gradient(90deg,#38bdf8,#38bdf8,#eab308,#f97316,#ef4444)"
+    : "linear-gradient(90deg,#ef4444,#f97316,#eab308,#38bdf8,#38bdf8)";
   return (
     <div>
       <div className="relative h-2.5 rounded-full" style={{ background: gradient }}>

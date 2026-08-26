@@ -1,12 +1,5 @@
 import { bsCallDelta, bsCallPrice } from "../analytics/blackScholes";
 
-/**
- * Deterministic synthetic market data used when no live market-data source
- * is configured (SnapTrade credentials absent) or when explicitly requested
- * via "Load demo portfolio". Everything is derived from a seeded PRNG so a
- * symbol always returns the same prices within a session.
- */
-
 export interface DemoChainContract {
   strike: number;
   expiry: string; // YYYY-MM-DD
@@ -40,11 +33,13 @@ function mulberry32(seed: number) {
 }
 
 /** Well-known tickers get realistic-ish anchors; everything else is derived. */
-const ANCHORS: Record<string, number> = {
+export const ANCHORS: Record<string, number> = {
   AAPL: 232, MSFT: 505, NVDA: 178, AMZN: 228, GOOGL: 196, META: 740,
   TSLA: 340, NFLX: 1210, AMD: 162, PLTR: 156, SPY: 645, QQQ: 575,
   AVGO: 290, COST: 940, JPM: 295,
 };
+
+export const DEMO_SPOTS: Record<string, number> = ANCHORS;
 
 export function demoSpot(symbol: string): number {
   const sym = symbol.toUpperCase();

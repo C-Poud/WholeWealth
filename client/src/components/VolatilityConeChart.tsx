@@ -88,19 +88,19 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
     <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2 text-xs font-mono">
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 text-emerald-400">
-            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/40 border border-emerald-400 inline-block" />
+          <span className="flex items-center gap-1.5 text-sky-400">
+            <span className="w-2.5 h-2.5 rounded-sm bg-sky-500/30 border border-sky-400 inline-block" />
             68.2% Probability ($1\sigma$)
           </span>
-          <span className="flex items-center gap-1.5 text-cyan-400">
-            <span className="w-2.5 h-2.5 rounded-sm bg-cyan-500/20 border border-cyan-400/50 inline-block" />
+          <span className="flex items-center gap-1.5 text-indigo-400">
+            <span className="w-2.5 h-2.5 rounded-sm bg-indigo-500/20 border border-indigo-400/50 inline-block" />
             95.4% Probability ($2\sigma$)
           </span>
         </div>
         <div className="text-zinc-400">
           Target: <strong className="text-white">{currentHoverPt.day} DTE</strong> · Spot:{" "}
           <strong className="text-white">{fmtMoney(spot)}</strong> · 1σ Range:{" "}
-          <strong className="text-emerald-400">
+          <strong className="text-sky-400">
             {fmtMoney(currentHoverPt.lower1)} – {fmtMoney(currentHoverPt.upper1)}
           </strong>
         </div>
@@ -140,12 +140,12 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
         >
           <defs>
             <linearGradient id="coneGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(6, 182, 212, 0.05)" />
-              <stop offset="100%" stopColor="rgba(6, 182, 212, 0.20)" />
+              <stop offset="0%" stopColor="rgba(99, 102, 241, 0.05)" />
+              <stop offset="100%" stopColor="rgba(99, 102, 241, 0.18)" />
             </linearGradient>
             <linearGradient id="coneGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(16, 185, 129, 0.15)" />
-              <stop offset="100%" stopColor="rgba(16, 185, 129, 0.35)" />
+              <stop offset="0%" stopColor="rgba(56, 189, 248, 0.12)" />
+              <stop offset="100%" stopColor="rgba(56, 189, 248, 0.28)" />
             </linearGradient>
           </defs>
 
@@ -203,10 +203,10 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
           })}
 
           {/* 95% Envelope Area */}
-          <path d={area2Path} fill="url(#coneGrad2)" stroke="rgba(6, 182, 212, 0.4)" strokeWidth="1" />
+          <path d={area2Path} fill="url(#coneGrad2)" stroke="rgba(99, 102, 241, 0.4)" strokeWidth="1" />
 
           {/* 68% Envelope Area */}
-          <path d={area1Path} fill="url(#coneGrad1)" stroke="rgba(16, 185, 129, 0.7)" strokeWidth="1.5" />
+          <path d={area1Path} fill="url(#coneGrad1)" stroke="rgba(56, 189, 248, 0.7)" strokeWidth="1.5" />
 
           {/* Center Spot Line */}
           <line
@@ -227,7 +227,7 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
                 y1={padding.top}
                 x2={xScale(currentHoverPt.day)}
                 y2={height - padding.bottom}
-                stroke="#10b981"
+                stroke="#38bdf8"
                 strokeWidth="1.5"
                 strokeDasharray="2 2"
               />
@@ -235,13 +235,13 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
                 cx={xScale(currentHoverPt.day)}
                 y={yScale(currentHoverPt.upper2)}
                 r="3"
-                fill="#06b6d4"
+                fill="#818cf8"
               />
               <circle
                 cx={xScale(currentHoverPt.day)}
                 y={yScale(currentHoverPt.upper1)}
                 r="3.5"
-                fill="#10b981"
+                fill="#38bdf8"
               />
               <circle
                 cx={xScale(currentHoverPt.day)}
@@ -253,13 +253,13 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
                 cx={xScale(currentHoverPt.day)}
                 y={yScale(currentHoverPt.lower1)}
                 r="3.5"
-                fill="#10b981"
+                fill="#38bdf8"
               />
               <circle
                 cx={xScale(currentHoverPt.day)}
                 y={yScale(currentHoverPt.lower2)}
                 r="3"
-                fill="#06b6d4"
+                fill="#818cf8"
               />
             </g>
           )}

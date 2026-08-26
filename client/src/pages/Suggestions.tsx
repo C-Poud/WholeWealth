@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fmtMoney } from "@/lib/format";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import { toast } from "sonner";
 import {
   ArrowDownRight,
@@ -513,21 +514,26 @@ export default function Suggestions() {
                         {data.singleAssetHedges.map((sh) => (
                           <tr key={sh.symbol} className="hover:bg-white/[0.02]">
                             <td className="py-3 font-bold text-white">
-                              {sh.symbol}
-                              <div className="text-[10px] text-zinc-500 font-normal">β {sh.beta.toFixed(2)} · {fmtMoney(sh.price)}</div>
+                              <div className="flex items-center gap-2.5">
+                                <CompanyLogo symbol={sh.symbol} size="xs" />
+                                <div>
+                                  <div>{sh.symbol}</div>
+                                  <div className="text-[10px] text-zinc-500 font-normal">β {sh.beta.toFixed(2)} · {fmtMoney(sh.price)}</div>
+                                </div>
+                              </div>
                             </td>
                             <td className="py-3 text-right text-zinc-300">
                               {sh.quantity} shs
                               <div className="text-[10px] text-zinc-500">{fmtMoney(sh.dollarDelta)}</div>
                             </td>
-                            <td className="py-3 text-right font-bold text-emerald-400">
+                            <td className="py-3 text-right font-bold text-sky-400">
                               +{sh.rawDelta} Δ
                             </td>
                             <td className="py-3 pl-4">
                               <div className="space-y-0.5">
                                 <div className="text-white font-medium">{sh.callHedge.action}</div>
                                 <div className="text-[10px] text-zinc-400">
-                                  Yield: <span className="text-emerald-400">+{fmtMoney(sh.callHedge.premium)}</span> · Res. Δ: <span className="text-zinc-300">+{sh.callHedge.postDelta}</span>
+                                  Yield: <span className="text-sky-400">+{fmtMoney(sh.callHedge.premium)}</span> · Res. Δ: <span className="text-zinc-300">+{sh.callHedge.postDelta}</span>
                                 </div>
                               </div>
                             </td>
@@ -578,7 +584,12 @@ export default function Suggestions() {
                       key={`${b.symbol}-${b.assetType}`}
                       className="hover:bg-white/[0.02] transition-colors"
                     >
-                      <td className="py-2.5 text-white font-bold">{b.symbol}</td>
+                      <td className="py-2.5 text-white font-bold">
+                        <div className="flex items-center gap-2">
+                          <CompanyLogo symbol={b.symbol} size="xs" />
+                          <span>{b.symbol}</span>
+                        </div>
+                      </td>
                       <td className="py-2.5 text-zinc-400 capitalize font-sans hidden sm:table-cell">
                         {b.assetType}
                       </td>

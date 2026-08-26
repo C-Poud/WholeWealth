@@ -22,15 +22,17 @@ export async function getSnaptradeConfig(): Promise<SnaptradeConfig | null> {
 
   try {
     const db = getDb();
-    const rows = await db
-      .select()
-      .from(appSettings)
-      .where(eq(appSettings.key, "snaptrade"));
-    const stored = rows[0]?.value
-      ? (JSON.parse(rows[0].value) as Partial<SnaptradeConfig>)
-      : {};
-    clientId = stored.clientId?.trim() || clientId;
-    consumerKey = stored.consumerKey?.trim() || consumerKey;
+    if (db) {
+      const rows = await db
+        .select()
+        .from(appSettings)
+        .where(eq(appSettings.key, "snaptrade"));
+      const stored = rows[0]?.value
+        ? (JSON.parse(rows[0].value) as Partial<SnaptradeConfig>)
+        : {};
+      clientId = stored.clientId?.trim() || clientId;
+      consumerKey = stored.consumerKey?.trim() || consumerKey;
+    }
   } catch {
     // Settings table may not exist yet on first boot — fall back to env.
   }
@@ -215,6 +217,26 @@ export async function listAccounts(
 ) {
   return snaptradeRequest<SnaptradeAccount[]>(config, {
     path: "/accounts",
+    query: { userId, userSecret },
+  });
+}
+
+export interface SnaptradeBalanceResponse {
+  total?: { amount?: number | null; currency?: string | null } | number | null;
+  cash?: number | null | Array<{ amount?: number | null; currency?: string | null }>;
+  buying_power?: number | null | Array<{ amount?: number | null; currency?: string | null }>;
+  currency?: { code?: string; name?: string } | string;
+  amount?: number | null;
+}
+
+export async function getAccountBalances(
+  config: SnaptradeConfig,
+  accountId: string,
+  userId: string,
+  userSecret: string,
+) {
+  return snaptradeRequest<SnaptradeBalanceResponse | SnaptradeBalanceResponse[]>(config, {
+    path: `/accounts/${accountId}/balances`,
     query: { userId, userSecret },
   });
 }

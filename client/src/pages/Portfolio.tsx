@@ -27,8 +27,9 @@ import {
   Compass,
 } from "lucide-react";
 import { startAppTour } from "@/components/OnboardingTour";
-import { ConnectBrokerCard } from "@/components/ConnectBrokerCard";
 import { AddPositionModal } from "@/components/AddPositionModal";
+import { CompanyLogo } from "@/components/CompanyLogo";
+import { BrokerFiguresCards } from "@/components/BrokerFiguresCards";
 
 export default function Portfolio() {
   const utils = trpc.useUtils();
@@ -261,16 +262,13 @@ export default function Portfolio() {
         </div>
       </header>
 
-      {/* Broker Connection Recommendation */}
-      <ConnectBrokerCard
-        variant={positions.length === 0 ? "card" : "compact"}
-        onOpenManual={() => setManualOpen(true)}
-      />
+      {/* Broker Reported Balances (Total Account Value, Multi-Currency Cash, Buying Power & Inline Broker Integration in Same Row) */}
+      <BrokerFiguresCards showSyncButton={accounts.length > 0} />
 
       {/* Summary KPI section */}
       {positions.length > 0 && (
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
-          <div className="stat-card p-3.5 sm:p-5">
+        <section className="rounded-lg border border-white/[0.08] bg-[#111318] grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] overflow-hidden">
+          <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
             <div className="text-[11px] sm:text-xs text-zinc-400">Capital at Work</div>
             <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
               {fmtMoney(metrics.capitalAtWork)}
@@ -280,17 +278,7 @@ export default function Portfolio() {
             </div>
           </div>
 
-          <div className="stat-card p-3.5 sm:p-5">
-            <div className="text-[11px] sm:text-xs text-zinc-400">Buying Power</div>
-            <div className="stat-value text-emerald-400 text-xl sm:text-2xl mt-1 font-bold font-mono">
-              {fmtMoney(metrics.availableBuyingPower)}
-            </div>
-            <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
-              {fmtMoney(metrics.cash)} available
-            </div>
-          </div>
-
-          <div className="stat-card p-3.5 sm:p-5">
+          <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
             <div className="text-[11px] sm:text-xs text-zinc-400">Option Coverage</div>
             <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
               {metrics.coveragePct.toFixed(0)}%
@@ -375,9 +363,14 @@ export default function Portfolio() {
                   return (
                     <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="py-2.5 sm:py-3 font-mono font-bold text-white">
-                        {p.assetType === "option"
-                          ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${p.optionType === "put" ? "P" : "C"}`
-                          : p.symbol}
+                        <div className="flex items-center gap-2.5">
+                          <CompanyLogo symbol={p.symbol} size="sm" />
+                          <span>
+                            {p.assetType === "option"
+                              ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${p.optionType === "put" ? "P" : "C"}`
+                              : p.symbol}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-2.5 sm:py-3 capitalize text-muted-foreground text-xs font-sans hidden sm:table-cell">
                         {p.assetType}

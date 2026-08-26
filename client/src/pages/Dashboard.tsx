@@ -20,7 +20,8 @@ import {
   Flame,
 } from "lucide-react";
 import { startAppTour } from "@/components/OnboardingTour";
-import { ConnectBrokerCard } from "@/components/ConnectBrokerCard";
+import { CompanyLogo } from "@/components/CompanyLogo";
+import { BrokerFiguresCards } from "@/components/BrokerFiguresCards";
 import {
   Dialog,
   DialogContent,
@@ -310,33 +311,13 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Broker Connection Recommendation */}
-      <ConnectBrokerCard variant={positions.length === 0 ? "card" : "compact"} />
+      {/* Broker Reported Balances & Quick Integration Bar (Unified in Same Row) */}
+      <BrokerFiguresCards showSyncButton={true} />
 
-      {/* Stats Grid */}
-      <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-4">
-        <div className="stat-card col-span-2 sm:col-span-1 p-3.5 sm:p-5">
-          <div className="text-[11px] sm:text-xs text-zinc-400">Portfolio Value</div>
-          <div className="text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
-            {fmtMoney(stats.equityValue + stats.cash)}
-          </div>
-          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
-            {fmtMoney(stats.equityValue)} equity · {fmtMoney(stats.cash)} cash
-          </div>
-        </div>
-
-        <div className="stat-card p-3.5 sm:p-5">
-          <div className="text-[11px] sm:text-xs text-zinc-400">Available Cash</div>
-          <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono truncate">
-            {fmtMoney(stats.availableBuyingPower)}
-          </div>
-          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono truncate">
-            {fmtMoney(stats.cash)} buying power
-          </div>
-        </div>
-
+      {/* Metrics Section: Beta Delta, Positions, Unrealized P&L in a unified segmented panel */}
+      <section className="rounded-lg border border-white/[0.08] bg-[#111318] grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] overflow-hidden">
         {/* SPX Beta Delta */}
-        <div className="stat-card p-3.5 sm:p-5">
+        <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="text-[11px] sm:text-xs text-zinc-400 flex items-center justify-between">
             <span>Portfolio Beta Δ</span>
             <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono">β {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}</span>
@@ -373,7 +354,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="stat-card p-3.5 sm:p-5">
+        {/* Positions Count */}
+        <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="text-[11px] sm:text-xs text-zinc-400">Positions</div>
           <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono">
             {stats.count}
@@ -383,7 +365,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="stat-card p-3.5 sm:p-5">
+        {/* Unrealized P&L */}
+        <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="text-[11px] sm:text-xs text-zinc-400">Unrealized P&L</div>
           <div
             className={`text-lg sm:text-2xl mt-1 font-bold font-mono truncate ${
@@ -484,7 +467,10 @@ export default function Dashboard() {
                           return (
                             <tr key={p.id} className="hover:bg-white/[0.03] transition-colors">
                               <td className="py-2.5 font-bold text-white">
-                                {label}
+                                <div className="flex items-center gap-2">
+                                  <CompanyLogo symbol={p.symbol} size="xs" />
+                                  <span>{label}</span>
+                                </div>
                               </td>
                               <td className="py-2.5 capitalize text-muted-foreground font-sans text-[11px]">
                                 {p.assetType}
@@ -916,19 +902,16 @@ export default function Dashboard() {
 
                       const pos52 = item.fiftyTwoWeekPos ?? 50;
                       const ytd = item.ytdChangePct;
-                      const tColor = getTickerColor(item.symbol);
 
                       return (
                         <tr
                           key={item.id}
                           className="hover:bg-white/[0.04] transition-colors group"
                         >
-                          {/* Ticker Symbol & Name with Colored Avatar */}
+                          {/* Ticker Symbol & Name with Company Logo */}
                           <td className="py-3">
                             <div className="flex items-center gap-2.5">
-                              <div className={`h-8 w-8 rounded-lg ${tColor.bg} ${tColor.border} border flex items-center justify-center font-bold text-xs ${tColor.text} shadow-sm shrink-0`}>
-                                {item.symbol.slice(0, 3)}
-                              </div>
+                              <CompanyLogo symbol={item.symbol} name={item.name} size="md" />
                               <div className="min-w-0">
                                 <div className="font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
                                   {item.symbol}

@@ -13,6 +13,7 @@ import { ScoreBar } from "@/components/Gauges";
 import { fmtMoney, fmtPct } from "@/lib/format";
 import { VolatilityConeChart } from "@/components/VolatilityConeChart";
 import { VolatilityBoxCalculator } from "@/components/VolatilityBoxCalculator";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   ShieldAlert,
   Activity,
@@ -31,6 +32,13 @@ function scoreLabel(s: number): string {
   if (s < 6) return `${s.toFixed(1)} Moderate`;
   if (s < 8) return `${s.toFixed(1)} Elevated`;
   return `${s.toFixed(1)} High`;
+}
+
+function scoreTextColor(s: number): string {
+  if (s < 4) return "text-zinc-300";
+  if (s < 6) return "text-sky-400";
+  if (s < 8) return "text-amber-400";
+  return "text-rose-400";
 }
 
 export default function Risk() {
@@ -101,7 +109,7 @@ export default function Risk() {
             <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight font-display">
               Risk & Volatility Analysis
             </h1>
-            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-500/10 border border-sky-500/30 text-sky-400">
               <Zap className="h-3 w-3" /> VolatilityBox Model
             </span>
           </div>
@@ -144,23 +152,23 @@ export default function Risk() {
           <TabsList className="bg-[#121419] border border-white/10 p-1 inline-flex w-auto min-w-full sm:min-w-0">
             <TabsTrigger
               value="portfolio"
-              className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400 whitespace-nowrap"
+              className="text-xs font-mono data-[state=active]:bg-white/10 data-[state=active]:text-white whitespace-nowrap"
             >
-              <Activity className="h-3.5 w-3.5 mr-1.5" />
+              <Activity className="h-3.5 w-3.5 mr-1.5 text-sky-400" />
               Portfolio Risk ({reports.length})
             </TabsTrigger>
             <TabsTrigger
               value="simulator"
-              className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400 whitespace-nowrap"
+              className="text-xs font-mono data-[state=active]:bg-white/10 data-[state=active]:text-white whitespace-nowrap"
             >
-              <Calculator className="h-3.5 w-3.5 mr-1.5" />
+              <Calculator className="h-3.5 w-3.5 mr-1.5 text-sky-400" />
               Volatility Box Simulator
             </TabsTrigger>
             <TabsTrigger
               value="methodology"
-              className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400 whitespace-nowrap"
+              className="text-xs font-mono data-[state=active]:bg-white/10 data-[state=active]:text-white whitespace-nowrap"
             >
-              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+              <BookOpen className="h-3.5 w-3.5 mr-1.5 text-sky-400" />
               Expected Move Methodology
             </TabsTrigger>
           </TabsList>
@@ -183,7 +191,7 @@ export default function Risk() {
 
               <div className="panel-box p-3.5 sm:p-4 space-y-1">
                 <div className="meta-label text-[10px]">Avg Portfolio IV (30D)</div>
-                <div className="font-mono text-lg sm:text-2xl font-bold text-emerald-400 truncate">
+                <div className="font-mono text-lg sm:text-2xl font-bold text-sky-400 truncate">
                   {portfolioVaR.avgIv != null ? `${(portfolioVaR.avgIv * 100).toFixed(1)}%` : "—"}
                 </div>
                 <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400">
@@ -253,7 +261,7 @@ export default function Risk() {
                     </span>
                     <span>
                       Weight:{" "}
-                      <strong className="text-emerald-400">{fmtPct(current.portfolioWeight, 1)}</strong>
+                      <strong className="text-white">{fmtPct(current.portfolioWeight, 1)}</strong>
                     </span>
                   </div>
                 )}
@@ -263,13 +271,17 @@ export default function Risk() {
                 <div className="panel-box p-6 sm:p-7 space-y-6">
                   {/* Position Header */}
                   <div className="flex items-center justify-between flex-wrap gap-2 border-b border-white/10 pb-4">
-                    <div className="font-display font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-emerald-400" />
-                      {current.symbol} {current.description ? `· ${current.description}` : ""}
+                    <div className="font-display font-bold text-lg text-white uppercase tracking-tight flex items-center gap-2.5">
+                      <CompanyLogo symbol={current.symbol} size="sm" />
+                      <Activity className="h-4 w-4 text-sky-400" />
+                      <span>{current.symbol}</span>
+                      {current.description && (
+                        <span className="text-zinc-400 text-sm font-normal">· {current.description}</span>
+                      )}
                     </div>
                     <div className="text-xs font-mono text-muted-foreground">
                       Composite Risk Score:{" "}
-                      <span className="text-emerald-400 font-bold">{scoreLabel(current.riskScore)}</span>
+                      <span className={`font-bold ${scoreTextColor(current.riskScore)}`}>{scoreLabel(current.riskScore)}</span>
                     </div>
                   </div>
 
@@ -287,7 +299,7 @@ export default function Risk() {
                         <div className="text-lg font-bold font-mono text-white">
                           ±${current.horizons.daily1D?.dollar.toFixed(2) ?? "—"}
                         </div>
-                        <div className="text-[11px] font-mono text-emerald-400">
+                        <div className="text-[11px] font-mono text-zinc-400">
                           ±{((current.horizons.daily1D?.pct ?? 0) * 100).toFixed(2)}% (1D)
                         </div>
                       </div>
@@ -297,19 +309,19 @@ export default function Risk() {
                         <div className="text-lg font-bold font-mono text-white">
                           ±${current.horizons.weekly1W?.dollar.toFixed(2) ?? "—"}
                         </div>
-                        <div className="text-[11px] font-mono text-emerald-400">
+                        <div className="text-[11px] font-mono text-zinc-400">
                           ±{((current.horizons.weekly1W?.pct ?? 0) * 100).toFixed(2)}% (7D)
                         </div>
                       </div>
 
-                      <div className="p-3.5 rounded bg-emerald-500/10 border border-emerald-500/30 space-y-1">
-                        <div className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
+                      <div className="p-3.5 rounded bg-sky-500/10 border border-sky-500/30 space-y-1">
+                        <div className="text-[10px] font-mono font-bold text-sky-400 uppercase tracking-wider">
                           {current.dte}-Day Move (1σ)
                         </div>
                         <div className="text-lg font-bold font-mono text-white">
                           ±${current.expectedMove1Sigma?.toFixed(2) ?? "—"}
                         </div>
-                        <div className="text-[11px] font-mono text-emerald-300">
+                        <div className="text-[11px] font-mono text-sky-300">
                           ±{(((current.expectedMove1Sigma ?? 0) / current.spot) * 100).toFixed(2)}% (68.2% Conf)
                         </div>
                       </div>
@@ -319,7 +331,7 @@ export default function Risk() {
                         <div className="text-lg font-bold font-mono text-white">
                           ±${current.horizons.monthly30D?.dollar.toFixed(2) ?? "—"}
                         </div>
-                        <div className="text-[11px] font-mono text-emerald-400">
+                        <div className="text-[11px] font-mono text-zinc-400">
                           ±{((current.horizons.monthly30D?.pct ?? 0) * 100).toFixed(2)}% (30D)
                         </div>
                       </div>
@@ -331,7 +343,7 @@ export default function Risk() {
                     <div className="p-4 rounded-lg bg-black/40 border border-white/10 space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-bold font-mono text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <TrendingUp className="h-4 w-4 text-emerald-400" />
+                          <TrendingUp className="h-4 w-4 text-sky-400" />
                           Probability Cone & Expected Move Envelopes ({current.symbol})
                         </h3>
                         <span className="text-xs font-mono text-zinc-400">
@@ -353,7 +365,7 @@ export default function Risk() {
                     <div className="lg:col-span-2 space-y-3 p-4 rounded-lg bg-black/40 border border-white/10">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                         <div className="font-mono font-bold text-xs uppercase tracking-wider text-white flex items-center gap-2">
-                          <Shield className="h-3.5 w-3.5 text-emerald-400" />
+                          <Shield className="h-3.5 w-3.5 text-sky-400" />
                           Volatility Box Price Levels ({current.dte} DTE)
                         </div>
                         <span className="text-[11px] font-mono text-zinc-400">
@@ -392,14 +404,14 @@ export default function Risk() {
                           </div>
 
                           {/* +1σ Expected Move Upper */}
-                          <div className="flex items-center justify-between p-2 rounded bg-emerald-500/5 border border-emerald-500/20 text-emerald-300">
+                          <div className="flex items-center justify-between p-2 rounded bg-sky-500/5 border border-sky-500/20 text-sky-300">
                             <span className="font-bold flex items-center gap-1.5">
-                              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />
+                              <ArrowUpRight className="h-3.5 w-3.5 text-sky-400" />
                               R1 (+1σ Expected Move Upper · 68.2%)
                             </span>
                             <div className="text-right">
                               <span className="font-bold text-white">{fmtMoney(current.boxLevels.r1)}</span>
-                              <span className="text-[10px] text-emerald-400 ml-2">
+                              <span className="text-[10px] text-sky-400 ml-2">
                                 +{(((current.boxLevels.r1 - current.spot) / current.spot) * 100).toFixed(1)}%
                               </span>
                             </div>
@@ -411,18 +423,18 @@ export default function Risk() {
                               <span className="w-2 h-2 rounded-full bg-white inline-block" />
                               Spot Reference Price
                             </span>
-                            <span className="text-base text-emerald-400">{fmtMoney(current.spot)}</span>
+                            <span className="text-base text-white">{fmtMoney(current.spot)}</span>
                           </div>
 
                           {/* -1σ Expected Move Lower */}
-                          <div className="flex items-center justify-between p-2 rounded bg-emerald-500/5 border border-emerald-500/20 text-emerald-300">
+                          <div className="flex items-center justify-between p-2 rounded bg-sky-500/5 border border-sky-500/20 text-sky-300">
                             <span className="font-bold flex items-center gap-1.5">
-                              <ArrowDownRight className="h-3.5 w-3.5 text-emerald-400" />
+                              <ArrowDownRight className="h-3.5 w-3.5 text-sky-400" />
                               S1 (−1σ Expected Move Lower · 68.2%)
                             </span>
                             <div className="text-right">
                               <span className="font-bold text-white">{fmtMoney(current.boxLevels.s1)}</span>
-                              <span className="text-[10px] text-emerald-400 ml-2">
+                              <span className="text-[10px] text-sky-400 ml-2">
                                 −{(((current.spot - current.boxLevels.s1) / current.spot) * 100).toFixed(1)}%
                               </span>
                             </div>
@@ -554,15 +566,18 @@ export default function Risk() {
                   <button
                     key={r.symbol}
                     onClick={() => handleSelectSymbol(r.symbol)}
-                    className={`panel-box p-4 text-left transition-all hover:border-emerald-500/50 cursor-pointer ${
+                    className={`panel-box p-4 text-left transition-all hover:border-sky-500/40 cursor-pointer ${
                       current?.symbol === r.symbol
-                        ? "border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                        ? "border-sky-500/80 bg-white/[0.03] shadow-[0_0_15px_rgba(56,189,248,0.12)]"
                         : ""
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-base text-white">{r.symbol}</span>
-                      <span className="font-mono text-xs font-bold text-emerald-400">
+                      <div className="flex items-center gap-2">
+                        <CompanyLogo symbol={r.symbol} size="xs" />
+                        <span className="font-mono font-bold text-base text-white">{r.symbol}</span>
+                      </div>
+                      <span className={`font-mono text-xs font-bold ${scoreTextColor(r.riskScore)}`}>
                         {scoreLabel(r.riskScore)}
                       </span>
                     </div>
@@ -589,7 +604,7 @@ export default function Risk() {
         <TabsContent value="methodology" className="space-y-6">
           <div className="panel-box p-6 sm:p-8 space-y-6 max-w-4xl">
             <div className="flex items-center gap-2 border-b border-white/10 pb-4">
-              <BookOpen className="h-5 w-5 text-emerald-400" />
+              <BookOpen className="h-5 w-5 text-sky-400" />
               <h2 className="text-xl font-bold font-display text-white">
                 VolatilityBox Options Expected Move Research
               </h2>
@@ -601,7 +616,7 @@ export default function Risk() {
               </p>
 
               <div className="p-4 rounded-lg bg-black/40 border border-white/10 space-y-3 font-mono text-xs">
-                <div className="text-emerald-400 font-bold text-sm">
+                <div className="text-sky-400 font-bold text-sm">
                   1. The Standard Implied Volatility Model
                 </div>
                 <div className="p-2.5 rounded bg-white/[0.03] text-white text-sm font-bold">
@@ -631,7 +646,7 @@ export default function Risk() {
                 <ul className="space-y-1.5 text-zinc-300 font-sans">
                   <li>• <strong className="font-mono text-rose-300">R3 / S3 (±3σ)</strong>: 99.7% Extreme Outlier Boundary (Black Swan / High Margin of Safety)</li>
                   <li>• <strong className="font-mono text-amber-300">R2 / S2 (±2σ)</strong>: 95.4% Volatility Resistance & Support (Ideal for credit spread wings)</li>
-                  <li>• <strong className="font-mono text-emerald-300">R1 / S1 (±1σ)</strong>: 68.2% Standard Expected Range (Covered call & cash-secured put target)</li>
+                  <li>• <strong className="font-mono text-sky-300">R1 / S1 (±1σ)</strong>: 68.2% Standard Expected Range (Covered call & cash-secured put target)</li>
                 </ul>
               </div>
             </div>

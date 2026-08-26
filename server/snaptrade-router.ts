@@ -21,6 +21,7 @@ import {
   SnaptradeError,
 } from "./snaptrade/client";
 import { getAudToUsdRate } from "./analytics/yahoo";
+import { getBrokerFiguresForUser } from "./snaptrade/balances";
 import crypto from "node:crypto";
 
 export function isAussieBroker(
@@ -309,6 +310,11 @@ export const snaptradeRouter = createRouter({
       await deleteAccount(ctx.user.id, input.accountId);
       return { ok: true };
     }),
+
+  /** Pull broker-reported figures: Total Account Value, Multi-Currency Cash & Buying Power */
+  brokerFigures: authedQuery.query(async ({ ctx }) => {
+    return await getBrokerFiguresForUser(ctx.user.id);
+  }),
 
   /** Remove the SnapTrade identity and all synced data. */
   disconnect: authedQuery.mutation(async ({ ctx }) => {

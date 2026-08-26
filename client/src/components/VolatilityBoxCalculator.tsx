@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { fmtMoney } from "@/lib/format";
 import { VolatilityConeChart } from "./VolatilityConeChart";
+import { CompanyLogo } from "./CompanyLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -62,12 +63,11 @@ export function VolatilityBoxCalculator({
       {/* Header & Search */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-              <Zap className="h-4 w-4" />
-            </span>
-            <h2 className="text-lg sm:text-xl font-bold font-display text-white">
-              Volatility Box & Expected Move Simulator
+          <div className="flex items-center gap-2.5">
+            <CompanyLogo symbol={activeSymbol} size="sm" />
+            <h2 className="text-lg sm:text-xl font-bold font-display text-white flex items-center gap-2">
+              <span>{activeSymbol}</span>
+              <span className="text-zinc-400 text-sm font-normal">· Volatility Box & Expected Move Simulator</span>
             </h2>
           </div>
           <p className="text-xs text-zinc-400 font-sans">
@@ -90,7 +90,7 @@ export function VolatilityBoxCalculator({
           <Button
             type="submit"
             size="sm"
-            className="h-8 px-3 text-xs font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
+            className="h-8 px-3 text-xs font-mono font-bold bg-sky-500 text-black hover:bg-sky-400 cursor-pointer"
           >
             Calculate
           </Button>
@@ -105,13 +105,14 @@ export function VolatilityBoxCalculator({
             key={s}
             type="button"
             onClick={() => handleQuickSelect(s)}
-            className={`px-2 py-0.5 rounded text-[11px] font-mono transition-all cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono transition-all cursor-pointer ${
               activeSymbol === s
-                ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold"
+                ? "bg-sky-500/20 border border-sky-500/50 text-sky-300 font-bold"
                 : "bg-white/[0.03] border border-white/10 text-zinc-400 hover:text-white hover:bg-white/[0.07]"
             }`}
           >
-            {s}
+            <CompanyLogo symbol={s} size="xs" />
+            <span>{s}</span>
           </button>
         ))}
       </div>
@@ -122,7 +123,7 @@ export function VolatilityBoxCalculator({
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-xs font-mono">
             <span className="text-zinc-300 flex items-center gap-1">
-              <Layers className="h-3.5 w-3.5 text-emerald-400" /> Time Horizon (DTE):
+              <Layers className="h-3.5 w-3.5 text-sky-400" /> Time Horizon (DTE):
             </span>
             <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">
               {dte} Days ({dte === 1 ? "Daily" : dte === 7 ? "Weekly" : dte === 30 ? "Monthly" : "Custom"})
@@ -140,35 +141,35 @@ export function VolatilityBoxCalculator({
             <button
               type="button"
               onClick={() => setDte(1)}
-              className="hover:text-emerald-400 cursor-pointer"
+              className="hover:text-sky-400 cursor-pointer"
             >
               1D (Daily)
             </button>
             <button
               type="button"
               onClick={() => setDte(7)}
-              className="hover:text-emerald-400 cursor-pointer"
+              className="hover:text-sky-400 cursor-pointer"
             >
               7D (Weekly)
             </button>
             <button
               type="button"
               onClick={() => setDte(22)}
-              className="hover:text-emerald-400 cursor-pointer"
+              className="hover:text-sky-400 cursor-pointer"
             >
               22D (Monthly Exp)
             </button>
             <button
               type="button"
               onClick={() => setDte(45)}
-              className="hover:text-emerald-400 cursor-pointer"
+              className="hover:text-sky-400 cursor-pointer"
             >
               45D (Tasty Standard)
             </button>
             <button
               type="button"
               onClick={() => setDte(90)}
-              className="hover:text-emerald-400 cursor-pointer"
+              className="hover:text-sky-400 cursor-pointer"
             >
               90D (Quarterly)
             </button>
@@ -186,7 +187,7 @@ export function VolatilityBoxCalculator({
                 ivShock > 0
                   ? "text-rose-400 bg-rose-500/10"
                   : ivShock < 0
-                    ? "text-emerald-400 bg-emerald-500/10"
+                    ? "text-sky-400 bg-sky-500/10"
                     : "text-zinc-300 bg-white/10"
               }`}
             >
@@ -249,7 +250,7 @@ export function VolatilityBoxCalculator({
               <div className="text-lg sm:text-xl font-bold font-mono text-white">
                 ±${report.horizons.daily1D?.dollar.toFixed(2) ?? "—"}
               </div>
-              <div className="text-[11px] font-mono text-emerald-400">
+              <div className="text-[11px] font-mono text-zinc-400">
                 ±{((report.horizons.daily1D?.pct ?? 0) * 100).toFixed(2)}% (1D)
               </div>
             </div>
@@ -260,20 +261,20 @@ export function VolatilityBoxCalculator({
               <div className="text-lg sm:text-xl font-bold font-mono text-white">
                 ±${report.horizons.weekly1W?.dollar.toFixed(2) ?? "—"}
               </div>
-              <div className="text-[11px] font-mono text-emerald-400">
+              <div className="text-[11px] font-mono text-zinc-400">
                 ±{((report.horizons.weekly1W?.pct ?? 0) * 100).toFixed(2)}% (7D)
               </div>
             </div>
 
             {/* Selected Horizon Move */}
-            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3.5 space-y-1">
-              <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">
+            <div className="rounded-lg border border-sky-500/30 bg-sky-500/10 p-3.5 space-y-1">
+              <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400">
                 {dte}-Day Horizon Move (1σ)
               </div>
               <div className="text-lg sm:text-xl font-bold font-mono text-white">
                 ±${report.expectedMove1Sigma?.toFixed(2) ?? "—"}
               </div>
-              <div className="text-[11px] font-mono text-emerald-300">
+              <div className="text-[11px] font-mono text-sky-300">
                 ±{(((report.expectedMove1Sigma ?? 0) / spot) * 100).toFixed(2)}% (68.2% Conf)
               </div>
             </div>
@@ -284,7 +285,7 @@ export function VolatilityBoxCalculator({
               <div className="text-lg sm:text-xl font-bold font-mono text-white">
                 ±${report.horizons.monthly30D?.dollar.toFixed(2) ?? "—"}
               </div>
-              <div className="text-[11px] font-mono text-emerald-400">
+              <div className="text-[11px] font-mono text-zinc-400">
                 ±{((report.horizons.monthly30D?.pct ?? 0) * 100).toFixed(2)}% (30D)
               </div>
             </div>
@@ -294,7 +295,7 @@ export function VolatilityBoxCalculator({
           <div className="p-4 rounded-lg bg-black/40 border border-white/10 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold font-mono text-white uppercase tracking-wider flex items-center gap-1.5">
-                <TrendingUp className="h-4 w-4 text-emerald-400" />
+                <TrendingUp className="h-4 w-4 text-sky-400" />
                 Dynamic Volatility Cone ({activeSymbol})
               </h3>
               <span className="text-xs font-mono text-zinc-400">
@@ -310,7 +311,7 @@ export function VolatilityBoxCalculator({
             <div className="lg:col-span-2 space-y-3 p-4 rounded-lg bg-black/40 border border-white/10">
               <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                 <div className="font-mono font-bold text-xs uppercase tracking-wider text-white flex items-center gap-2">
-                  <Shield className="h-3.5 w-3.5 text-emerald-400" />
+                  <Shield className="h-3.5 w-3.5 text-sky-400" />
                   Volatility Box Price Levels ({dte} DTE)
                 </div>
                 <span className="text-[11px] font-mono text-zinc-400">
@@ -349,14 +350,14 @@ export function VolatilityBoxCalculator({
                   </div>
 
                   {/* +1σ Expected Move Upper */}
-                  <div className="flex items-center justify-between p-2 rounded bg-emerald-500/5 border border-emerald-500/20 text-emerald-300">
+                  <div className="flex items-center justify-between p-2 rounded bg-sky-500/5 border border-sky-500/20 text-sky-300">
                     <span className="font-bold flex items-center gap-1.5">
-                      <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />
+                      <ArrowUpRight className="h-3.5 w-3.5 text-sky-400" />
                       R1 (+1σ Expected Move Upper · 68.2%)
                     </span>
                     <div className="text-right">
                       <span className="font-bold text-white">{fmtMoney(report.boxLevels.r1)}</span>
-                      <span className="text-[10px] text-emerald-400 ml-2">
+                      <span className="text-[10px] text-sky-400 ml-2">
                         +{(((report.boxLevels.r1 - spot) / spot) * 100).toFixed(1)}%
                       </span>
                     </div>
@@ -368,18 +369,18 @@ export function VolatilityBoxCalculator({
                       <span className="w-2 h-2 rounded-full bg-white inline-block" />
                       Current Reference Spot Price
                     </span>
-                    <span className="text-base text-emerald-400">{fmtMoney(spot)}</span>
+                    <span className="text-base text-white">{fmtMoney(spot)}</span>
                   </div>
 
                   {/* -1σ Expected Move Lower */}
-                  <div className="flex items-center justify-between p-2 rounded bg-emerald-500/5 border border-emerald-500/20 text-emerald-300">
+                  <div className="flex items-center justify-between p-2 rounded bg-sky-500/5 border border-sky-500/20 text-sky-300">
                     <span className="font-bold flex items-center gap-1.5">
-                      <ArrowDownRight className="h-3.5 w-3.5 text-emerald-400" />
+                      <ArrowDownRight className="h-3.5 w-3.5 text-sky-400" />
                       S1 (−1σ Expected Move Lower · 68.2%)
                     </span>
                     <div className="text-right">
                       <span className="font-bold text-white">{fmtMoney(report.boxLevels.s1)}</span>
-                      <span className="text-[10px] text-emerald-400 ml-2">
+                      <span className="text-[10px] text-sky-400 ml-2">
                         −{(((spot - report.boxLevels.s1) / spot) * 100).toFixed(1)}%
                       </span>
                     </div>
@@ -470,7 +471,7 @@ export function VolatilityBoxCalculator({
 
               <div className="p-3 rounded bg-white/[0.02] border border-white/5 space-y-1.5 text-[11px] text-zinc-400 font-sans">
                 <div className="font-mono font-bold text-white flex items-center gap-1">
-                  <HelpCircle className="h-3 w-3 text-emerald-400" />
+                  <HelpCircle className="h-3 w-3 text-sky-400" />
                   VolatilityBox Edge Principle
                 </div>
                 <p className="leading-relaxed">

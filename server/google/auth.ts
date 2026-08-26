@@ -3,7 +3,7 @@ import { setCookie } from "hono/cookie";
 import { env } from "../lib/env";
 import { getSessionCookieOptions } from "../lib/cookies";
 import { Session } from "@contracts/constants";
-import { signSessionToken } from "../kimi/session";
+import { signSessionToken } from "../auth/session";
 import { upsertUser } from "../queries/users";
 
 /**

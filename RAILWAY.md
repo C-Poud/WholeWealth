@@ -1,4 +1,4 @@
-# Deploying WheelDesk on Railway
+# Deploying NetWorth.io on Railway
 
 ## 1. Create the project
 

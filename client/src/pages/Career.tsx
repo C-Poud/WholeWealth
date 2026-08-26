@@ -98,11 +98,11 @@ export default function Career() {
             </span>
           </div>
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-[-0.05em] text-[#f0f0f2] leading-none uppercase">
-            Career Optimiser
+            Career Optimizer
           </h1>
           <p className="text-sm font-mono text-muted-foreground mt-3 max-w-3xl leading-relaxed">
             Applying the exact same data-first discipline to human capital as financial capital.
-            Using verified market datasets, regional benchmarks, and AI to eliminate underpayment and command top-tier compensation.
+            Using verified market datasets, regional benchmarks, and quantitative modeling to eliminate underpayment and command top-tier compensation.
           </p>
         </div>
 
@@ -407,7 +407,7 @@ export default function Career() {
           <div className="space-y-4">
             <p className="text-xs font-mono text-muted-foreground">
               Market data reveals that compensation is heavily skewed by specific asymmetric skill acquisitions.
-              Here is an excerpt of live skill premium premiums modeled in our backend:
+              Here is an excerpt of live skill premium benchmarks modeled in our system:
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {SAMPLE_SKILLS.map((skill, idx) => (

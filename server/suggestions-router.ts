@@ -691,7 +691,7 @@ export const suggestionsRouter = createRouter({
             Authorization: `Bearer ${cfg.apiKey}`,
           },
           body: JSON.stringify({
-            source: "wheeldesk",
+            source: "networth",
             type: "trade_suggestion",
             user: ctx.user.email,
             trade: input,

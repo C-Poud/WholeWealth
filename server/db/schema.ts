@@ -44,7 +44,7 @@ export type InsertUser = typeof users.$inferInsert;
 //   bigint("columnName", { mode: "number", unsigned: true }).notNull()
 
 // ---------------------------------------------------------------------------
-// WheelDesk tables
+// NetWorth tables
 // ---------------------------------------------------------------------------
 
 /** App-level settings (admin managed). Holds e.g. SnapTrade credentials. */

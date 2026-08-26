@@ -9,13 +9,10 @@ function required(name: string): string {
 }
 
 export const env = {
-  // Kimi platform vars — optional so the app can also run self-hosted (Railway)
   appId: process.env.APP_ID ?? "",
   appSecret: required("APP_SECRET"),
   isProduction: process.env.NODE_ENV === "production",
   databaseUrl: required("DATABASE_URL"),
-  kimiAuthUrl: process.env.KIMI_AUTH_URL ?? "",
-  kimiOpenUrl: process.env.KIMI_OPEN_URL ?? "",
   ownerUnionId: process.env.OWNER_UNION_ID ?? "",
   // Google OAuth — when set, users must sign in with Google
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",

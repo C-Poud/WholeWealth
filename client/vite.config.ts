@@ -3,7 +3,6 @@ import path from "path"
 const __dirname = import.meta.dirname
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
-import { inspectAttr } from 'kimi-plugin-inspect-react'
 
 // Frontend build config — root is this client/ folder; the backend lives
 // in ../server and is bundled separately by esbuild (see package.json).
@@ -14,7 +13,8 @@ export default defineConfig({
       entry: path.resolve(__dirname, "../server/boot.ts"),
       exclude: [/^\/(?!api\/).*$/],
     }),
-    inspectAttr(), react()],
+    react(),
+  ],
   server: {
     host: "0.0.0.0",
     port: 3000,

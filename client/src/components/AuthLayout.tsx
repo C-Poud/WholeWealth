@@ -33,7 +33,7 @@ const menuItems = [
   { icon: Briefcase, label: "Portfolio", path: "/portfolio" },
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
   { icon: Lightbulb, label: "Suggestions", path: "/suggestions" },
-  { icon: Rocket, label: "Career Optimiser", path: "/career" },
+  { icon: Rocket, label: "Career Optimizer", path: "/career" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
@@ -454,7 +454,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   )}
                   <item.icon className={`h-4 w-4 mb-1 transition-transform ${isActive ? "scale-110 text-emerald-400" : ""}`} />
                   <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
-                    {item.label === "Risk Analysis" ? "Risk" : item.label === "Career Optimiser" ? "Career" : item.label}
+                    {item.label === "Risk Analysis" ? "Risk" : item.label === "Career Optimizer" ? "Career" : item.label}
                   </span>
                 </button>
               );

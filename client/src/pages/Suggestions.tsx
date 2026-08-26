@@ -108,13 +108,13 @@ export default function Suggestions() {
                 </code>
               </div>
               <p className="text-xs text-zinc-400">
-                Hedge ratio <code className="text-zinc-300 font-mono">N = -Δ_unhedged / (100 · Δ_option)</code>. Post-hedge delta is stabilized near zero.
+                Calculates required hedge sizing to stabilize portfolio market delta near neutral.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <div className="p-2 rounded bg-black/40 border border-white/[0.06] text-right font-mono text-xs">
                 <div className="text-[10px] text-zinc-500">Neutral Threshold</div>
-                <div className="text-white font-bold">&lt; ±$500 SPX Δ</div>
+                <div className="text-white font-bold">Within ±$500 SPX Delta</div>
               </div>
             </div>
           </div>
@@ -564,12 +564,12 @@ export default function Suggestions() {
                 <thead>
                   <tr className="border-b border-white/[0.08] text-zinc-400 text-[11px]">
                     <th className="pb-2.5 font-normal">Symbol</th>
-                    <th className="pb-2.5 font-normal">Type</th>
+                    <th className="pb-2.5 font-normal hidden sm:table-cell">Type</th>
                     <th className="pb-2.5 text-right font-normal">Qty</th>
-                    <th className="pb-2.5 text-right font-normal">Price</th>
-                    <th className="pb-2.5 text-right font-normal">Beta</th>
-                    <th className="pb-2.5 text-right font-normal">SPX Δ (Decimal)</th>
-                    <th className="pb-2.5 text-right font-normal">SPX Δ $</th>
+                    <th className="pb-2.5 text-right font-normal hidden md:table-cell">Price</th>
+                    <th className="pb-2.5 text-right font-normal hidden sm:table-cell">Beta</th>
+                    <th className="pb-2.5 text-right font-normal hidden md:table-cell">SPX Delta</th>
+                    <th className="pb-2.5 text-right font-normal">SPX Dollar Delta</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.03]">
@@ -579,20 +579,20 @@ export default function Suggestions() {
                       className="hover:bg-white/[0.02] transition-colors"
                     >
                       <td className="py-2.5 text-white font-bold">{b.symbol}</td>
-                      <td className="py-2.5 text-zinc-400 capitalize font-sans">
+                      <td className="py-2.5 text-zinc-400 capitalize font-sans hidden sm:table-cell">
                         {b.assetType}
                       </td>
                       <td className="py-2.5 text-right text-zinc-400">
                         {b.quantity}
                       </td>
-                      <td className="py-2.5 text-right text-white">
+                      <td className="py-2.5 text-right text-white hidden md:table-cell">
                         {fmtMoney(b.price)}
                       </td>
-                      <td className="py-2.5 text-right text-zinc-300 font-bold">
+                      <td className="py-2.5 text-right text-zinc-300 font-bold hidden sm:table-cell">
                         {b.beta.toFixed(2)}
                       </td>
                       <td
-                        className={`py-2.5 text-right font-bold ${
+                        className={`py-2.5 text-right font-bold hidden md:table-cell ${
                           (b.spxBetaDelta ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"
                         }`}
                       >

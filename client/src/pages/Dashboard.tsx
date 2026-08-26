@@ -801,18 +801,18 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 mt-2">
-                <table className="w-full text-left border-collapse text-xs font-mono min-w-[620px]">
+                <table className="w-full text-left border-collapse text-xs font-mono min-w-full">
                   <thead>
                     <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
                       <th className="pb-2.5 font-normal meta-label">Ticker</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Price</th>
                       <th className="pb-2.5 font-normal meta-label text-right">Day Chg</th>
-                      <th className="pb-2.5 font-normal meta-label text-center">IVR</th>
-                      <th className="pb-2.5 font-normal meta-label text-right">YTD</th>
-                      <th className="pb-2.5 font-normal meta-label text-right">High</th>
-                      <th className="pb-2.5 font-normal meta-label text-right">Low</th>
-                      <th className="pb-2.5 font-normal meta-label text-center min-w-[140px]">52W Range</th>
-                      <th className="pb-2.5 font-normal meta-label text-right w-10"></th>
+                      <th className="pb-2.5 font-normal meta-label text-center hidden md:table-cell">IVR</th>
+                      <th className="pb-2.5 font-normal meta-label text-right hidden sm:table-cell">YTD</th>
+                      <th className="pb-2.5 font-normal meta-label text-right hidden lg:table-cell">High</th>
+                      <th className="pb-2.5 font-normal meta-label text-right hidden lg:table-cell">Low</th>
+                      <th className="pb-2.5 font-normal meta-label text-center hidden md:table-cell min-w-[130px]">52W Range</th>
+                      <th className="pb-2.5 font-normal meta-label text-right w-8"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.03]">
@@ -834,23 +834,23 @@ export default function Dashboard() {
                           className="hover:bg-white/[0.03] transition-colors group"
                         >
                           {/* Ticker Symbol & Name */}
-                          <td className="py-3">
+                          <td className="py-2.5 sm:py-3">
                             <div className="font-bold text-white text-sm">
                               {item.symbol}
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[140px]">
+                            <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[110px] sm:max-w-[140px]">
                               {item.name}
                             </div>
                           </td>
 
                           {/* Price */}
-                          <td className="py-3 text-right font-medium text-white text-xs">
+                          <td className="py-2.5 sm:py-3 text-right font-medium text-white text-xs">
                             {item.price ? fmtMoney(item.price) : "—"}
                           </td>
 
                           {/* Day Change */}
                           <td
-                            className={`py-3 text-right font-medium text-xs ${
+                            className={`py-2.5 sm:py-3 text-right font-medium text-xs ${
                               item.change >= 0 ? "text-primary" : "text-red-400"
                             }`}
                           >
@@ -870,8 +870,8 @@ export default function Dashboard() {
                             )}
                           </td>
 
-                          {/* IVR (IV Rank) */}
-                          <td className="py-3 text-center">
+                          {/* IVR (IV Rank) - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 text-center hidden md:table-cell">
                             <span
                               className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${ivColor}`}
                               title={`Implied Volatility Rank: ${iv}%`}
@@ -880,9 +880,9 @@ export default function Dashboard() {
                             </span>
                           </td>
 
-                          {/* YTD Return */}
+                          {/* YTD Return - hidden on very small mobile */}
                           <td
-                            className={`py-3 text-right font-medium text-xs ${
+                            className={`py-2.5 sm:py-3 text-right font-medium text-xs hidden sm:table-cell ${
                               ytd == null
                                 ? "text-muted-foreground"
                                 : ytd >= 0
@@ -893,18 +893,18 @@ export default function Dashboard() {
                             {ytd != null ? `${ytd >= 0 ? "+" : ""}${ytd.toFixed(2)}%` : "—"}
                           </td>
 
-                          {/* 52W High */}
-                          <td className="py-3 text-right font-medium text-white/90 text-xs">
+                          {/* 52W High - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 text-right font-medium text-white/90 text-xs hidden lg:table-cell">
                             {item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "—"}
                           </td>
 
-                          {/* 52W Low */}
-                          <td className="py-3 text-right font-medium text-muted-foreground text-xs">
+                          {/* 52W Low - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 text-right font-medium text-muted-foreground text-xs hidden lg:table-cell">
                             {item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "—"}
                           </td>
 
-                          {/* 52W Range Visual */}
-                          <td className="py-3 px-3">
+                          {/* 52W Range Visual - hidden on mobile */}
+                          <td className="py-2.5 sm:py-3 px-3 hidden md:table-cell">
                             <div className="w-full flex flex-col items-center gap-1">
                               <div className="w-full bg-white/[0.08] h-1.5 rounded-full overflow-hidden relative">
                                 <div
@@ -921,7 +921,7 @@ export default function Dashboard() {
                           </td>
 
                           {/* Remove Action */}
-                          <td className="py-3 text-right">
+                          <td className="py-2.5 sm:py-3 text-right">
                             <button
                               onClick={() =>
                                 removeSymbolMut.mutate({

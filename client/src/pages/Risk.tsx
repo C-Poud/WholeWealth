@@ -106,7 +106,7 @@ export default function Risk() {
             </span>
           </div>
           <p className="text-xs text-zinc-400 font-sans max-w-2xl">
-            Multi-horizon expected moves, probability cones ($1\sigma, 2\sigma, 3\sigma$), and ATM Straddle implied volatility bounds grounded in empirical options research.
+            Multi-horizon expected moves, probability cones (1-sigma, 2-sigma, 3-sigma), and ATM Straddle implied volatility bounds grounded in empirical options research.
           </p>
         </div>
 

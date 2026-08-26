@@ -122,12 +122,12 @@ export function ConnectBrokerCard({
               <span className="text-xs font-bold text-white font-sans">
                 Recommended: Connect Your Brokerage
               </span>
-              <span className="text-[10px] font-mono font-semibold px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 rounded">
+              <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">
                 Live Sync
               </span>
             </div>
             <p className="text-xs text-zinc-400 font-sans">
-              Sync holdings automatically to run real-time Delta-neutral (Δ = 0) and volatility risk simulations.
+              Sync holdings automatically to run real-time delta-neutral and volatility risk simulations.
             </p>
           </div>
         </div>
@@ -140,7 +140,7 @@ export function ConnectBrokerCard({
             className="text-xs font-mono font-semibold bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.25)] cursor-pointer"
           >
             <Link2 className="h-3.5 w-3.5 mr-1" />
-            {connectMut.isPending ? "Connecting…" : "Connect Broker"}
+            {connectMut.isPending ? "Connecting..." : "Connect Broker"}
           </Button>
           <button
             onClick={() => setIsDismissed(true)}
@@ -157,25 +157,25 @@ export function ConnectBrokerCard({
   return (
     <section
       id="connect-broker-recommendation-card"
-      className={`rounded-xl border border-emerald-500/30 bg-gradient-to-b from-[#11141c] via-[#0c0d12] to-[#090a0d] p-6 sm:p-8 shadow-2xl relative overflow-hidden ${className}`}
+      className={`rounded-xl border border-emerald-500/30 bg-gradient-to-b from-[#11141c] via-[#0c0d12] to-[#090a0d] p-5 sm:p-8 shadow-2xl relative overflow-hidden ${className}`}
     >
       {/* Glow decorative element */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/[0.04] rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.08]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 sm:pb-6 border-b border-white/[0.08]">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5">
               <Zap className="h-3 w-3" /> Recommended Step
             </span>
-            <span className="text-xs font-mono text-zinc-400">Direct Brokerage Integration</span>
+            <span className="text-xs font-mono text-zinc-400 hidden sm:inline">Direct Brokerage Integration</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-sans">
-            Connect Your Broker for Real-Time Risk & Hedging
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white font-sans">
+            Connect Your Broker for Real-Time Risk and Hedging
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed max-w-3xl">
-            Connecting your account allows NetWorth.io to automatically import your equities, options, and cash balances to compute your exact portfolio beta-weighted delta (Δ_portfolio), Greek sensitivities, and optimal delta-neutral hedge trades.
+            Connecting your account allows NetWorth.io to automatically import your equities, options, and cash balances to compute your exact portfolio beta-weighted delta, Greek sensitivities, and optimal delta-neutral hedge trades.
           </p>
         </div>
 
@@ -190,9 +190,9 @@ export function ConnectBrokerCard({
       </div>
 
       {/* Feature / Value Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-        <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-2">
-          <div className="h-8 w-8 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 my-5 sm:my-6">
+        <div className="p-3.5 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-1.5 sm:space-y-2">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
             <Zap className="h-4 w-4" />
           </div>
           <div className="text-sm font-semibold text-white font-sans">Zero Manual Entry</div>
@@ -201,29 +201,29 @@ export function ConnectBrokerCard({
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-2">
-          <div className="h-8 w-8 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+        <div className="p-3.5 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-1.5 sm:space-y-2">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
             <TrendingUp className="h-4 w-4" />
           </div>
           <div className="text-sm font-semibold text-white font-sans">Institutional Greeks</div>
           <p className="text-xs text-zinc-400 font-sans leading-normal">
-            Real-time Black-Scholes pricing calculates beta-weighted $\Delta$, $\Gamma$, and $\Theta$ against the S&P 500 index.
+            Real-time pricing models calculate beta-weighted Delta, Gamma, and Theta against the S&P 500 index.
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-2">
-          <div className="h-8 w-8 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+        <div className="p-3.5 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-1.5 sm:space-y-2">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
             <Lock className="h-4 w-4" />
           </div>
-          <div className="text-sm font-semibold text-white font-sans">Bank-Grade 256-Bit Security</div>
+          <div className="text-sm font-semibold text-white font-sans">Bank-Grade Security</div>
           <p className="text-xs text-zinc-400 font-sans leading-normal">
             Read-only portfolio syncing via official SnapTrade OAuth. Credentials are never stored on NetWorth servers.
           </p>
         </div>
       </div>
 
-      {/* Supported Brokers Logos / Pills */}
-      <div className="space-y-2.5 pb-6 border-b border-white/[0.08]">
+      {/* Supported Brokers Logos / Pills - hidden on mobile to optimize layout */}
+      <div className="hidden sm:block space-y-2.5 pb-6 border-b border-white/[0.08]">
         <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium flex items-center gap-1.5">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Supported Brokerages (20+ Integrations)
         </div>
@@ -242,16 +242,16 @@ export function ConnectBrokerCard({
       </div>
 
       {/* Bottom CTA Action Bar */}
-      <div className="pt-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="pt-4 sm:pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Button
             size="lg"
             onClick={() => connectMut.mutate({ origin: window.location.origin })}
             disabled={connectMut.isPending}
-            className="text-xs sm:text-sm font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.35)] px-6 cursor-pointer"
+            className="w-full sm:w-auto text-xs sm:text-sm font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.35)] px-5 sm:px-6 cursor-pointer"
           >
             <Link2 className="h-4 w-4 mr-2" />
-            {connectMut.isPending ? "Opening Portal…" : "Connect Broker via SnapTrade"}
+            {connectMut.isPending ? "Opening Portal..." : "Connect Broker via SnapTrade"}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
 
@@ -271,10 +271,10 @@ export function ConnectBrokerCard({
             variant="outline"
             onClick={() => fileRef.current?.click()}
             disabled={importMut.isPending}
-            className="text-xs sm:text-sm font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer"
+            className="w-full sm:w-auto text-xs sm:text-sm font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer"
           >
             <Upload className="h-4 w-4 mr-2 text-cyan-400" />
-            {importMut.isPending ? "Importing…" : "Upload Statement CSV"}
+            {importMut.isPending ? "Importing..." : "Upload Statement CSV"}
           </Button>
 
           {onOpenManual && (
@@ -282,7 +282,7 @@ export function ConnectBrokerCard({
               size="lg"
               variant="ghost"
               onClick={onOpenManual}
-              className="text-xs sm:text-sm font-mono text-zinc-400 hover:text-white cursor-pointer"
+              className="w-full sm:w-auto text-xs sm:text-sm font-mono text-zinc-400 hover:text-white cursor-pointer"
             >
               <Layers className="h-4 w-4 mr-2 text-amber-400" />
               Manual Entry
@@ -290,8 +290,8 @@ export function ConnectBrokerCard({
           )}
         </div>
 
-        <div className="text-[11px] font-mono text-zinc-500">
-          Takes &lt; 2 minutes · Read-only access
+        <div className="text-[11px] font-mono text-zinc-500 text-center sm:text-right">
+          Takes under 2 minutes · Read-only access
         </div>
       </div>
     </section>

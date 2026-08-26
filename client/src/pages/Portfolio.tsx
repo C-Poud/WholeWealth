@@ -358,15 +358,15 @@ export default function Portfolio() {
           </div>
         ) : (
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <table className="w-full text-left border-collapse text-xs sm:text-sm font-mono min-w-[580px]">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm font-mono min-w-full">
               <thead>
                 <tr className="border-b border-white/[0.08] text-muted-foreground text-xs font-mono">
                   <th className="pb-3 font-medium meta-label">Symbol</th>
-                  <th className="pb-3 font-medium meta-label">Type</th>
+                  <th className="pb-3 font-medium meta-label hidden sm:table-cell">Type</th>
                   <th className="pb-3 font-medium meta-label text-right">Qty</th>
-                  <th className="pb-3 font-medium meta-label text-right">Cost Basis</th>
+                  <th className="pb-3 font-medium meta-label text-right hidden md:table-cell">Cost Basis</th>
                   <th className="pb-3 font-medium meta-label text-right">Last Price</th>
-                  <th className="pb-3 font-medium meta-label text-right">Source</th>
+                  <th className="pb-3 font-medium meta-label text-right hidden lg:table-cell">Source</th>
                   <th className="pb-3 font-medium meta-label text-right">Actions</th>
                 </tr>
               </thead>
@@ -374,29 +374,29 @@ export default function Portfolio() {
                 {positions.map((p) => {
                   return (
                     <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="py-3 font-mono font-bold text-white">
+                      <td className="py-2.5 sm:py-3 font-mono font-bold text-white">
                         {p.assetType === "option"
                           ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${p.optionType === "put" ? "P" : "C"}`
                           : p.symbol}
                       </td>
-                      <td className="py-3 capitalize text-muted-foreground text-xs font-sans">
+                      <td className="py-2.5 sm:py-3 capitalize text-muted-foreground text-xs font-sans hidden sm:table-cell">
                         {p.assetType}
                       </td>
-                      <td className="py-3 text-right font-mono text-muted-foreground">
+                      <td className="py-2.5 sm:py-3 text-right font-mono text-muted-foreground">
                         {fmtNum(p.quantity, 0)}
                       </td>
-                      <td className="py-3 text-right font-mono text-muted-foreground">
+                      <td className="py-2.5 sm:py-3 text-right font-mono text-muted-foreground hidden md:table-cell">
                         {fmtMoney(p.costBasis)}
                       </td>
-                      <td className="py-3 text-right font-mono text-white">
+                      <td className="py-2.5 sm:py-3 text-right font-mono text-white">
                         {fmtMoney(p.price)}
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-2.5 sm:py-3 text-right hidden lg:table-cell">
                         <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-white/5 text-muted-foreground">
                           {p.source}
                         </span>
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-2.5 sm:py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {/* Move / Edit Position Dialog Trigger */}
                           <button
@@ -409,17 +409,17 @@ export default function Portfolio() {
                                 accountId: p.accountId,
                               })
                             }
-                            className="p-2 hover:bg-white/10 active:bg-white/20 rounded text-muted-foreground hover:text-white transition-colors cursor-pointer"
+                            className="p-1.5 sm:p-2 hover:bg-white/10 active:bg-white/20 rounded text-muted-foreground hover:text-white transition-colors cursor-pointer"
                             title="Move Account / Edit Position"
                           >
-                            <ArrowRightLeft className="h-4 w-4 text-primary" />
+                            <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                           </button>
                           <button
                             onClick={() => removeMut.mutate({ ids: [p.id] })}
-                            className="p-2 hover:bg-red-500/10 active:bg-red-500/20 rounded text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
+                            className="p-1.5 sm:p-2 hover:bg-red-500/10 active:bg-red-500/20 rounded text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
                             title="Remove"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </button>
                         </div>
                       </td>

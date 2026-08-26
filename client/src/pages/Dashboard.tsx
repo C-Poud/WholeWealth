@@ -9,18 +9,15 @@ import {
   Scale,
   Plus,
   Trash2,
+  ShieldAlert,
+  Coins,
   Sparkles,
   ArrowUpRight,
   ArrowDownRight,
   FolderPlus,
   X,
   PieChart as PieIcon,
-  Compass,
-  Activity,
-  Flame,
 } from "lucide-react";
-import { startAppTour } from "@/components/OnboardingTour";
-import { ConnectBrokerCard } from "@/components/ConnectBrokerCard";
 import {
   Dialog,
   DialogContent,
@@ -30,36 +27,27 @@ import {
 } from "@/components/ui/dialog";
 
 const COLORS = [
-  "#38bdf8", // Sky
-  "#818cf8", // Indigo
-  "#a855f7", // Purple
-  "#ec4899", // Pink
-  "#10b981", // Emerald
-  "#f59e0b", // Amber
-  "#06b6d4", // Cyan
-  "#f97316", // Orange
-  "#6366f1", // Blue-indigo
+  "#facc15",
+  "#4ade80",
+  "#60a5fa",
+  "#f472b6",
+  "#a78bfa",
+  "#34d399",
+  "#fb923c",
+  "#22d3ee",
 ];
 
-const TICKER_ACCENT_COLORS = [
-  { bg: "bg-sky-500/15", border: "border-sky-500/30", text: "text-sky-400" },
-  { bg: "bg-indigo-500/15", border: "border-indigo-500/30", text: "text-indigo-400" },
-  { bg: "bg-purple-500/15", border: "border-purple-500/30", text: "text-purple-400" },
-  { bg: "bg-emerald-500/15", border: "border-emerald-500/30", text: "text-emerald-400" },
-  { bg: "bg-amber-500/15", border: "border-amber-500/30", text: "text-amber-400" },
-  { bg: "bg-pink-500/15", border: "border-pink-500/30", text: "text-pink-400" },
-  { bg: "bg-cyan-500/15", border: "border-cyan-500/30", text: "text-cyan-400" },
-  { bg: "bg-teal-500/15", border: "border-teal-500/30", text: "text-teal-400" },
+const POPULAR_WHEEL_TICKERS = [
+  "NVDA",
+  "AAPL",
+  "TSLA",
+  "AMD",
+  "SPY",
+  "MSFT",
+  "AMZN",
+  "PLTR",
+  "GOOGL",
 ];
-
-function getTickerColor(symbol: string) {
-  let hash = 0;
-  for (let i = 0; i < symbol.length; i++) {
-    hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % TICKER_ACCENT_COLORS.length;
-  return TICKER_ACCENT_COLORS[index];
-}
 
 export default function Dashboard() {
   const { data, isLoading, error, refetch } = trpc.portfolio.overview.useQuery();
@@ -224,6 +212,14 @@ export default function Dashboard() {
     };
   }, [data]);
 
+  const handleQuickAdd = (sym: string) => {
+    if (!activeWlId) return;
+    addSymbolMut.mutate({
+      watchlistId: activeWlId,
+      symbol: sym,
+    });
+  };
+
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeWlId || !tickerInput.trim()) return;
@@ -262,19 +258,22 @@ export default function Dashboard() {
   const positions = data?.positions ?? [];
 
   return (
-    <div className="p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-8 max-w-[1750px] mx-auto">
+    <div className="p-5 sm:p-8 lg:p-10 space-y-8 max-w-[1750px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
         <div>
-          <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
-            Dashboard
+          <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-[#f0f0f2] leading-none uppercase">
+            Portfolio & Watchlist
           </h1>
+          <p className="meta-label mt-2">
+            Holdings, SPX Beta Delta hedge & real-time target watchlists
+          </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
           {deltaData?.hasPositions && (
             <Link
               to="/suggestions"
-              className="px-2.5 py-1.5 rounded border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-medium flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-1.5 rounded border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_15px_rgba(212,255,0,0.12)]"
             >
               <Scale className="h-3.5 w-3.5" />
               <span>
@@ -285,20 +284,20 @@ export default function Dashboard() {
             </Link>
           )}
           {stats.hasDemo ? (
-            <div className="terminal-badge shrink-0 text-amber-300 border-amber-500/30 bg-amber-500/10">
-              Demo Data
+            <div className="neon-badge shrink-0 self-start md:self-auto shadow-[0_0_15px_rgba(212,255,0,0.15)]">
+              Demo Data Active
             </div>
           ) : (
-            <div className="terminal-badge shrink-0">
-              Live
+            <div className="neon-badge shrink-0 self-start md:self-auto shadow-[0_0_15px_rgba(212,255,0,0.15)]">
+              Live Workspace
             </div>
           )}
         </div>
       </header>
 
       {error && (
-        <div className="p-3 rounded border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-3">
-          <p className="text-xs text-destructive font-mono">
+        <div className="p-4 rounded border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-4">
+          <p className="text-sm text-destructive font-mono">
             Failed to load portfolio: {error.message}
           </p>
           <button
@@ -310,95 +309,92 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Broker Connection Recommendation */}
-      <ConnectBrokerCard variant={positions.length === 0 ? "card" : "compact"} />
-
-      {/* Stats Grid */}
-      <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-4">
-        <div className="stat-card col-span-2 sm:col-span-1 p-3.5 sm:p-5">
-          <div className="text-[11px] sm:text-xs text-zinc-400">Portfolio Value</div>
-          <div className="text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
-            {fmtMoney(stats.equityValue + stats.cash)}
+      {/* Stats & Risk KPIs Grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+        <div className="stat-card">
+          <div className="meta-label text-xs">Capital at Work</div>
+          <div className="stat-value text-white text-2xl mt-1 font-bold">
+            {fmtMoney(stats.capitalAtWork)}
           </div>
-          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
-            {fmtMoney(stats.equityValue)} equity · {fmtMoney(stats.cash)} cash
+          <div className="text-xs text-muted-foreground mt-1.5 font-mono">
+            {fmtMoney(stats.stockCostBasis)} stock · {fmtMoney(stats.cspCollateral)} CSP
           </div>
         </div>
 
-        <div className="stat-card p-3.5 sm:p-5">
-          <div className="text-[11px] sm:text-xs text-zinc-400">Available Cash</div>
-          <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono truncate">
+        <div className="stat-card">
+          <div className="meta-label text-xs">Available Buying Power</div>
+          <div className="stat-value text-primary text-2xl mt-1 font-bold drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]">
             {fmtMoney(stats.availableBuyingPower)}
           </div>
-          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono truncate">
-            {fmtMoney(stats.cash)} buying power
+          <div className="text-xs text-muted-foreground mt-1.5 font-mono">
+            {fmtMoney(stats.cash)} cash in accounts
           </div>
         </div>
 
         {/* SPX Beta Delta */}
-        <div className="stat-card p-3.5 sm:p-5">
-          <div className="text-[11px] sm:text-xs text-zinc-400 flex items-center justify-between">
-            <span>Portfolio Beta Δ</span>
-            <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono">β {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}</span>
+        <div className="stat-card">
+          <div className="meta-label text-xs flex items-center justify-between">
+            <span>Portfolio SPX Beta Δ</span>
+            <span className="text-[10px] text-muted-foreground font-mono">β {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}</span>
           </div>
           <div
-            className={`text-lg sm:text-2xl mt-1 flex items-center gap-1 font-bold font-mono ${
+            className={`stat-value text-2xl mt-1 flex items-center gap-1 font-bold ${
               deltaData?.neutral
                 ? "text-white"
                 : (deltaData?.totalDelta ?? 0) > 0
-                  ? "text-emerald-400"
+                  ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]"
                   : "text-red-400"
             }`}
           >
             {deltaData?.hasPositions && !deltaData.neutral && (
               (deltaData.totalDelta > 0 ? (
-                <ArrowUpRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0" />
+                <ArrowUpRight className="h-5 w-5 shrink-0" />
               ) : (
-                <ArrowDownRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0" />
+                <ArrowDownRight className="h-5 w-5 shrink-0" />
               ))
             )}
-            <span className="truncate">
+            <span>
               {(deltaData?.spxBetaDelta ?? 0) >= 0 ? "+" : ""}
               {(deltaData?.spxBetaDelta ?? 0).toFixed(2)}
             </span>
-            <span className="text-[10px] sm:text-xs font-mono text-zinc-500">Δ</span>
+            <span className="text-xs font-mono text-muted-foreground">Δ</span>
           </div>
-          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono flex items-center justify-between">
-            <span className="truncate">
-              {((deltaData?.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (deltaData?.spyBetaDelta ?? 0).toFixed(1)} SPY
+          <div className="text-xs text-muted-foreground mt-1.5 font-mono flex items-center justify-between">
+            <span>
+              {((deltaData?.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (deltaData?.spyBetaDelta ?? 0).toFixed(1)} SPY eq.
             </span>
-            <Link to="/suggestions" className="text-zinc-400 hover:text-white hover:underline shrink-0 ml-1">
+            <Link to="/suggestions" className="text-primary hover:underline font-bold">
               Hedge →
             </Link>
           </div>
         </div>
 
-        <div className="stat-card p-3.5 sm:p-5">
-          <div className="text-[11px] sm:text-xs text-zinc-400">Positions</div>
-          <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono">
-            {stats.count}
+        <div className="stat-card">
+          <div className="meta-label text-xs">Option Coverage</div>
+          <div className="stat-value text-white text-2xl mt-1 font-bold">
+            {stats.coveragePct.toFixed(0)}%
           </div>
-          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
-            {stats.allocation.length} holdings
+          <div className="text-xs text-muted-foreground mt-1.5 font-mono">
+            {fmtNum(stats.coveredShares, 0)}/{fmtNum(stats.roundLotShares, 0)} sh · {stats.shortCallCount} CC/{stats.shortPutCount} CSP
           </div>
         </div>
 
-        <div className="stat-card p-3.5 sm:p-5">
-          <div className="text-[11px] sm:text-xs text-zinc-400">Unrealized P&L</div>
+        <div className="stat-card">
+          <div className="meta-label text-xs">Unrealized P&L</div>
           <div
-            className={`text-lg sm:text-2xl mt-1 font-bold font-mono truncate ${
-              stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"
+            className={`stat-value text-2xl mt-1 font-bold ${
+              stats.pnl >= 0 ? "text-primary drop-shadow-[0_0_8px_rgba(212,255,0,0.3)]" : "text-red-400"
             }`}
           >
             {stats.pnl >= 0 ? `+${fmtMoney(stats.pnl)}` : fmtMoney(stats.pnl)}
           </div>
           {stats.pnlPct != null && (
             <div
-              className={`text-[10px] sm:text-xs font-mono mt-1 ${
-                stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"
+              className={`text-xs font-mono mt-1.5 ${
+                stats.pnl >= 0 ? "text-primary" : "text-red-400"
               }`}
             >
-              {stats.pnl >= 0 ? "+" : ""}{fmtPct(stats.pnlPct)}
+              {stats.pnl >= 0 ? "+" : ""}{fmtPct(stats.pnlPct)} {stats.pnl >= 0 ? "▲" : "▼"}
             </div>
           )}
         </div>
@@ -407,123 +403,113 @@ export default function Dashboard() {
       {/* Main Grid: Holdings + Allocation (Row 1) & Target Watchlist (Row 2) */}
       <div className="space-y-8">
         
-        {/* Top Row: Active Holdings Table (3 cols) + Asset Allocation Pie Chart (2 cols) */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 items-stretch">
+        {/* Top Row: Active Holdings Table (7 cols) + Asset Allocation Pie Chart (5 cols) */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
           
           {/* Active Holdings Table */}
-          <div className="xl:col-span-3 flex flex-col">
-            <div className="panel-box p-4 sm:p-7 overflow-hidden flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3 min-h-[34px]">
-                  <div className="flex items-center gap-2">
-                    <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
-                      <Briefcase className="h-4 w-4 text-primary" /> Active Holdings
-                    </span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-muted-foreground border border-white/10">
-                      {positions.length}
-                    </span>
-                  </div>
+          <div className="xl:col-span-7 space-y-4">
+            <div className="panel-box p-6 sm:p-8 overflow-hidden">
+              <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5">
+                <div className="flex items-center gap-2.5">
+                  <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
+                    <Briefcase className="h-4 w-4 text-primary" /> Active Holdings
+                  </span>
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-muted-foreground border border-white/10">
+                    {positions.length}
+                  </span>
+                </div>
+                <Link
+                  to="/portfolio"
+                  className="text-xs font-mono text-primary hover:underline font-medium"
+                >
+                  Manage Portfolio →
+                </Link>
+              </div>
+
+              {positions.length === 0 ? (
+                <div className="py-14 text-center space-y-3">
+                  <Briefcase className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
+                  <p className="text-sm font-mono text-white font-semibold">No active positions</p>
+                  <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                    Connect a brokerage or load demo data in Portfolio menu.
+                  </p>
                   <Link
                     to="/portfolio"
-                    className="text-xs font-mono text-primary hover:underline font-medium"
+                    className="inline-block mt-2 rounded bg-primary px-4 py-2 text-xs font-mono font-bold text-black hover:bg-primary/90 uppercase tracking-wider shadow-[0_0_15px_rgba(212,255,0,0.25)]"
                   >
-                    Manage Portfolio →
+                    Open Portfolio
                   </Link>
                 </div>
-
-                {positions.length === 0 ? (
-                  <div className="py-10 sm:py-14 text-center space-y-3 font-mono">
-                    <Briefcase className="h-10 w-10 mx-auto text-muted-foreground/40 stroke-1" />
-                    <p className="text-sm text-white font-semibold">No active positions</p>
-                    <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                      Your workspace is clean. Import your broker statements or add lots in Portfolio.
-                    </p>
-                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                      <Link
-                        to="/portfolio"
-                        className="inline-block rounded bg-primary px-4 py-2 text-xs font-mono font-bold text-black hover:bg-primary/90 uppercase tracking-wider shadow-[0_0_15px_rgba(212,255,0,0.25)]"
-                      >
-                        Open Portfolio
-                      </Link>
-                      <button
-                        onClick={() => startAppTour()}
-                        className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/5 px-3 py-2 text-xs font-mono text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-                      >
-                        <Compass className="h-3.5 w-3.5 text-emerald-400" />
-                        Take Tour
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <table className="w-full text-left border-collapse text-xs font-mono min-w-[500px]">
-                      <thead>
-                        <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
-                          <th className="pb-2.5 font-normal meta-label">Symbol</th>
-                          <th className="pb-2.5 font-normal meta-label">Type</th>
-                          <th className="pb-2.5 font-normal meta-label text-right">Qty</th>
-                          <th className="pb-2.5 font-normal meta-label text-right">Cost</th>
-                          <th className="pb-2.5 font-normal meta-label text-right">Price</th>
-                          <th className="pb-2.5 font-normal meta-label text-right">Value</th>
-                          <th className="pb-2.5 font-normal meta-label text-right">P&L</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/[0.03]">
-                        {positions.map((p) => {
-                          const px = p.price ?? p.costBasis ?? 0;
-                          const mult = p.assetType === "option" ? 100 : 1;
-                          const mv = p.quantity * px * mult;
-                          const cb = p.costBasis ?? px;
-                          const pnl = p.quantity * (px - cb) * mult;
-                          const label =
-                            p.assetType === "option"
-                              ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${
-                                  p.optionType === "put" ? "P" : "C"
-                                }`
-                              : p.symbol;
-                          return (
-                            <tr key={p.id} className="hover:bg-white/[0.03] transition-colors">
-                              <td className="py-2.5 font-bold text-white">
-                                {label}
-                              </td>
-                              <td className="py-2.5 capitalize text-muted-foreground font-sans text-[11px]">
-                                {p.assetType}
-                              </td>
-                              <td className="py-2.5 text-right text-muted-foreground">
-                                {fmtNum(p.quantity, 0)}
-                              </td>
-                              <td className="py-2.5 text-right text-muted-foreground">
-                                {fmtMoney(p.costBasis)}
-                              </td>
-                              <td className="py-2.5 text-right text-white">
-                                {fmtMoney(px)}
-                              </td>
-                              <td className="py-2.5 text-right font-medium text-white">
-                                {fmtMoney(mv)}
-                              </td>
-                              <td
-                                className={`py-2.5 text-right font-semibold ${
-                                  pnl >= 0 ? "text-primary" : "text-red-400"
-                                }`}
-                              >
-                                {pnl >= 0 ? `+${fmtMoney(pnl)}` : fmtMoney(pnl)}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs font-mono">
+                    <thead>
+                      <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
+                        <th className="pb-2.5 font-normal meta-label">Symbol</th>
+                        <th className="pb-2.5 font-normal meta-label">Type</th>
+                        <th className="pb-2.5 font-normal meta-label text-right">Qty</th>
+                        <th className="pb-2.5 font-normal meta-label text-right">Cost</th>
+                        <th className="pb-2.5 font-normal meta-label text-right">Price</th>
+                        <th className="pb-2.5 font-normal meta-label text-right">Day</th>
+                        <th className="pb-2.5 font-normal meta-label text-right">Value</th>
+                        <th className="pb-2.5 font-normal meta-label text-right">P&L</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.03]">
+                      {positions.map((p) => {
+                        const px = p.price ?? p.costBasis ?? 0;
+                        const mult = p.assetType === "option" ? 100 : 1;
+                        const mv = p.quantity * px * mult;
+                        const cb = p.costBasis ?? px;
+                        const pnl = p.quantity * (px - cb) * mult;
+                        const label =
+                          p.assetType === "option"
+                            ? `${p.symbol} ${p.expiry ?? ""} ${p.strike ?? ""}${
+                                p.optionType === "put" ? "P" : "C"
+                              }`
+                            : p.symbol;
+                        return (
+                          <tr key={p.id} className="hover:bg-white/[0.03] transition-colors">
+                            <td className="py-2.5 font-bold text-white">
+                              {label}
+                            </td>
+                            <td className="py-2.5 capitalize text-muted-foreground font-sans text-[11px]">
+                              {p.assetType}
+                            </td>
+                            <td className="py-2.5 text-right text-muted-foreground">
+                              {fmtNum(p.quantity, 0)}
+                            </td>
+                            <td className="py-2.5 text-right text-muted-foreground">
+                              {fmtMoney(p.costBasis)}
+                            </td>
+                            <td className="py-2.5 text-right text-white">
+                              {fmtMoney(px)}
+                            </td>
+                            <td className="py-2.5 text-right font-medium text-white">
+                              {fmtMoney(mv)}
+                            </td>
+                            <td
+                              className={`py-2.5 text-right font-semibold ${
+                                pnl >= 0 ? "text-primary" : "text-red-400"
+                              }`}
+                            >
+                              {pnl >= 0 ? `+${fmtMoney(pnl)}` : fmtMoney(pnl)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
               {/* Real-time Greek Stream widget */}
               <div className="activity-widget mt-5">
                 <div className="meta-label mb-1.5 text-[0.6rem]">Real-time Portfolio Greek Stream</div>
-                <div className="activity-line text-[11px] flex-wrap gap-1">
+                <div className="activity-line text-[11px]">
                   <span>{new Date().toLocaleTimeString()}</span>
-                  <span className="truncate">
-                    SPX BETA DELTA: {(deltaData?.spxBetaDelta ?? 0) >= 0 ? "+" : ""}{(deltaData?.spxBetaDelta ?? 0).toFixed(2)} Δ · BETA: {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}
+                  <span>
+                    SPX BETA DELTA: {(deltaData?.spxBetaDelta ?? 0) >= 0 ? "+" : ""}{(deltaData?.spxBetaDelta ?? 0).toFixed(2)} Δ · WEIGHTED BETA: {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}
                   </span>
                 </div>
               </div>
@@ -531,36 +517,24 @@ export default function Dashboard() {
           </div>
 
           {/* Allocation Pie Chart Section */}
-          <div className="xl:col-span-2 flex flex-col">
-            <div className="panel-box p-4 sm:p-6 overflow-hidden flex-1 flex flex-col justify-between relative bg-gradient-to-b from-[#151720] to-[#101217] border border-white/[0.09] shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
-              {/* Subtle ambient corner glow */}
-              <div className="absolute top-0 right-0 w-36 h-36 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4 border-b border-white/[0.07] pb-3.5 min-h-[36px]">
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-cyan-500/20 via-sky-500/15 to-indigo-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_12px_rgba(56,189,248,0.2)]">
-                      <PieIcon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-white text-xs tracking-tight flex items-center gap-1.5 uppercase font-sans">
-                        Capital Allocation
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono">
-                    <span className="text-zinc-400 text-[11px]">Total</span>
-                    <span className="text-white font-bold">{fmtMoney(stats.equityValue + stats.cash)}</span>
-                  </div>
+          <div className="xl:col-span-5 space-y-4">
+            <div className="panel-box p-6 sm:p-8 overflow-hidden">
+              <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5">
+                <div className="flex items-center gap-2.5">
+                  <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
+                    <PieIcon className="h-4 w-4 text-primary" /> Capital Allocation
+                  </span>
                 </div>
+                <span className="text-xs font-mono text-muted-foreground">
+                  Total <span className="text-white font-semibold">{fmtMoney(stats.equityValue + stats.cash)}</span>
+                </span>
+              </div>
 
               {stats.allocation.length === 0 ? (
-                <div className="py-14 text-center space-y-3">
-                  <div className="h-12 w-12 mx-auto rounded-xl bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                    <PieIcon className="h-6 w-6 stroke-[1.5]" />
-                  </div>
-                  <p className="text-sm font-semibold text-white">No equity positions charted</p>
-                  <p className="text-xs font-mono text-zinc-400 max-w-xs mx-auto">
-                    Add or import stock and option holdings to visualize live capital weighting.
+                <div className="py-14 text-center space-y-2">
+                  <PieIcon className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
+                  <p className="text-xs font-mono text-muted-foreground">
+                    No equity positions available to chart.
                   </p>
                 </div>
               ) : (
@@ -573,18 +547,14 @@ export default function Dashboard() {
                             data={stats.allocation}
                             dataKey="value"
                             nameKey="symbol"
-                            innerRadius={52}
-                            outerRadius={80}
+                            innerRadius={50}
+                            outerRadius={78}
                             strokeWidth={2}
-                            stroke="#13151b"
-                            paddingAngle={4}
+                            stroke="#111113"
+                            paddingAngle={3}
                           >
                             {stats.allocation.map((_, i) => (
-                              <Cell 
-                                key={i} 
-                                fill={COLORS[i % COLORS.length]} 
-                                className="transition-all duration-200 hover:opacity-80 cursor-pointer"
-                              />
+                              <Cell key={i} fill={COLORS[i % COLORS.length]} />
                             ))}
                           </Pie>
                           <Tooltip
@@ -592,23 +562,17 @@ export default function Dashboard() {
                               if (!active || !payload || !payload.length) return null;
                               const pData = payload[0];
                               const aItem = pData.payload as { symbol: string; value: number; pct: number; fill?: string };
-                              const itemColor = pData.fill || aItem?.fill || "#38bdf8";
                               return (
-                                <div className="bg-[#12141a]/95 backdrop-blur-md border border-white/15 rounded-lg px-3.5 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.6)] font-mono text-xs z-50 pointer-events-none">
-                                  <div className="flex items-center gap-2 mb-1.5 pb-1.5 border-b border-white/10">
+                                <div className="bg-[#141417] border border-primary/40 rounded-md px-3.5 py-2.5 shadow-[0_0_20px_rgba(212,255,0,0.18)] font-mono text-xs z-50 pointer-events-none">
+                                  <div className="flex items-center gap-2 mb-1.5 pb-1 border-b border-white/10">
                                     <span
-                                      className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-[0_0_8px_currentColor]"
-                                      style={{ backgroundColor: itemColor }}
+                                      className="w-2.5 h-2.5 rounded-sm inline-block shrink-0 shadow-[0_0_8px_currentColor]"
+                                      style={{ backgroundColor: pData.fill || aItem?.fill || "#d4ff00" }}
                                     />
                                     <span className="font-bold text-white uppercase tracking-wider">{aItem?.symbol || pData.name}</span>
-                                    <span 
-                                      className="font-bold ml-auto px-1.5 py-0.5 rounded text-[10px] bg-white/10"
-                                      style={{ color: itemColor }}
-                                    >
-                                      {aItem?.pct}%
-                                    </span>
+                                    <span className="text-primary font-bold ml-auto">{aItem?.pct}%</span>
                                   </div>
-                                  <div className="flex items-center justify-between gap-4 text-[11px] text-zinc-400">
+                                  <div className="flex items-center justify-between gap-4 text-[11px] text-muted-foreground">
                                     <span>Holding Value:</span>
                                     <span className="text-white font-semibold">{fmtMoney(Number(pData.value))}</span>
                                   </div>
@@ -620,75 +584,48 @@ export default function Dashboard() {
                       </ResponsiveContainer>
                       {/* Center total overlay */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse mb-1" />
-                        <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Equity</span>
-                        <span className="text-xs font-mono font-bold text-white tracking-tight">{fmtMoney(stats.equityValue)}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Equity</span>
+                        <span className="text-xs font-mono font-bold text-white">{fmtMoney(stats.equityValue)}</span>
                       </div>
                     </div>
 
                     <div className="sm:col-span-6 space-y-1.5 max-h-52 overflow-y-auto pr-1">
-                      {stats.allocation.map((a, i) => {
-                        const itemColor = COLORS[i % COLORS.length];
-                        return (
-                          <div
-                            key={a.symbol}
-                            className="group relative flex justify-between items-center text-xs py-1.5 px-2.5 rounded-md bg-white/[0.02] hover:bg-white/[0.06] transition-all border border-white/[0.04] hover:border-white/15"
-                          >
-                            {/* Proportional background accent bar */}
-                            <div
-                              className="absolute left-0 top-0 bottom-0 rounded-md opacity-10 pointer-events-none transition-all"
-                              style={{
-                                width: `${Math.min(100, a.pct)}%`,
-                                backgroundColor: itemColor,
-                              }}
+                      {stats.allocation.map((a, i) => (
+                        <div
+                          key={a.symbol}
+                          className="flex justify-between items-center text-xs py-1.5 px-2 rounded hover:bg-white/[0.04] transition-colors border-b border-white/[0.03]"
+                        >
+                          <span className="flex items-center font-medium font-sans text-white text-xs">
+                            <span
+                              className="w-2.5 h-2.5 rounded-[2px] inline-block mr-2 shrink-0 shadow-[0_0_6px_rgba(0,0,0,0.5)]"
+                              style={{ background: COLORS[i % COLORS.length] }}
                             />
-                            <span className="flex items-center font-medium font-sans text-white text-xs z-10">
-                              <span
-                                className="w-2.5 h-2.5 rounded-sm inline-block mr-2 shrink-0 shadow-[0_0_8px_currentColor]"
-                                style={{ backgroundColor: itemColor, color: itemColor }}
-                              />
-                              <span className="font-mono font-bold">{a.symbol}</span>
-                            </span>
-                            <div className="flex items-center gap-2.5 font-mono text-xs z-10">
-                              <span 
-                                className="font-bold px-1.5 py-0.5 rounded text-[11px] bg-white/5 border border-white/10"
-                                style={{ color: itemColor }}
-                              >
-                                {a.pct}%
-                              </span>
-                              <span className="text-zinc-300 font-medium">{fmtMoney(a.value)}</span>
-                            </div>
+                            {a.symbol}
+                          </span>
+                          <div className="flex items-center gap-2.5 font-mono text-xs">
+                            <span className="text-primary font-semibold">{a.pct}%</span>
+                            <span className="text-muted-foreground">{fmtMoney(a.value)}</span>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
                   {/* Asset class balance bar */}
-                  <div className="pt-3.5 border-t border-white/[0.07] space-y-2">
-                    <div className="flex justify-between items-center text-[11px] font-mono">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.6)]" />
-                        <span className="text-zinc-300">
-                          Equities ({stats.equityValue + stats.cash > 0 ? ((stats.equityValue / (stats.equityValue + stats.cash)) * 100).toFixed(0) : 0}%)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
-                        <span className="text-zinc-300">
-                          Cash ({fmtMoney(stats.availableBuyingPower)})
-                        </span>
-                      </div>
+                  <div className="pt-3 border-t border-white/[0.06] space-y-2">
+                    <div className="flex justify-between text-[11px] font-mono text-muted-foreground">
+                      <span>Equities ({stats.equityValue > 0 ? ((stats.equityValue / (stats.equityValue + stats.cash)) * 100).toFixed(0) : 0}%)</span>
+                      <span>Free Cash / Buying Power ({fmtMoney(stats.availableBuyingPower)})</span>
                     </div>
-                    <div className="w-full h-2.5 bg-white/10 rounded-full overflow-hidden flex p-0.5 gap-0.5 border border-white/5 shadow-inner">
+                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden flex">
                       <div
-                        className="bg-gradient-to-r from-sky-400 to-indigo-500 h-full rounded-l-full shadow-[0_0_12px_rgba(56,189,248,0.4)] transition-all duration-500"
+                        className="bg-primary h-full shadow-[0_0_10px_rgba(212,255,0,0.3)]"
                         style={{
                           width: `${stats.equityValue + stats.cash > 0 ? Math.min(100, (stats.equityValue / (stats.equityValue + stats.cash)) * 100) : 0}%`,
                         }}
                       />
                       <div
-                        className="bg-gradient-to-r from-emerald-400 to-teal-400 h-full rounded-r-full shadow-[0_0_12px_rgba(16,185,129,0.4)] transition-all duration-500"
+                        className="bg-sky-400 h-full"
                         style={{
                           width: `${stats.equityValue + stats.cash > 0 ? Math.min(100, (stats.availableBuyingPower / (stats.equityValue + stats.cash)) * 100) : 0}%`,
                         }}
@@ -697,64 +634,50 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
-              </div>
             </div>
           </div>
         </div>
 
         {/* ========================================================================= */}
-        {/* ROW 2: WATCHLIST (Full Width)                                             */}
+        {/* ROW 2: TARGET WATCHLIST (Full Width)                                      */}
         {/* ========================================================================= */}
         <div className="w-full space-y-4">
-          <div className="panel-box p-4 sm:p-7 overflow-hidden relative bg-gradient-to-b from-[#151720] to-[#101217] border border-white/[0.09] shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
-            {/* Ambient background glow */}
-            <div className="absolute top-0 left-1/4 w-72 h-32 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
-            
+          <div className="panel-box p-6 sm:p-8 overflow-hidden">
             {/* Header & Watchlist Selector */}
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.07] pb-4 mb-4 sm:mb-5">
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-violet-500/20 via-fuchsia-500/15 to-cyan-500/20 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-[0_0_12px_rgba(139,92,246,0.25)]">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="font-bold text-white text-xs tracking-tight flex items-center gap-1.5 uppercase font-sans">
-                      Target Watchlist & Market Intel
-                    </span>
-                  </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
+                  <Coins className="h-4 w-4 text-primary" /> Target Watchlist
+                </span>
+                {/* Watchlist switcher buttons */}
+                <div className="flex items-center gap-1 bg-white/[0.03] p-0.5 rounded border border-white/[0.08]">
+                  {watchlists?.map((w) => (
+                    <button
+                      key={w.id}
+                      onClick={() => setSelectedWatchlistId(w.id)}
+                      className={`px-2.5 py-1 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                        activeWlId === w.id
+                          ? "bg-primary text-black"
+                          : "text-muted-foreground hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {w.name}
+                    </button>
+                  ))}
                 </div>
-
-                {/* Watchlist switcher buttons when multiple lists exist */}
-                {watchlists && watchlists.length > 1 && (
-                  <div className="flex items-center gap-1 bg-white/[0.03] p-1 rounded-lg border border-white/[0.08] overflow-x-auto max-w-full">
-                    {watchlists.map((w) => (
-                      <button
-                        key={w.id}
-                        onClick={() => setSelectedWatchlistId(w.id)}
-                        className={`px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
-                          activeWlId === w.id
-                            ? "bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 text-white shadow-[0_0_12px_rgba(139,92,246,0.35)] border border-violet-400/40"
-                            : "text-zinc-400 hover:text-white hover:bg-white/[0.06]"
-                        }`}
-                      >
-                        {w.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Action Buttons: New List & Add Ticker */}
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {/* Create Watchlist Modal */}
                 <Dialog open={isNewListOpen} onOpenChange={setIsNewListOpen}>
                   <DialogTrigger asChild>
-                    <button className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono font-semibold text-zinc-300 hover:text-white uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer">
-                      <FolderPlus className="h-3.5 w-3.5 text-violet-400" />
+                    <button className="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono font-semibold text-white uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer">
+                      <FolderPlus className="h-3 w-3 text-primary" />
                       <span>+ List</span>
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="bg-[#12141a] border-white/10 text-white sm:max-w-md">
+                  <DialogContent className="bg-[#111113] border-white/10 text-white sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle className="font-display font-bold uppercase tracking-wide">
                         Create Custom Watchlist
@@ -765,21 +688,21 @@ export default function Dashboard() {
                         <label className="meta-label block mb-1.5">Watchlist Name</label>
                         <input
                           type="text"
-                          placeholder="e.g. Growth, Tech, Dividend"
+                          placeholder="e.g. High Volatility CSPs, Core Wheel"
                           value={newListName}
                           onChange={(e) => setNewListName(e.target.value)}
                           required
-                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-muted-foreground focus:outline-none focus:border-violet-400"
+                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                         />
                       </div>
                       <div>
                         <label className="meta-label block mb-1.5">Description (Optional)</label>
                         <input
                           type="text"
-                          placeholder="e.g. Core tracked tickers"
+                          placeholder="e.g. Weekly wheel candidates"
                           value={newListDesc}
                           onChange={(e) => setNewListDesc(e.target.value)}
-                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-muted-foreground focus:outline-none focus:border-violet-400"
+                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                         />
                       </div>
                       <div className="flex justify-end gap-2 pt-2">
@@ -793,7 +716,7 @@ export default function Dashboard() {
                         <button
                           type="submit"
                           disabled={createListMut.isPending}
-                          className="px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-mono text-xs font-bold uppercase hover:brightness-110 disabled:opacity-50 cursor-pointer shadow-[0_0_12px_rgba(139,92,246,0.3)]"
+                          className="px-4 py-2 rounded bg-primary text-black font-mono text-xs font-bold uppercase hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
                         >
                           {createListMut.isPending ? "Creating..." : "Create Watchlist"}
                         </button>
@@ -805,12 +728,12 @@ export default function Dashboard() {
                 {/* Add Ticker Modal */}
                 <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                   <DialogTrigger asChild>
-                    <button className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:brightness-110 transition-all cursor-pointer">
-                      <Plus className="h-3.5 w-3.5" />
+                    <button className="px-2.5 py-1 rounded bg-primary text-black text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 hover:bg-primary/90 transition-colors cursor-pointer">
+                      <Plus className="h-3 w-3" />
                       <span>+ Ticker</span>
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="bg-[#12141a] border-white/10 text-white sm:max-w-md">
+                  <DialogContent className="bg-[#111113] border-white/10 text-white sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle className="font-display font-bold uppercase tracking-wide">
                         Add Ticker to Watchlist
@@ -825,7 +748,7 @@ export default function Dashboard() {
                           value={tickerInput}
                           onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
                           required
-                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono uppercase placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400"
+                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono uppercase placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                         />
                       </div>
                       <div className="flex justify-end gap-2 pt-2">
@@ -839,7 +762,7 @@ export default function Dashboard() {
                         <button
                           type="submit"
                           disabled={addSymbolMut.isPending}
-                          className="px-4 py-2 rounded bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-mono text-xs font-bold uppercase hover:brightness-110 disabled:opacity-50 cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+                          className="px-4 py-2 rounded bg-primary text-black font-mono text-xs font-bold uppercase hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
                         >
                           {addSymbolMut.isPending ? "Adding..." : "Add to List"}
                         </button>
@@ -857,7 +780,7 @@ export default function Dashboard() {
                       }
                     }}
                     disabled={deleteListMut.isPending}
-                    className="p-1.5 rounded-lg hover:bg-red-500/15 text-zinc-400 hover:text-red-400 border border-transparent hover:border-red-500/30 transition-colors cursor-pointer"
+                    className="p-1 rounded hover:bg-red-500/10 text-muted-foreground hover:text-red-400 border border-transparent hover:border-red-500/20 transition-colors cursor-pointer"
                     title="Delete this watchlist"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -866,195 +789,176 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Quick Add Presets Bar */}
+            <div className="flex items-center gap-1.5 flex-wrap py-2 text-xs font-mono text-muted-foreground border-b border-white/[0.04]">
+              <span className="text-[10px] text-muted-foreground/80 uppercase font-semibold">Quick add:</span>
+              {POPULAR_WHEEL_TICKERS.map((sym) => {
+                const alreadyInList = watchlistData?.items.some((i) => i.symbol === sym);
+                return (
+                  <button
+                    key={sym}
+                    onClick={() => !alreadyInList && handleQuickAdd(sym)}
+                    disabled={alreadyInList || addSymbolMut.isPending}
+                    className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors cursor-pointer ${
+                      alreadyInList
+                        ? "border-white/5 text-muted-foreground/30 cursor-default"
+                        : "border-white/10 bg-white/[0.02] text-white hover:border-primary/50 hover:text-primary"
+                    }`}
+                  >
+                    {alreadyInList ? `✓${sym}` : `+${sym}`}
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Watchlist Table */}
             {isWatchlistLoading ? (
               <div className="py-12 space-y-2.5">
-                <Skeleton className="h-9 w-full bg-white/5" />
-                <Skeleton className="h-9 w-full bg-white/5" />
-                <Skeleton className="h-9 w-full bg-white/5" />
+                <Skeleton className="h-7 w-full bg-white/5" />
+                <Skeleton className="h-7 w-full bg-white/5" />
+                <Skeleton className="h-7 w-full bg-white/5" />
               </div>
             ) : !watchlistData || watchlistData.items.length === 0 ? (
-              <div className="py-14 text-center space-y-3">
-                <div className="h-12 w-12 mx-auto rounded-xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
-                  <Sparkles className="h-6 w-6" />
-                </div>
-                <p className="text-sm font-semibold text-white">Watchlist is currently empty</p>
-                <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                  Add high-conviction symbols to stream real-time price quotes, Tastylive IV Rank, YTD trajectory, and 52-week percentile channels.
+              <div className="py-12 text-center space-y-2">
+                <Sparkles className="h-7 w-7 mx-auto text-muted-foreground" />
+                <p className="text-xs font-mono text-white">Watchlist is empty</p>
+                <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+                  Add tickers above to track IV Rank, 52-Week range & run Basis analysis.
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 mt-2">
-                <table className="w-full text-left border-collapse text-xs font-mono min-w-full">
+              <div className="overflow-x-auto mt-2">
+                <table className="w-full text-left border-collapse text-xs font-mono">
                   <thead>
-                    <tr className="border-b border-white/[0.08] text-zinc-400 text-[11px]">
-                      <th className="pb-3 font-normal meta-label">Ticker</th>
-                      <th className="pb-3 font-normal meta-label text-right">Price</th>
-                      <th className="pb-3 font-normal meta-label text-right">Day Chg</th>
-                      <th
-                        className="pb-3 font-normal meta-label text-center hidden md:table-cell cursor-help"
-                        title="Tastylive Implied Volatility Rank (IVR): ((Current IV - 52W Low IV) / (52W High IV - 52W Low IV)) × 100"
-                      >
-                        IVR
-                      </th>
-                      <th className="pb-3 font-normal meta-label text-right hidden sm:table-cell">YTD</th>
-                      <th className="pb-3 font-normal meta-label text-right hidden lg:table-cell">52W High</th>
-                      <th className="pb-3 font-normal meta-label text-right hidden lg:table-cell">52W Low</th>
-                      <th className="pb-3 font-normal meta-label text-center hidden md:table-cell min-w-[150px]">52W Channel</th>
-                      <th className="pb-3 font-normal meta-label text-right w-8"></th>
+                    <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
+                      <th className="pb-2.5 font-normal meta-label">Ticker</th>
+                      <th className="pb-2.5 font-normal meta-label text-right">Price</th>
+                      <th className="pb-2.5 font-normal meta-label text-right">Day Chg</th>
+                      <th className="pb-2.5 font-normal meta-label text-center">IV Rank</th>
+                      <th className="pb-2.5 font-normal meta-label text-center min-w-[120px]">52-Week</th>
+                      <th className="pb-2.5 font-normal meta-label text-right">Beta</th>
+                      <th className="pb-2.5 font-normal meta-label text-right">Basis / Risk</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/[0.04]">
+                  <tbody className="divide-y divide-white/[0.03]">
                     {watchlistData.items.map((item) => {
                       const iv = item.ivRank ?? 35;
-                      const ivStyle =
+                      const ivColor =
                         iv >= 60
-                          ? "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                          ? "bg-amber-400/15 text-amber-300 border-amber-400/30"
                           : iv >= 30
-                            ? "bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.15)]"
-                            : "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
+                            ? "bg-primary/15 text-primary border-primary/30"
+                            : "bg-blue-400/15 text-blue-300 border-blue-400/30";
 
                       const pos52 = item.fiftyTwoWeekPos ?? 50;
-                      const ytd = item.ytdChangePct;
-                      const tColor = getTickerColor(item.symbol);
 
                       return (
                         <tr
                           key={item.id}
-                          className="hover:bg-white/[0.04] transition-colors group"
+                          className="hover:bg-white/[0.03] transition-colors group"
                         >
-                          {/* Ticker Symbol & Name with Colored Avatar */}
-                          <td className="py-3">
-                            <div className="flex items-center gap-2.5">
-                              <div className={`h-8 w-8 rounded-lg ${tColor.bg} ${tColor.border} border flex items-center justify-center font-bold text-xs ${tColor.text} shadow-sm shrink-0`}>
-                                {item.symbol.slice(0, 3)}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
-                                  {item.symbol}
-                                </div>
-                                <div className="text-[10px] text-zinc-400 font-sans truncate max-w-[110px] sm:max-w-[150px]">
-                                  {item.name}
-                                </div>
-                              </div>
+                          {/* Ticker Symbol */}
+                          <td className="py-2.5">
+                            <div className="font-bold text-white text-sm">
+                              {item.symbol}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground font-sans truncate max-w-[110px]">
+                              {item.name}
                             </div>
                           </td>
 
                           {/* Price */}
-                          <td className="py-3 text-right font-bold text-white text-sm font-mono">
+                          <td className="py-2.5 text-right font-medium text-white text-xs">
                             {item.price ? fmtMoney(item.price) : "—"}
                           </td>
 
-                          {/* Day Change with Dynamic Pill */}
-                          <td className="py-3 text-right">
+                          {/* Day Change */}
+                          <td
+                            className={`py-2.5 text-right font-medium text-xs ${
+                              item.change >= 0 ? "text-primary" : "text-red-400"
+                            }`}
+                          >
                             {item.price ? (
-                              <div className="inline-flex flex-col items-end">
-                                <div
-                                  className={`px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-0.5 border ${
-                                    item.change >= 0
-                                      ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]"
-                                      : "bg-rose-500/15 text-rose-400 border-rose-500/30 shadow-[0_0_8px_rgba(244,63,94,0.15)]"
-                                  }`}
-                                >
-                                  {item.change >= 0 ? (
-                                    <ArrowUpRight className="h-3 w-3 shrink-0" />
-                                  ) : (
-                                    <ArrowDownRight className="h-3 w-3 shrink-0" />
-                                  )}
-                                  <span>{item.change >= 0 ? "+" : ""}{item.change.toFixed(2)}</span>
+                              <>
+                                {item.change >= 0 ? "+" : ""}
+                                {item.change.toFixed(2)}
+                                <div className="text-[10px]">
+                                  {item.changePct >= 0 ? "+" : ""}
+                                  {item.changePct.toFixed(1)}%
                                 </div>
-                                <div className={`text-[10px] mt-0.5 font-medium ${item.changePct >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                                  {item.changePct >= 0 ? "+" : ""}{item.changePct.toFixed(2)}%
-                                </div>
-                              </div>
+                              </>
                             ) : (
-                              <span className="text-zinc-500">—</span>
+                              "—"
                             )}
                           </td>
 
-                          {/* IVR (Tastylive IV Rank) */}
-                          <td className="py-3 text-center hidden md:table-cell">
-                            {item.ivRank != null ? (
-                              <span
-                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono font-bold border ${ivStyle} cursor-help transition-all`}
-                                title={`Tastylive IV Rank: ${item.ivRank}%\nIV Percentile (IVP): ${item.ivPercentile ?? "—"}%\nCurrent 30D IV: ${item.iv30 != null ? (item.iv30 * 100).toFixed(1) + "%" : "—"}\n52W IV Range: ${item.iv52wLow != null ? (item.iv52wLow * 100).toFixed(0) + "%" : "—"} - ${item.iv52wHigh != null ? (item.iv52wHigh * 100).toFixed(0) + "%" : "—"}`}
-                              >
-                                {item.ivRank >= 60 && <Flame className="h-3 w-3 text-amber-400 shrink-0" />}
-                                {item.ivRank < 60 && item.ivRank >= 30 && <Activity className="h-3 w-3 text-cyan-400 shrink-0" />}
-                                <span>{item.ivRank}%</span>
-                              </span>
-                            ) : (
-                              <span className="text-zinc-500 text-[10px]">—</span>
-                            )}
+                          {/* IV Rank */}
+                          <td className="py-2.5 text-center">
+                            <span
+                              className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${ivColor}`}
+                              title={
+                                iv >= 60
+                                  ? "High IV Rank — prime for selling options premium"
+                                  : "Moderate IV Rank"
+                              }
+                            >
+                              {iv}%
+                            </span>
                           </td>
 
-                          {/* YTD Return */}
-                          <td className="py-3 text-right hidden sm:table-cell">
-                            {ytd != null ? (
-                              <span
-                                className={`inline-block px-2 py-0.5 rounded text-xs font-semibold border ${
-                                  ytd >= 0
-                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                                }`}
-                              >
-                                {ytd >= 0 ? "+" : ""}{ytd.toFixed(2)}%
-                              </span>
-                            ) : (
-                              <span className="text-zinc-500">—</span>
-                            )}
-                          </td>
-
-                          {/* 52W High - hidden on mobile */}
-                          <td className="py-3 text-right font-medium text-emerald-400/90 text-xs hidden lg:table-cell">
-                            {item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "—"}
-                          </td>
-
-                          {/* 52W Low - hidden on mobile */}
-                          <td className="py-3 text-right font-medium text-rose-400/80 text-xs hidden lg:table-cell">
-                            {item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "—"}
-                          </td>
-
-                          {/* 52W Range Visual with Multi-stop Gradient */}
-                          <td className="py-3 px-3 hidden md:table-cell">
-                            <div className="w-full flex flex-col items-center gap-1.5">
-                              <div className="w-full bg-white/10 h-2 rounded-full relative overflow-visible shadow-inner">
-                                {/* Gradient track from low (rose) to high (emerald) */}
-                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-500/80 via-amber-400/80 to-emerald-400/80" />
-                                {/* Current price position marker */}
+                          {/* 52-Week Range */}
+                          <td className="py-2.5 px-2">
+                            <div className="w-full flex flex-col items-center gap-1">
+                              <div className="w-full bg-white/[0.08] h-1.5 rounded-full overflow-hidden relative">
                                 <div
-                                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-zinc-950 shadow-[0_0_10px_rgba(255,255,255,0.9)] z-10 transition-all"
-                                  style={{ left: `${Math.min(96, Math.max(4, pos52))}%` }}
+                                  className="bg-primary h-full rounded-full transition-all"
+                                  style={{ width: `${Math.min(100, Math.max(3, pos52))}%` }}
                                 />
                               </div>
-                              <div className="w-full flex justify-between items-center text-[10px] font-mono">
-                                <span className="text-rose-400/80 font-medium">
-                                  {item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "Low"}
-                                </span>
-                                <span className="px-1.5 py-0.2 rounded bg-white/10 text-white font-bold text-[9px]">
-                                  {pos52}%
-                                </span>
-                                <span className="text-emerald-400/80 font-medium">
-                                  {item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "High"}
-                                </span>
+                              <div className="w-full flex justify-between text-[9px] text-muted-foreground font-mono">
+                                <span>{item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "L"}</span>
+                                <span className="text-white/80 font-bold">{pos52}%</span>
+                                <span>{item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "H"}</span>
                               </div>
                             </div>
                           </td>
 
-                          {/* Remove Action */}
-                          <td className="py-3 text-right">
-                            <button
-                              onClick={() =>
-                                removeSymbolMut.mutate({
-                                  watchlistId: item.watchlistId,
-                                  symbol: item.symbol,
-                                })
-                              }
-                              className="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/15 transition-colors cursor-pointer"
-                              title="Remove from watchlist"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
+                          {/* Beta */}
+                          <td className="py-2.5 text-right text-white font-bold text-xs">
+                            {item.beta ? item.beta.toFixed(2) : "1.00"}
+                          </td>
+
+                          {/* Basis & Risk Quick Action buttons */}
+                          <td className="py-2.5 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Link
+                                to={`/basis?symbol=${item.symbol}`}
+                                className="px-2 py-1 rounded bg-primary/10 hover:bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1 transition-colors"
+                                title="Run Basis Improvement analysis"
+                              >
+                                <Coins className="h-3 w-3" />
+                                <span>Basis</span>
+                              </Link>
+                              <Link
+                                to={`/risk?symbol=${item.symbol}`}
+                                className="px-1.5 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] text-[10px] font-bold text-muted-foreground hover:text-white uppercase tracking-wider transition-colors"
+                                title="Run Risk & Expected Move Check"
+                              >
+                                <ShieldAlert className="h-3 w-3" />
+                              </Link>
+                              <button
+                                onClick={() =>
+                                  removeSymbolMut.mutate({
+                                    watchlistId: item.watchlistId,
+                                    symbol: item.symbol,
+                                  })
+                                }
+                                className="p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                                title="Remove from watchlist"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

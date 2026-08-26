@@ -3,10 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { authedQuery, createRouter } from "./middleware";
 import { lookupSymbolInfo } from "./analytics/symbolInfo";
 import {
-  searchSymbolsWithRecommendations,
-  getSymbolDetailPreview,
-} from "./analytics/symbolSearch";
-import {
   clearDemoData,
   deletePositionsByIds,
   getOrCreateImportAccount,
@@ -28,21 +24,6 @@ export const portfolioRouter = createRouter({
     ]);
     return { positions: rows, accounts };
   }),
-
-  /** Search symbols with ticker autocomplete & recommendations */
-  searchSymbols: authedQuery
-    .input(z.object({ query: z.string().default("") }))
-    .query(async ({ input }) => {
-      const results = await searchSymbolsWithRecommendations(input.query);
-      return results;
-    }),
-
-  /** Live detail preview and recommendation metrics for a specific symbol */
-  symbolPreview: authedQuery
-    .input(z.object({ symbol: z.string() }))
-    .query(async ({ input }) => {
-      return await getSymbolDetailPreview(input.symbol);
-    }),
 
   /** Import a broker export (IBKR CSV) or generic xlsx/csv positions file. */
   importFile: authedQuery
@@ -113,7 +94,6 @@ export const portfolioRouter = createRouter({
         symbol: z.string().min(1).max(16),
         quantity: z.number().positive(),
         costBasis: z.number().positive().optional(),
-        accountId: z.number().nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -129,7 +109,6 @@ export const portfolioRouter = createRouter({
       // add the position anyway, quotes will fill in on next refresh.
       await insertManualPosition(ctx.user.id, {
         userId: ctx.user.id,
-        accountId: input.accountId ?? undefined,
         symbol,
         description: info ? (info.name ?? undefined) : undefined,
         assetType: info?.instrumentType === "ETF" ? "etf" : "stock",

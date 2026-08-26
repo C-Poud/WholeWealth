@@ -1,4 +1,10 @@
-import { getYahooSymbolInfo, getYahooSpots, type YahooSymbolInfo } from "./yahoo";
+import {
+  getYahooQuotes,
+  getYahooSymbolInfo,
+  getYahooSpots,
+  type YahooQuote,
+  type YahooSymbolInfo,
+} from "./yahoo";
 
 /**
  * Symbol lookup with automatic fallback.
@@ -98,6 +104,35 @@ export async function getSpotsWithFallback(
         const p = qj?.data?.p;
         if (typeof p === "number" && p > 0) {
           out[sym] = p;
+          return;
+        }
+      }
+    }),
+  );
+  return out;
+}
+
+/**
+ * Quotes (last price + previous close) with fallback: Yahoo first,
+ * stockanalysis.com per-symbol for anything missing (price only there,
+ * so prevClose stays null and day-change is simply not shown).
+ */
+export async function getQuotesWithFallback(
+  symbols: string[],
+): Promise<Record<string, YahooQuote>> {
+  const out = await getYahooQuotes(symbols);
+  const missing = [...new Set(symbols.map((s) => s.toUpperCase()))].filter(
+    (s) => !out[s],
+  );
+  await Promise.all(
+    missing.map(async (sym) => {
+      for (const kind of ["s", "e"] as const) {
+        const qj = await fetchSa(
+          `${SA}/api/quotes/${kind}/${encodeURIComponent(sym)}`,
+        );
+        const p = qj?.data?.p;
+        if (typeof p === "number" && p > 0) {
+          out[sym] = { price: p, prevClose: null };
           return;
         }
       }

@@ -40,15 +40,17 @@ export async function resolveMarketData(
 
   if (config && identity) {
     const db = getDb();
-    const accounts = await db
-      .select()
-      .from(brokerAccounts)
-      .where(
-        and(
-          eq(brokerAccounts.userId, userId),
-          eq(brokerAccounts.source, "snaptrade"),
-        ),
-      );
+    const accounts = !db
+      ? []
+      : await db
+          .select()
+          .from(brokerAccounts)
+          .where(
+            and(
+              eq(brokerAccounts.userId, userId),
+              eq(brokerAccounts.source, "snaptrade"),
+            ),
+          );
     accountId = accounts[0]?.snaptradeAccountId ?? null;
   }
 

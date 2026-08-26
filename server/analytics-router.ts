@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { authedQuery, createRouter } from "./middleware";
 import { listPositions } from "./queries/portfolio";
 import { resolveMarketData } from "./analytics/marketData";
@@ -125,7 +124,6 @@ export const analyticsRouter = createRouter({
           marketValue: mv,
           portfolioValue,
           hasShortOptions: shortOptBySymbol.get(symbol) ?? false,
-          contracts: chain,
         }),
         description:
           rows.find((p) => p.symbol === symbol && p.description)?.description ??
@@ -141,42 +139,4 @@ export const analyticsRouter = createRouter({
       errors: market.errors,
     };
   }),
-
-  /**
-   * Interactive Expected Move / Volatility Box calculator for any symbol.
-   * Allows stress-testing custom DTEs and IV shocks.
-   */
-  expectedMoveLookup: authedQuery
-    .input(
-      z.object({
-        symbol: z.string(),
-        dte: z.number().optional(),
-        ivShockPct: z.number().optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const sym = input.symbol.trim().toUpperCase();
-      if (!sym) {
-        throw new Error("Symbol is required");
-      }
-      const market = await resolveMarketData(ctx.user.id, [sym]);
-      const spot = market.spots[sym] ?? 0;
-      const chain = market.chains[sym] ?? [];
-      let iv30 = estimateIv30(chain, spot);
-      if (iv30 != null && input.ivShockPct != null && input.ivShockPct !== 0) {
-        iv30 = Math.max(0.02, iv30 * (1 + input.ivShockPct / 100));
-      }
-      const report = buildRiskReport({
-        symbol: sym,
-        spot,
-        iv30,
-        basis: null,
-        marketValue: 10000,
-        portfolioValue: 10000,
-        hasShortOptions: false,
-        dte: input.dte ?? 22,
-        contracts: chain,
-      });
-      return { report, mode: market.mode };
-    }),
 });

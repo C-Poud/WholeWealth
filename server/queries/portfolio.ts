@@ -9,18 +9,54 @@ import {
   type Position,
   type SnaptradeIdentity,
 } from "@db/schema";
-import { lookupSymbolInfo } from "../analytics/symbolInfo";
+import { getQuotesWithFallback, getSpotsWithFallback, lookupSymbolInfo } from "../analytics/symbolInfo";
 import { DEMO_POSITIONS, demoSpot } from "../snaptrade/demo";
+
+/** Position enriched with the previous close, for day-change display. */
+export type PositionWithQuote = Position & { prevClose?: number | null };
 
 // ---- in-memory fallback stores ---------------------------------------------
 
 const inMemorySettings = new Map<string, string>();
 const inMemoryIdentities = new Map<number, SnaptradeIdentity>();
 let nextAccountId = 1;
-const inMemoryAccounts: BrokerAccount[] = [];
+const inMemoryAccounts: BrokerAccount[] = [
+  {
+    id: nextAccountId++,
+    userId: 1,
+    snaptradeAccountId: null,
+    name: "Primary Trading",
+    institution: "Interactive Brokers",
+    number: "U***8492",
+    cash: 25480.0,
+    currency: "USD",
+    enabled: true,
+    source: "demo",
+    lastSyncedAt: new Date(),
+    createdAt: new Date(),
+  },
+];
 
 let nextPositionId = 1;
-const inMemoryPositions: Position[] = [];
+const inMemoryPositions: Position[] = DEMO_POSITIONS.map((p) => ({
+  id: nextPositionId++,
+  userId: 1,
+  accountId: 1,
+  symbol: p.symbol,
+  description: p.description,
+  assetType: "stock" as const,
+  quantity: p.quantity,
+  costBasis: p.costBasis,
+  price: demoSpot(p.symbol),
+  currency: "USD",
+  source: "demo" as const,
+  optionType: null,
+  strike: null,
+  expiry: null,
+  rawSymbol: null,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+}));
 
 // ---- settings --------------------------------------------------------------
 
@@ -126,6 +162,7 @@ export async function deleteIdentity(userId: number) {
 // ---- accounts --------------------------------------------------------------
 
 export async function listAccounts(userId: number): Promise<BrokerAccount[]> {
+  await ensureUserDemoData(userId);
   const db = getDb();
   if (db) {
     try {
@@ -350,9 +387,12 @@ export async function getOrCreateImportAccount(userId: number): Promise<BrokerAc
 // ---- positions -------------------------------------------------------------
 
 /** All positions for a user, excluding ones in accounts they've disabled. */
-export async function listPositions(userId: number): Promise<Position[]> {
+export async function listPositions(
+  userId: number,
+): Promise<PositionWithQuote[]> {
+  await ensureUserDemoData(userId);
   const db = getDb();
-  let rows: Position[] = [];
+  let rows: PositionWithQuote[] = [];
   if (db) {
     try {
       const disabledRows = await db
@@ -440,6 +480,44 @@ export async function listPositions(userId: number): Promise<Position[]> {
         }
       }),
     );
+  }
+
+  // Refresh equity prices (stocks/ETFs) with live quotes - keeps demo and
+  // manually added positions on real market data instead of the price
+  // captured when the row was created. Options keep their synced price
+  // (no free option-quote source). Capped at 15 symbols per load.
+  const equitySymbols = [
+    ...new Set(
+      rows
+        .filter((r) => r.assetType !== "option")
+        .map((r) => r.symbol.toUpperCase()),
+    ),
+  ].slice(0, 15);
+  if (equitySymbols.length > 0) {
+    try {
+      const quotes = await getQuotesWithFallback(equitySymbols);
+      for (const r of rows) {
+        const q = quotes[r.symbol.toUpperCase()];
+        if (!q) continue;
+        r.prevClose = q.prevClose;
+        if (r.assetType === "option" || q.price === r.price) continue;
+        r.price = q.price;
+        if (db) {
+          try {
+            await db
+              .update(positions)
+              .set({ price: q.price })
+              .where(and(eq(positions.id, r.id), eq(positions.userId, userId)));
+          } catch {
+            /* best effort */
+          }
+        }
+        const memPos = inMemoryPositions.find((p) => p.id === r.id);
+        if (memPos) memPos.price = q.price;
+      }
+    } catch {
+      /* quotes are best effort - stale prices still render */
+    }
   }
 
   return rows;
@@ -655,6 +733,10 @@ export async function seedDemoData(userId: number) {
     }
   }
 
+  // Live market prices when reachable; synthetic prices as fallback.
+  const spots = await getSpotsWithFallback(
+    DEMO_POSITIONS.map((p) => p.symbol),
+  ).catch(() => ({}) as Record<string, number>);
   const rows = DEMO_POSITIONS.map((p) => ({
     userId,
     accountId,
@@ -663,7 +745,7 @@ export async function seedDemoData(userId: number) {
     assetType: "stock" as const,
     quantity: p.quantity,
     costBasis: p.costBasis,
-    price: demoSpot(p.symbol),
+    price: spots[p.symbol] ?? demoSpot(p.symbol),
     currency: "USD",
     source: "demo" as const,
   }));
@@ -703,41 +785,42 @@ export async function clearDemoData(userId: number) {
   }
 }
 
-/**
- * Completely clears a user's linked accounts, SnapTrade credentials,
- * and synced/imported positions, enabling them to re-authenticate
- * and connect fresh. The user account itself remains intact (not banned).
- */
-export async function resetUserPortfolioData(userId: number) {
+/** Ensures that a new user starts with demo data by default. */
+export async function ensureUserDemoData(userId: number) {
+  // 1. If user has a SnapTrade identity registered, never auto-seed demo data
+  const identity = await getIdentity(userId);
+  if (identity) return;
+
+  // 2. Check if user already has positions or accounts in DB
   const db = getDb();
   if (db) {
     try {
-      // 1. Delete user's positions
-      await db.delete(positions).where(eq(positions.userId, userId));
-      // 2. Delete user's broker accounts
-      await db.delete(brokerAccounts).where(eq(brokerAccounts.userId, userId));
-      // 3. Delete SnapTrade identity
-      await db.delete(snaptradeIdentities).where(eq(snaptradeIdentities.userId, userId));
+      const [dbPositions, dbAccounts] = await Promise.all([
+        db
+          .select({ id: positions.id })
+          .from(positions)
+          .where(eq(positions.userId, userId))
+          .limit(1),
+        db
+          .select({ id: brokerAccounts.id, source: brokerAccounts.source })
+          .from(brokerAccounts)
+          .where(eq(brokerAccounts.userId, userId)),
+      ]);
+
+      if (dbPositions.length > 0) return;
+      if (dbAccounts.some((a) => a.source === "snaptrade" || a.source === "import")) return;
     } catch (err) {
-      console.warn("[portfolio] resetUserPortfolioData db error, fallback to memory:", err);
+      console.warn("[portfolio] ensureUserDemoData db check error, fallback to memory:", err);
     }
   }
 
-  // In-memory cleanup
-  inMemoryIdentities.delete(userId);
-  for (let i = inMemoryPositions.length - 1; i >= 0; i--) {
-    if (inMemoryPositions[i].userId === userId) {
-      inMemoryPositions.splice(i, 1);
-    }
-  }
-  for (let i = inMemoryAccounts.length - 1; i >= 0; i--) {
-    if (inMemoryAccounts[i].userId === userId) {
-      inMemoryAccounts.splice(i, 1);
-    }
-  }
-}
+  // Check in-memory state
+  const memPositions = inMemoryPositions.filter((p) => p.userId === userId);
+  if (memPositions.length > 0) return;
 
-/** Ensures that a user has data only if explicitly requested (no-op: all users start with 0 positions). */
-export async function ensureUserDemoData(_userId: number) {
-  // First time users start clean with zero positions.
+  const memAccounts = inMemoryAccounts.filter((a) => a.userId === userId);
+  if (memAccounts.some((a) => a.source === "snaptrade" || a.source === "import")) return;
+
+  // Auto-seed demo portfolio for this new user
+  await seedDemoData(userId);
 }

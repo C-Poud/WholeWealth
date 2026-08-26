@@ -69,8 +69,8 @@ const inMemoryWatchlists: InMemoryWatchlist[] = [
   {
     id: nextWatchlistId++,
     userId: 1,
-    name: "Watchlist",
-    description: "Tracked tickers, IV Rank, and performance metrics",
+    name: "Wheel Strategy Targets",
+    description: "High quality liquid tickers for Cash Secured Puts & Covered Calls",
     createdAt: new Date(),
   },
 ];
@@ -81,8 +81,8 @@ const inMemoryItems: InMemoryWatchlistItem[] = [
     watchlistId: 1,
     userId: 1,
     symbol: "NVDA",
-    notes: "NVIDIA Corp",
-    targetStrike: null,
+    notes: "Top AI compute leader · Target 30-45 DTE 0.20Δ CSP",
+    targetStrike: 120.0,
     createdAt: new Date(),
   },
   {
@@ -90,8 +90,8 @@ const inMemoryItems: InMemoryWatchlistItem[] = [
     watchlistId: 1,
     userId: 1,
     symbol: "AAPL",
-    notes: "Apple Inc",
-    targetStrike: null,
+    notes: "High cash generator · Steady CC candidate",
+    targetStrike: 220.0,
     createdAt: new Date(),
   },
   {
@@ -99,8 +99,8 @@ const inMemoryItems: InMemoryWatchlistItem[] = [
     watchlistId: 1,
     userId: 1,
     symbol: "TSLA",
-    notes: "Tesla Inc",
-    targetStrike: null,
+    notes: "High IV rank · Great premium yield",
+    targetStrike: 200.0,
     createdAt: new Date(),
   },
   {
@@ -108,8 +108,8 @@ const inMemoryItems: InMemoryWatchlistItem[] = [
     watchlistId: 1,
     userId: 1,
     symbol: "AMD",
-    notes: "Advanced Micro Devices",
-    targetStrike: null,
+    notes: "Semiconductor beta hedge",
+    targetStrike: 140.0,
     createdAt: new Date(),
   },
   {
@@ -117,8 +117,8 @@ const inMemoryItems: InMemoryWatchlistItem[] = [
     watchlistId: 1,
     userId: 1,
     symbol: "SPY",
-    notes: "SPDR S&P 500 ETF Trust",
-    targetStrike: null,
+    notes: "Core index anchor",
+    targetStrike: 540.0,
     createdAt: new Date(),
   },
 ];
@@ -137,8 +137,8 @@ export async function listUserWatchlists(userId: number): Promise<Watchlist[]> {
         // Create initial default watchlist
         await db.insert(watchlists).values({
           userId,
-          name: "Watchlist",
-          description: "Tracked tickers, IV Rank, and performance metrics",
+          name: "Wheel Strategy Targets",
+          description: "High quality liquid tickers for Cash Secured Puts & Covered Calls",
         });
         const created = await db
           .select()
@@ -153,7 +153,7 @@ export async function listUserWatchlists(userId: number): Promise<Watchlist[]> {
               watchlistId: defaultWlId,
               userId,
               symbol: s,
-              notes: s,
+              notes: "Default Wheel candidate",
             });
           }
           return created;
@@ -171,8 +171,8 @@ export async function listUserWatchlists(userId: number): Promise<Watchlist[]> {
     const newWl: InMemoryWatchlist = {
       id: nextWatchlistId++,
       userId,
-      name: "Watchlist",
-      description: "Tracked tickers, IV Rank, and performance metrics",
+      name: "Wheel Strategy Targets",
+      description: "High quality liquid tickers for Cash Secured Puts & Covered Calls",
       createdAt: new Date(),
     };
     inMemoryWatchlists.push(newWl);
@@ -185,7 +185,7 @@ export async function listUserWatchlists(userId: number): Promise<Watchlist[]> {
         watchlistId: newWl.id,
         userId,
         symbol: s,
-        notes: s,
+        notes: "Default Wheel candidate",
         targetStrike: null,
         createdAt: new Date(),
       });

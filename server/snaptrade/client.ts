@@ -22,10 +22,12 @@ export async function getSnaptradeConfig(): Promise<SnaptradeConfig | null> {
 
   try {
     const db = getDb();
-    const rows = await db
-      .select()
-      .from(appSettings)
-      .where(eq(appSettings.key, "snaptrade"));
+    const rows = !db
+      ? []
+      : await db
+          .select()
+          .from(appSettings)
+          .where(eq(appSettings.key, "snaptrade"));
     const stored = rows[0]?.value
       ? (JSON.parse(rows[0].value) as Partial<SnaptradeConfig>)
       : {};

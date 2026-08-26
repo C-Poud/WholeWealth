@@ -5,8 +5,10 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
 import { createContext } from "./context";
 import { env } from "./lib/env";
+import { createOAuthCallbackHandler } from "./kimi/auth";
 import { googleCallbackHandler, googleLoginHandler } from "./google/auth";
 import { runMigrations } from "./migrate";
+import { Paths } from "@contracts/constants";
 
 // Ensure database schema exists (production runtime is the only environment
 // with network access to the database). Runs in the background with retries
@@ -33,6 +35,7 @@ if (env.isProduction || process.env.RUN_MIGRATIONS === "1") {
 const app = new Hono<{ Bindings: HttpBindings }>();
 
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.get("/api/oauth/google", googleLoginHandler());
 app.get("/api/oauth/google/callback", googleCallbackHandler());
 app.use("/api/trpc/*", async (c) => {

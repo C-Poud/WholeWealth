@@ -4,10 +4,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Compass, KeyRound, Trash2, Webhook } from "lucide-react";
+import { Building2, KeyRound, Trash2, Webhook } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { fmtMoney } from "@/lib/format";
-import { startAppTour, TOUR_STORAGE_KEY } from "@/components/OnboardingTour";
 
 export default function Settings() {
   const utils = trpc.useUtils();
@@ -265,47 +264,7 @@ export default function Settings() {
     </div>
   );
 
-  const tourPanel = (
-    <div className="panel-box p-6 sm:p-8 space-y-6">
-      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
-        <span className="meta-label flex items-center gap-2">
-          <Compass className="h-4 w-4 text-primary" /> Product Tour & Walkthrough
-        </span>
-        <span className="text-xs font-mono text-emerald-400 font-medium px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-          Guided Mode
-        </span>
-      </div>
-
-      <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-        Review the NetWorth.io architecture, delta-neutral Greek modeling ($\Delta = 0$), portfolio data integration methods (SnapTrade, CSV, manual entry), and algorithmic hedging engine.
-      </p>
-
-      <div className="flex flex-wrap items-center gap-3 pt-1">
-        <Button
-          onClick={() => startAppTour()}
-          className="font-mono text-xs font-semibold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
-        >
-          <Compass className="h-3.5 w-3.5 mr-1.5" /> Start Product Tour
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            try {
-              localStorage.removeItem(TOUR_STORAGE_KEY);
-              toast.success("Tour status reset. It will appear on next page refresh or when launched.");
-            } catch {
-              // ignore
-            }
-          }}
-          className="font-mono text-xs border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer"
-        >
-          Reset Tour Status
-        </Button>
-      </div>
-    </div>
-  );
-
-  // Normal users: only their broker trade API and tour are configurable.
+  // Normal users: only their broker trade API is configurable.
   if (me.data && !isAdmin) {
     return (
       <div className="p-4 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
@@ -314,10 +273,9 @@ export default function Settings() {
             Settings
           </h1>
           <p className="meta-label mt-2">
-            Manage connected accounts, product walkthrough, and broker API.
+            Manage connected accounts and your broker trade API.
           </p>
         </header>
-        {tourPanel}
         {accountsPanel}
         {brokerPanel}
       </div>
@@ -332,11 +290,9 @@ export default function Settings() {
           Settings
         </h1>
         <p className="meta-label mt-2">
-          Integrations, walkthrough, and market-data configuration.
+          Integrations and market-data configuration.
         </p>
       </header>
-
-      {tourPanel}
 
       {accountsPanel}
 

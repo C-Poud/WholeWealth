@@ -109,7 +109,7 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
       <div className="relative w-full overflow-hidden rounded-lg bg-black/40 border border-white/10 p-2">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full h-auto select-none"
+          className="w-full h-auto select-none touch-none cursor-crosshair"
           onMouseMove={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
@@ -118,6 +118,25 @@ export function VolatilityConeChart({ spot, iv, dte = 30 }: VolatilityConeChartP
             setHoverDay(Math.round(dayRatio * 90));
           }}
           onMouseLeave={() => setHoverDay(null)}
+          onTouchStart={(e) => {
+            const touch = e.touches[0];
+            if (!touch) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const mouseX = touch.clientX - rect.left;
+            const normX = (mouseX / rect.width) * width;
+            const dayRatio = Math.max(0, Math.min(1, (normX - padding.left) / (width - padding.left - padding.right)));
+            setHoverDay(Math.round(dayRatio * 90));
+          }}
+          onTouchMove={(e) => {
+            const touch = e.touches[0];
+            if (!touch) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const mouseX = touch.clientX - rect.left;
+            const normX = (mouseX / rect.width) * width;
+            const dayRatio = Math.max(0, Math.min(1, (normX - padding.left) / (width - padding.left - padding.right)));
+            setHoverDay(Math.round(dayRatio * 90));
+          }}
+          onTouchEnd={() => setHoverDay(null)}
         >
           <defs>
             <linearGradient id="coneGrad2" x1="0%" y1="0%" x2="100%" y2="0%">

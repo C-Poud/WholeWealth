@@ -220,6 +220,7 @@ export function OnboardingTour({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleDismiss()}>
       <DialogContent
         id="onboarding-tour-modal"
+        showCloseButton={false}
         className="bg-[#0e1015] border border-white/10 text-white sm:max-w-2xl p-0 overflow-hidden shadow-2xl rounded-xl focus:outline-none"
       >
         <DialogTitle className="sr-only">

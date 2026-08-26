@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams } from "react-router";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -11,7 +12,8 @@ import {
 } from "@/components/ui/select";
 import { ScoreBar, DeltaGauge } from "@/components/Gauges";
 import { fmtDate, fmtMoney, fmtPct } from "@/lib/format";
-import { Coins, Sparkles } from "lucide-react";
+import { Coins, Sparkles, Plus } from "lucide-react";
+import { AddPositionModal } from "@/components/AddPositionModal";
 
 function scoreLabel(s: number): string {
   if (s >= 8) return `${s.toFixed(1)} Excellent`;
@@ -23,6 +25,7 @@ function scoreLabel(s: number): string {
 export default function Basis() {
   const [searchParams, setSearchParams] = useSearchParams();
   const paramSym = searchParams.get("symbol");
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const { data, isLoading, error, refetch } = trpc.analytics.basisSuggestions.useQuery();
   
   const suggestions = useMemo(() => data?.suggestions ?? [], [data]);
@@ -89,14 +92,24 @@ export default function Basis() {
       )}
 
       {suggestions.length === 0 ? (
-        <div className="panel-box py-16 text-center space-y-3">
+        <div className="panel-box py-16 text-center space-y-4">
           <Coins className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
-          <p className="text-lg font-display font-bold text-white">No qualifying stock positions</p>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            {data?.message ??
-              error?.message ??
-              "Add a long stock position with at least 100 shares to see covered-call basis strategies."}
-          </p>
+          <div>
+            <p className="text-lg font-display font-bold text-white">No qualifying stock positions</p>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+              {data?.message ??
+                error?.message ??
+                "Add a long stock position with at least 100 shares to see covered-call basis strategies."}
+            </p>
+          </div>
+          <div className="pt-1">
+            <Button
+              onClick={() => setIsAddOpen(true)}
+              className="bg-emerald-500 text-black hover:bg-emerald-400 font-mono text-xs font-bold shadow-[0_0_15px_rgba(16,185,129,0.25)] cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> Add 100+ Shares Position
+            </Button>
+          </div>
         </div>
       ) : (
         <>
@@ -298,6 +311,12 @@ export default function Basis() {
           )}
         </>
       )}
+
+      <AddPositionModal
+        open={isAddOpen}
+        onOpenChange={setIsAddOpen}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }

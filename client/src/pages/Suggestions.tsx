@@ -54,17 +54,17 @@ export default function Suggestions() {
   });
 
   return (
-    <div className="p-5 sm:p-8 lg:p-10 space-y-7 max-w-[1550px] mx-auto">
+    <div className="p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-7 max-w-[1550px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+          <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
             Delta Neutral Suggestions
           </h1>
         </div>
         {data?.hasPositions && (
-          <div className="flex items-center gap-2">
-            <span className="terminal-badge shrink-0 self-start md:self-auto">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="terminal-badge shrink-0">
               15m Delay
             </span>
           </div>
@@ -86,7 +86,7 @@ export default function Suggestions() {
       )}
 
       {!data?.hasPositions ? (
-        <div className="panel-box py-16 text-center space-y-3">
+        <div className="panel-box py-12 sm:py-16 text-center space-y-3">
           <Lightbulb className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
           <p className="text-base font-semibold text-white">No positions to hedge</p>
           <p className="text-xs text-zinc-400 max-w-sm mx-auto">
@@ -96,10 +96,10 @@ export default function Suggestions() {
         </div>
       ) : (
         <>
-          {/* Delta Neutral Formula Bar (Wikipedia Grounding) */}
-          <div className="p-4 rounded border border-white/[0.08] bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Delta Neutral Formula Bar */}
+          <div className="p-3.5 sm:p-4 rounded border border-white/[0.08] bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
                   Delta Neutral Principle:
                 </span>
@@ -108,7 +108,7 @@ export default function Suggestions() {
                 </code>
               </div>
               <p className="text-xs text-zinc-400">
-                Hedge ratio <code className="text-zinc-300 font-mono">N = -Δ_unhedged / (100 · Δ_option)</code>. Post-hedge delta is stabilized near zero to neutralize directional market exposure.
+                Hedge ratio <code className="text-zinc-300 font-mono">N = -Δ_unhedged / (100 · Δ_option)</code>. Post-hedge delta is stabilized near zero.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -120,11 +120,11 @@ export default function Suggestions() {
           </div>
 
           {/* Delta overview KPI Row */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="stat-card">
-              <div className="text-xs text-zinc-400">Portfolio Beta Δ</div>
+          <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="stat-card p-3 sm:p-4">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Portfolio Beta Δ</div>
               <div
-                className={`text-2xl mt-1 flex items-center gap-1 font-bold font-mono ${
+                className={`text-lg sm:text-2xl mt-1 flex items-center gap-1 font-bold font-mono truncate ${
                   data.neutral
                     ? "text-white"
                     : long
@@ -134,27 +134,27 @@ export default function Suggestions() {
               >
                 {!data.neutral &&
                   (long ? (
-                    <ArrowUpRight className="h-5 w-5 shrink-0" />
+                    <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
                   ) : (
-                    <ArrowDownRight className="h-5 w-5 shrink-0" />
+                    <ArrowDownRight className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
                   ))}
-                <span>
+                <span className="truncate">
                   {(data.spxBetaDelta ?? 0) >= 0 ? "+" : ""}
                   {(data.spxBetaDelta ?? 0).toFixed(2)}
                 </span>
-                <span className="text-xs font-mono text-zinc-500">SPX eq.</span>
+                <span className="text-[10px] sm:text-xs font-mono text-zinc-500">SPX eq.</span>
               </div>
-              <div className="text-xs text-zinc-500 mt-1 font-mono">
-                {((data.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (data.spyBetaDelta ?? 0).toFixed(1)} SPY eq. · {data.totalDelta >= 0 ? "+" : ""}{fmtMoney(data.totalDelta)}
+              <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono truncate">
+                {((data.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (data.spyBetaDelta ?? 0).toFixed(1)} SPY · {data.totalDelta >= 0 ? "+" : ""}{fmtMoney(data.totalDelta)}
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="text-xs text-zinc-400">Portfolio Beta (vs SPX)</div>
-              <div className="text-white text-2xl mt-1 font-bold font-mono">
+            <div className="stat-card p-3 sm:p-4">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Portfolio Beta (vs SPX)</div>
+              <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono truncate">
                 {(data.portfolioBeta ?? 1.0).toFixed(2)}
               </div>
-              <div className="text-xs text-zinc-500 mt-1 font-mono">
+              <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono truncate">
                 {(data.portfolioBeta ?? 1) > 1.15
                   ? "High sensitivity"
                   : (data.portfolioBeta ?? 1) < 0.85
@@ -163,56 +163,56 @@ export default function Suggestions() {
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="text-xs text-zinc-400">Index Reference</div>
-              <div className="text-white text-2xl mt-1 font-bold font-mono">
+            <div className="stat-card p-3 sm:p-4">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Index Reference</div>
+              <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono truncate">
                 {data.spxSpot ? `SPX ${data.spxSpot.toFixed(0)}` : "—"}
               </div>
-              <div className="text-xs text-zinc-500 mt-1 font-mono">
+              <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono truncate">
                 SPY {data.spySpot ? `$${data.spySpot.toFixed(2)}` : "—"}
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="text-xs text-zinc-400">Delta Neutral State</div>
-              <div className="flex items-center gap-2 mt-1">
-                <Scale className="h-4 w-4 text-emerald-400 shrink-0" />
+            <div className="stat-card p-3 sm:p-4">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Delta Neutral State</div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <Scale className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
                 <span
-                  className={`font-mono text-base font-bold uppercase ${
+                  className={`font-mono text-xs sm:text-base font-bold uppercase truncate ${
                     data.neutral ? "text-emerald-400" : "text-amber-400"
                   }`}
                 >
                   {data.neutral ? "Delta Neutral" : `Net ${long ? "Long" : "Short"}`}
                 </span>
               </div>
-              <div className="text-xs text-zinc-500 mt-1 font-mono">
-                {data.neutral ? "Directionally neutral (Δ ≈ 0)" : "Requires hedge to achieve Δ = 0"}
+              <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono truncate">
+                {data.neutral ? "Δ ≈ 0" : "Requires hedge"}
               </div>
             </div>
           </section>
 
           {/* Navigation Tabs between Macro Delta Hedges and Single Asset Hedges */}
-          <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-2 gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
               <button
                 onClick={() => setActiveTab("MACRO")}
-                className={`px-3 py-1.5 rounded text-xs font-mono font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded text-xs font-mono font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   activeTab === "MACRO"
                     ? "bg-white/10 text-white font-bold"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
-                Macro Portfolio Hedges ({data.ideas.length})
+                Macro Hedges ({data.ideas.length})
               </button>
               <button
                 onClick={() => setActiveTab("SINGLE_ASSET")}
-                className={`px-3 py-1.5 rounded text-xs font-mono font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded text-xs font-mono font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   activeTab === "SINGLE_ASSET"
                     ? "bg-white/10 text-white font-bold"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
-                Single Asset Delta Hedges ({data.singleAssetHedges?.length ?? 0})
+                Single Asset Hedges ({data.singleAssetHedges?.length ?? 0})
               </button>
             </div>
 

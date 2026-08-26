@@ -93,12 +93,12 @@ export default function Risk() {
   }
 
   return (
-    <div className="p-5 sm:p-8 lg:p-10 space-y-7 max-w-[1550px] mx-auto">
+    <div className="p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-7 max-w-[1550px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight font-display">
+            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight font-display">
               Risk & Volatility Analysis
             </h1>
             <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
@@ -110,14 +110,14 @@ export default function Risk() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {data?.mode === "demo" && (
-            <div className="terminal-badge shrink-0 self-start md:self-auto text-amber-300 border-amber-500/30 bg-amber-500/10">
+            <div className="terminal-badge shrink-0 text-amber-300 border-amber-500/30 bg-amber-500/10">
               Demo Data
             </div>
           )}
           {data?.mode === "yahoo" && (
-            <div className="terminal-badge shrink-0 self-start md:self-auto text-cyan-300 border-cyan-500/30 bg-cyan-500/10">
+            <div className="terminal-badge shrink-0 text-cyan-300 border-cyan-500/30 bg-cyan-500/10">
               15m Delayed
             </div>
           )}
@@ -139,73 +139,75 @@ export default function Risk() {
       )}
 
       {/* Main Tabs Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-[#121419] border border-white/10 p-1">
-          <TabsTrigger
-            value="portfolio"
-            className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400"
-          >
-            <Activity className="h-3.5 w-3.5 mr-1.5" />
-            Portfolio Risk ({reports.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="simulator"
-            className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400"
-          >
-            <Calculator className="h-3.5 w-3.5 mr-1.5" />
-            Volatility Box Simulator
-          </TabsTrigger>
-          <TabsTrigger
-            value="methodology"
-            className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400"
-          >
-            <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            Expected Move Methodology
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5 sm:space-y-6">
+        <div className="overflow-x-auto -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
+          <TabsList className="bg-[#121419] border border-white/10 p-1 inline-flex w-auto min-w-full sm:min-w-0">
+            <TabsTrigger
+              value="portfolio"
+              className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400 whitespace-nowrap"
+            >
+              <Activity className="h-3.5 w-3.5 mr-1.5" />
+              Portfolio Risk ({reports.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="simulator"
+              className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400 whitespace-nowrap"
+            >
+              <Calculator className="h-3.5 w-3.5 mr-1.5" />
+              Volatility Box Simulator
+            </TabsTrigger>
+            <TabsTrigger
+              value="methodology"
+              className="text-xs font-mono data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400 whitespace-nowrap"
+            >
+              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+              Expected Move Methodology
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Tab 1: Portfolio Holdings Risk Analysis */}
-        <TabsContent value="portfolio" className="space-y-6">
+        <TabsContent value="portfolio" className="space-y-5 sm:space-y-6">
           {/* Portfolio-Level Value at Risk Summary */}
           {reports.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div className="panel-box p-4 space-y-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+              <div className="panel-box p-3.5 sm:p-4 space-y-1">
                 <div className="meta-label text-[10px]">Portfolio Value</div>
-                <div className="font-mono text-xl sm:text-2xl font-bold text-white">
+                <div className="font-mono text-lg sm:text-2xl font-bold text-white truncate">
                   {fmtMoney(data?.portfolioValue ?? 0)}
                 </div>
-                <div className="text-[11px] font-mono text-zinc-400">
+                <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400">
                   {reports.length} Active Asset{reports.length === 1 ? "" : "s"}
                 </div>
               </div>
 
-              <div className="panel-box p-4 space-y-1">
+              <div className="panel-box p-3.5 sm:p-4 space-y-1">
                 <div className="meta-label text-[10px]">Avg Portfolio IV (30D)</div>
-                <div className="font-mono text-xl sm:text-2xl font-bold text-emerald-400">
+                <div className="font-mono text-lg sm:text-2xl font-bold text-emerald-400 truncate">
                   {portfolioVaR.avgIv != null ? `${(portfolioVaR.avgIv * 100).toFixed(1)}%` : "—"}
                 </div>
-                <div className="text-[11px] font-mono text-zinc-400">
-                  Weighted Implied Volatility
+                <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400">
+                  Weighted IV
                 </div>
               </div>
 
-              <div className="panel-box p-4 space-y-1 border-rose-500/20 bg-rose-500/[0.03]">
-                <div className="meta-label text-[10px] text-rose-400">1σ Downside Impact (68%)</div>
-                <div className="font-mono text-xl sm:text-2xl font-bold text-rose-400">
+              <div className="panel-box p-3.5 sm:p-4 space-y-1 border-rose-500/20 bg-rose-500/[0.03]">
+                <div className="meta-label text-[10px] text-rose-400">1σ Downside (68%)</div>
+                <div className="font-mono text-lg sm:text-2xl font-bold text-rose-400 truncate">
                   −{fmtMoney(portfolioVaR.totalDown1)}
                 </div>
-                <div className="text-[11px] font-mono text-zinc-400">
-                  {data?.portfolioValue ? `-${((portfolioVaR.totalDown1 / data.portfolioValue) * 100).toFixed(1)}% portfolio shock` : "Expected 1σ Move"}
+                <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400 truncate">
+                  {data?.portfolioValue ? `-${((portfolioVaR.totalDown1 / data.portfolioValue) * 100).toFixed(1)}% shock` : "Expected 1σ"}
                 </div>
               </div>
 
-              <div className="panel-box p-4 space-y-1 border-rose-500/30 bg-rose-500/[0.06]">
-                <div className="meta-label text-[10px] text-rose-300">2σ Tail Downside (95%)</div>
-                <div className="font-mono text-xl sm:text-2xl font-bold text-rose-300">
+              <div className="panel-box p-3.5 sm:p-4 space-y-1 border-rose-500/30 bg-rose-500/[0.06]">
+                <div className="meta-label text-[10px] text-rose-300">2σ Tail Down (95%)</div>
+                <div className="font-mono text-lg sm:text-2xl font-bold text-rose-300 truncate">
                   −{fmtMoney(portfolioVaR.totalDown2)}
                 </div>
-                <div className="text-[11px] font-mono text-zinc-400">
-                  95.4% Extreme Risk Envelope
+                <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400">
+                  95.4% Extreme Risk
                 </div>
               </div>
             </div>

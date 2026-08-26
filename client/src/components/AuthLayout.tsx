@@ -313,22 +313,31 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {isMobile && (
         <>
           {/* Top Mobile Bar */}
-          <header className="fixed top-0 inset-x-0 h-14 z-30 flex items-center justify-between px-3 bg-[#0c0c0e]/95 border-b border-white/[0.08] backdrop-blur">
-            <div className="flex items-center gap-3">
+          <header className="fixed top-0 inset-x-0 h-14 z-30 flex items-center justify-between px-3.5 bg-[#0c0c0e]/95 border-b border-white/[0.08] backdrop-blur-md">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="h-9 w-9 rounded-md bg-white/5 border border-white/10 text-white hover:bg-white/10 flex items-center justify-center cursor-pointer"
-                aria-label="Open Navigation"
+                className="h-9 w-9 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10 active:bg-white/20 flex items-center justify-center cursor-pointer transition-colors"
+                aria-label="Open Navigation Drawer"
               >
                 <Menu className="h-4 w-4" />
               </button>
-              <Logo size={28} showText={true} />
+              <Logo size={26} showText={true} />
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-emerald-400 font-medium px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                {activeMenuItem?.label ?? "Dashboard"}
+              <button
+                type="button"
+                onClick={() => startAppTour()}
+                className="h-8 px-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono font-medium flex items-center gap-1 active:bg-emerald-500/20"
+                title="Open Product Tour"
+              >
+                <Compass className="h-3 w-3" />
+                <span>Tour</span>
+              </button>
+              <span className="text-[11px] font-mono text-zinc-300 font-medium px-2 py-1 rounded bg-white/5 border border-white/10 truncate max-w-[110px]">
+                {activeMenuItem?.label ?? "Terminal"}
               </span>
             </div>
           </header>
@@ -337,28 +346,47 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           {mobileOpen && (
             <div
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm transition-opacity"
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm transition-opacity"
             />
           )}
 
           {/* Slide-out Drawer */}
           <aside
-            className={`fixed inset-y-0 left-0 z-50 w-[270px] bg-[#0c0d10] border-r border-white/10 flex flex-col transition-transform duration-200 ease-out shadow-2xl ${
+            className={`fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-[#0c0d10] border-r border-white/10 flex flex-col transition-transform duration-200 ease-out shadow-2xl ${
               mobileOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            <div className="h-14 flex items-center justify-between px-4 border-b border-white/[0.08]">
+            <div className="h-14 flex items-center justify-between px-4 border-b border-white/[0.08] bg-[#0a0b0e]">
               <Logo size={28} showText={true} />
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="h-8 w-8 rounded-md hover:bg-white/10 text-muted-foreground hover:text-white flex items-center justify-center cursor-pointer"
+                className="h-9 w-9 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white flex items-center justify-center cursor-pointer"
+                aria-label="Close Drawer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto">
+            <div className="p-3 border-b border-white/[0.06] bg-[#0f1117]/50">
+              <div className="flex items-center gap-2.5">
+                <Avatar className="h-8 w-8 border border-white/10">
+                  {user?.avatar ? (
+                    <AvatarImage src={user.avatar} alt={user?.name ?? ""} />
+                  ) : null}
+                  <AvatarFallback className="text-xs font-semibold bg-emerald-500/20 text-emerald-400">
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-white truncate">{user?.name || "Workspace User"}</div>
+                  <div className="text-[10px] text-zinc-400 font-mono truncate">{user?.email || "Terminal"}</div>
+                </div>
+              </div>
+            </div>
+
+            <nav className="flex-1 py-3 px-3 space-y-1.5 overflow-y-auto">
+              <div className="px-2 pb-1 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Navigation</div>
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -369,27 +397,27 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       setMobileOpen(false);
                       navigate(item.path);
                     }}
-                    className={`w-full h-10 rounded-md flex items-center px-3 gap-3 transition-colors cursor-pointer ${
+                    className={`w-full h-11 rounded-lg flex items-center px-3.5 gap-3 transition-all cursor-pointer ${
                       isActive
-                        ? "bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20"
-                        : "text-zinc-400 hover:text-white hover:bg-white/5"
+                        ? "bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                        : "text-zinc-300 hover:text-white hover:bg-white/5 active:bg-white/10"
                     }`}
                   >
-                    <item.icon className="h-4 w-4 shrink-0" />
+                    <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
                     <span className="text-xs font-mono">{item.label}</span>
                   </button>
                 );
               })}
             </nav>
 
-            <div className="p-3 border-t border-white/10 space-y-1.5">
+            <div className="p-3 border-t border-white/10 space-y-2 bg-[#090a0d]">
               <button
                 type="button"
                 onClick={() => {
                   setMobileOpen(false);
                   startAppTour();
                 }}
-                className="w-full h-9 rounded-md flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-mono border border-white/10 cursor-pointer"
+                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-300 text-xs font-mono border border-emerald-500/25 cursor-pointer transition-colors"
               >
                 <Compass className="h-3.5 w-3.5 text-emerald-400" />
                 <span>Product Tour</span>
@@ -397,18 +425,61 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={logout}
-                className="w-full h-9 rounded-md flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-mono border border-destructive/20 cursor-pointer"
+                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 active:bg-destructive/30 text-destructive text-xs font-mono border border-destructive/20 cursor-pointer transition-colors"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 <span>Sign out</span>
               </button>
             </div>
           </aside>
+
+          {/* Fixed Mobile Bottom Navigation Bar (< 768px) */}
+          <nav
+            aria-label="Mobile Navigation"
+            className="fixed bottom-0 inset-x-0 z-40 h-16 bg-[#090a0d]/95 backdrop-blur-lg border-t border-white/[0.08] flex items-center justify-around px-1 pb-[env(safe-area-inset-bottom,0px)]"
+          >
+            {visibleMenuItems.slice(0, 5).map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
+                    isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+                  )}
+                  <item.icon className={`h-4 w-4 mb-1 transition-transform ${isActive ? "scale-110 text-emerald-400" : ""}`} />
+                  <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
+                    {item.label === "Risk Analysis" ? "Risk" : item.label === "Career Optimiser" ? "Career" : item.label}
+                  </span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => navigate("/settings")}
+              className={`flex flex-col items-center justify-center flex-1 h-full min-w-0 py-1 transition-all cursor-pointer relative ${
+                location.pathname === "/settings" ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              {location.pathname === "/settings" && (
+                <span className="absolute top-0 inset-x-4 h-0.5 bg-emerald-400 rounded-full" />
+              )}
+              <Settings className={`h-4 w-4 mb-1 transition-transform ${location.pathname === "/settings" ? "scale-110 text-emerald-400" : ""}`} />
+              <span className="text-[10px] font-mono leading-none truncate max-w-[62px]">
+                Settings
+              </span>
+            </button>
+          </nav>
         </>
       )}
 
       {/* ── MAIN VIEWPORT ── */}
-      <main className={`flex-1 min-w-0 transition-all ${isMobile ? "pt-14" : ""}`}>
+      <main className={`flex-1 min-w-0 transition-all ${isMobile ? "pt-14 pb-20" : ""}`}>
         <div key={location.pathname} className="page-fade">
           {children}
         </div>

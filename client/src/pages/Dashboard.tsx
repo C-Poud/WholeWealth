@@ -239,19 +239,19 @@ export default function Dashboard() {
   const positions = data?.positions ?? [];
 
   return (
-    <div className="p-5 sm:p-8 lg:p-10 space-y-8 max-w-[1750px] mx-auto">
+    <div className="p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-8 max-w-[1750px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+          <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
             Dashboard
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {deltaData?.hasPositions && (
             <Link
               to="/suggestions"
-              className="px-3 py-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5 transition-colors"
+              className="px-2.5 py-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5 transition-colors"
             >
               <Scale className="h-3.5 w-3.5" />
               <span>
@@ -262,11 +262,11 @@ export default function Dashboard() {
             </Link>
           )}
           {stats.hasDemo ? (
-            <div className="terminal-badge shrink-0 self-start md:self-auto text-amber-300 border-amber-500/30 bg-amber-500/10">
+            <div className="terminal-badge shrink-0 text-amber-300 border-amber-500/30 bg-amber-500/10">
               Demo Data
             </div>
           ) : (
-            <div className="terminal-badge shrink-0 self-start md:self-auto">
+            <div className="terminal-badge shrink-0">
               Live
             </div>
           )}
@@ -274,7 +274,7 @@ export default function Dashboard() {
       </header>
 
       {error && (
-        <div className="p-3.5 rounded border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-4">
+        <div className="p-3 rounded border border-destructive/40 bg-destructive/10 flex items-center justify-between gap-3">
           <p className="text-xs text-destructive font-mono">
             Failed to load portfolio: {error.message}
           </p>
@@ -291,35 +291,35 @@ export default function Dashboard() {
       <ConnectBrokerCard variant={positions.length === 0 ? "card" : "compact"} />
 
       {/* Stats Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <div className="stat-card">
-          <div className="text-xs text-zinc-400">Portfolio Value</div>
-          <div className="text-white text-2xl mt-1 font-bold font-mono">
+      <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-4">
+        <div className="stat-card col-span-2 sm:col-span-1 p-3.5 sm:p-5">
+          <div className="text-[11px] sm:text-xs text-zinc-400">Portfolio Value</div>
+          <div className="text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
             {fmtMoney(stats.equityValue + stats.cash)}
           </div>
-          <div className="text-xs text-zinc-500 mt-1 font-mono">
+          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
             {fmtMoney(stats.equityValue)} equity · {fmtMoney(stats.cash)} cash
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="text-xs text-zinc-400">Available Cash</div>
-          <div className="text-emerald-400 text-2xl mt-1 font-bold font-mono">
+        <div className="stat-card p-3.5 sm:p-5">
+          <div className="text-[11px] sm:text-xs text-zinc-400">Available Cash</div>
+          <div className="text-emerald-400 text-lg sm:text-2xl mt-1 font-bold font-mono truncate">
             {fmtMoney(stats.availableBuyingPower)}
           </div>
-          <div className="text-xs text-zinc-500 mt-1 font-mono">
+          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono truncate">
             {fmtMoney(stats.cash)} buying power
           </div>
         </div>
 
         {/* SPX Beta Delta */}
-        <div className="stat-card">
-          <div className="text-xs text-zinc-400 flex items-center justify-between">
+        <div className="stat-card p-3.5 sm:p-5">
+          <div className="text-[11px] sm:text-xs text-zinc-400 flex items-center justify-between">
             <span>Portfolio Beta Δ</span>
-            <span className="text-[10px] text-zinc-500 font-mono">β {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}</span>
+            <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono">β {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}</span>
           </div>
           <div
-            className={`text-2xl mt-1 flex items-center gap-1 font-bold font-mono ${
+            className={`text-lg sm:text-2xl mt-1 flex items-center gap-1 font-bold font-mono ${
               deltaData?.neutral
                 ? "text-white"
                 : (deltaData?.totalDelta ?? 0) > 0
@@ -329,41 +329,41 @@ export default function Dashboard() {
           >
             {deltaData?.hasPositions && !deltaData.neutral && (
               (deltaData.totalDelta > 0 ? (
-                <ArrowUpRight className="h-5 w-5 shrink-0" />
+                <ArrowUpRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0" />
               ) : (
-                <ArrowDownRight className="h-5 w-5 shrink-0" />
+                <ArrowDownRight className="h-4 sm:h-5 w-4 sm:w-5 shrink-0" />
               ))
             )}
-            <span>
+            <span className="truncate">
               {(deltaData?.spxBetaDelta ?? 0) >= 0 ? "+" : ""}
               {(deltaData?.spxBetaDelta ?? 0).toFixed(2)}
             </span>
-            <span className="text-xs font-mono text-zinc-500">Δ</span>
+            <span className="text-[10px] sm:text-xs font-mono text-zinc-500">Δ</span>
           </div>
-          <div className="text-xs text-zinc-500 mt-1 font-mono flex items-center justify-between">
-            <span>
-              {((deltaData?.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (deltaData?.spyBetaDelta ?? 0).toFixed(1)} SPY eq.
+          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono flex items-center justify-between">
+            <span className="truncate">
+              {((deltaData?.spyBetaDelta ?? 0) >= 0 ? "+" : "") + (deltaData?.spyBetaDelta ?? 0).toFixed(1)} SPY
             </span>
-            <Link to="/suggestions" className="text-emerald-400 hover:underline">
+            <Link to="/suggestions" className="text-emerald-400 hover:underline shrink-0 ml-1">
               Hedge →
             </Link>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="text-xs text-zinc-400">Positions</div>
-          <div className="text-white text-2xl mt-1 font-bold font-mono">
+        <div className="stat-card p-3.5 sm:p-5">
+          <div className="text-[11px] sm:text-xs text-zinc-400">Positions</div>
+          <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono">
             {stats.count}
           </div>
-          <div className="text-xs text-zinc-500 mt-1 font-mono">
+          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
             {stats.allocation.length} holdings
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="text-xs text-zinc-400">Unrealized P&L</div>
+        <div className="stat-card p-3.5 sm:p-5">
+          <div className="text-[11px] sm:text-xs text-zinc-400">Unrealized P&L</div>
           <div
-            className={`text-2xl mt-1 font-bold font-mono ${
+            className={`text-lg sm:text-2xl mt-1 font-bold font-mono truncate ${
               stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"
             }`}
           >
@@ -371,7 +371,7 @@ export default function Dashboard() {
           </div>
           {stats.pnlPct != null && (
             <div
-              className={`text-xs font-mono mt-1 ${
+              className={`text-[10px] sm:text-xs font-mono mt-1 ${
                 stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"
               }`}
             >
@@ -389,10 +389,10 @@ export default function Dashboard() {
           
           {/* Active Holdings Table */}
           <div className="xl:col-span-3 flex flex-col">
-            <div className="panel-box p-6 sm:p-8 overflow-hidden flex-1 flex flex-col justify-between">
+            <div className="panel-box p-4 sm:p-7 overflow-hidden flex-1 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5 min-h-[34px]">
-                  <div className="flex items-center gap-2.5">
+                <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3 min-h-[34px]">
+                  <div className="flex items-center gap-2">
                     <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
                       <Briefcase className="h-4 w-4 text-primary" /> Active Holdings
                     </span>
@@ -409,13 +409,13 @@ export default function Dashboard() {
                 </div>
 
                 {positions.length === 0 ? (
-                  <div className="py-14 text-center space-y-3 font-mono">
+                  <div className="py-10 sm:py-14 text-center space-y-3 font-mono">
                     <Briefcase className="h-10 w-10 mx-auto text-muted-foreground/40 stroke-1" />
                     <p className="text-sm text-white font-semibold">No active positions</p>
                     <p className="text-xs text-muted-foreground max-w-xs mx-auto">
                       Your workspace is clean. Import your broker statements or add lots in Portfolio.
                     </p>
-                    <div className="flex items-center justify-center gap-2 pt-2">
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
                       <Link
                         to="/portfolio"
                         className="inline-block rounded bg-primary px-4 py-2 text-xs font-mono font-bold text-black hover:bg-primary/90 uppercase tracking-wider shadow-[0_0_15px_rgba(212,255,0,0.25)]"
@@ -432,8 +432,8 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs font-mono">
+                  <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <table className="w-full text-left border-collapse text-xs font-mono min-w-[500px]">
                       <thead>
                         <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
                           <th className="pb-2.5 font-normal meta-label">Symbol</th>
@@ -497,10 +497,10 @@ export default function Dashboard() {
               {/* Real-time Greek Stream widget */}
               <div className="activity-widget mt-5">
                 <div className="meta-label mb-1.5 text-[0.6rem]">Real-time Portfolio Greek Stream</div>
-                <div className="activity-line text-[11px]">
+                <div className="activity-line text-[11px] flex-wrap gap-1">
                   <span>{new Date().toLocaleTimeString()}</span>
-                  <span>
-                    SPX BETA DELTA: {(deltaData?.spxBetaDelta ?? 0) >= 0 ? "+" : ""}{(deltaData?.spxBetaDelta ?? 0).toFixed(2)} Δ · WEIGHTED BETA: {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}
+                  <span className="truncate">
+                    SPX BETA DELTA: {(deltaData?.spxBetaDelta ?? 0) >= 0 ? "+" : ""}{(deltaData?.spxBetaDelta ?? 0).toFixed(2)} Δ · BETA: {deltaData?.portfolioBeta?.toFixed(2) ?? "1.00"}
                   </span>
                 </div>
               </div>
@@ -509,10 +509,10 @@ export default function Dashboard() {
 
           {/* Allocation Pie Chart Section */}
           <div className="xl:col-span-2 flex flex-col">
-            <div className="panel-box p-6 sm:p-8 overflow-hidden flex-1 flex flex-col justify-between">
+            <div className="panel-box p-4 sm:p-7 overflow-hidden flex-1 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3.5 min-h-[34px]">
-                  <div className="flex items-center gap-2.5">
+                <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3 min-h-[34px]">
+                  <div className="flex items-center gap-2">
                     <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
                       <PieIcon className="h-4 w-4 text-primary" /> Capital Allocation
                     </span>
@@ -635,21 +635,21 @@ export default function Dashboard() {
         {/* ROW 2: WATCHLIST (Full Width)                                             */}
         {/* ========================================================================= */}
         <div className="w-full space-y-4">
-          <div className="panel-box p-6 sm:p-8 overflow-hidden">
+          <div className="panel-box p-4 sm:p-7 overflow-hidden">
             {/* Header & Watchlist Selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5 mb-4 sm:mb-5">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="meta-label font-bold text-white uppercase flex items-center gap-1.5 text-xs">
                   <Sparkles className="h-4 w-4 text-primary" /> Watchlist
                 </span>
                 {/* Watchlist switcher buttons when multiple lists exist */}
                 {watchlists && watchlists.length > 1 && (
-                  <div className="flex items-center gap-1 bg-white/[0.03] p-0.5 rounded border border-white/[0.08]">
+                  <div className="flex items-center gap-1 bg-white/[0.03] p-0.5 rounded border border-white/[0.08] overflow-x-auto max-w-full">
                     {watchlists.map((w) => (
                       <button
                         key={w.id}
                         onClick={() => setSelectedWatchlistId(w.id)}
-                        className={`px-2.5 py-1 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap ${
                           activeWlId === w.id
                             ? "bg-primary text-black"
                             : "text-muted-foreground hover:text-white hover:bg-white/5"
@@ -800,8 +800,8 @@ export default function Dashboard() {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto mt-2">
-                <table className="w-full text-left border-collapse text-xs font-mono">
+              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 mt-2">
+                <table className="w-full text-left border-collapse text-xs font-mono min-w-[620px]">
                   <thead>
                     <tr className="border-b border-white/[0.08] text-muted-foreground text-[11px]">
                       <th className="pb-2.5 font-normal meta-label">Ticker</th>

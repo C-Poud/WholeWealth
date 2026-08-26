@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { fmtMoney, fmtNum } from "@/lib/format";
 import {
@@ -29,13 +28,13 @@ import {
 } from "lucide-react";
 import { startAppTour } from "@/components/OnboardingTour";
 import { ConnectBrokerCard } from "@/components/ConnectBrokerCard";
+import { AddPositionModal } from "@/components/AddPositionModal";
 
 export default function Portfolio() {
   const utils = trpc.useUtils();
   const [searchParams, setSearchParams] = useSearchParams();
   const fileRef = useRef<HTMLInputElement>(null);
   const [manualOpen, setManualOpen] = useState(false);
-  const [manual, setManual] = useState({ symbol: "", quantity: "", costBasis: "" });
 
   // Move / Edit position state
   const [editingPos, setEditingPos] = useState<{
@@ -112,20 +111,6 @@ export default function Portfolio() {
         );
         d.warnings.slice(0, 3).forEach((w) => toast.warning(w));
       }
-      await invalidateAll();
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const addManualMut = trpc.portfolio.addManual.useMutation({
-    onSuccess: async (d) => {
-      toast.success(
-        d.name
-          ? `Added ${d.name} (${d.price != null ? fmtMoney(d.price) : "price pending"}).`
-          : "Position added.",
-      );
-      setManualOpen(false);
-      setManual({ symbol: "", quantity: "", costBasis: "" });
       await invalidateAll();
     },
     onError: (e) => toast.error(e.message),
@@ -239,18 +224,18 @@ export default function Portfolio() {
   })();
 
   return (
-    <div className="p-5 sm:p-8 lg:p-10 space-y-8 max-w-[1750px] mx-auto">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
+    <div className="p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-8 max-w-[1750px] mx-auto">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+          <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
             Portfolio
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {!st?.registered ? (
             <Button
               size="sm"
-              className="text-xs font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer"
+              className="text-xs font-mono font-bold bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer h-9 px-3"
               onClick={() =>
                 connectMut.mutate({ origin: window.location.origin })
               }
@@ -263,7 +248,7 @@ export default function Portfolio() {
             <Button
               size="sm"
               variant="outline"
-              className="text-xs border-white/10 hover:bg-white/5 cursor-pointer"
+              className="text-xs border-white/10 hover:bg-white/5 cursor-pointer h-9 px-3"
               onClick={() => syncMut.mutate()}
               disabled={syncMut.isPending}
             >
@@ -284,33 +269,33 @@ export default function Portfolio() {
 
       {/* Summary KPI section */}
       {positions.length > 0 && (
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="stat-card">
-            <div className="text-xs text-zinc-400">Capital at Work</div>
-            <div className="stat-value text-white text-2xl mt-1 font-bold font-mono">
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
+          <div className="stat-card p-3.5 sm:p-5">
+            <div className="text-[11px] sm:text-xs text-zinc-400">Capital at Work</div>
+            <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
               {fmtMoney(metrics.capitalAtWork)}
             </div>
-            <div className="text-xs text-zinc-500 mt-1 font-mono">
+            <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
               {fmtMoney(metrics.stockCostBasis)} stock · {fmtMoney(metrics.cspCollateral)} CSP
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="text-xs text-zinc-400">Buying Power</div>
-            <div className="stat-value text-emerald-400 text-2xl mt-1 font-bold font-mono">
+          <div className="stat-card p-3.5 sm:p-5">
+            <div className="text-[11px] sm:text-xs text-zinc-400">Buying Power</div>
+            <div className="stat-value text-emerald-400 text-xl sm:text-2xl mt-1 font-bold font-mono">
               {fmtMoney(metrics.availableBuyingPower)}
             </div>
-            <div className="text-xs text-zinc-500 mt-1 font-mono">
+            <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
               {fmtMoney(metrics.cash)} available
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="text-xs text-zinc-400">Option Coverage</div>
-            <div className="stat-value text-white text-2xl mt-1 font-bold font-mono">
+          <div className="stat-card p-3.5 sm:p-5">
+            <div className="text-[11px] sm:text-xs text-zinc-400">Option Coverage</div>
+            <div className="stat-value text-white text-xl sm:text-2xl mt-1 font-bold font-mono">
               {metrics.coveragePct.toFixed(0)}%
             </div>
-            <div className="text-xs text-zinc-500 mt-1 font-mono">
+            <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
               {fmtNum(metrics.coveredShares, 0)}/{fmtNum(metrics.roundLotShares, 0)} sh · {metrics.shortCallCount} CC / {metrics.shortPutCount} CSP
             </div>
           </div>
@@ -318,9 +303,9 @@ export default function Portfolio() {
       )}
 
       {/* Positions Table (Prominently Placed Above Integration Cards) */}
-      <div className="panel-box p-6 sm:p-7 overflow-hidden">
-        <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3.5">
-          <div className="flex items-center gap-2.5">
+      <div className="panel-box p-4 sm:p-7 overflow-hidden">
+        <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3">
+          <div className="flex items-center gap-2">
             <span className="meta-label font-bold text-white uppercase text-xs">
               Positions ({positions.length})
             </span>
@@ -329,7 +314,7 @@ export default function Portfolio() {
             <Button
               size="sm"
               variant="outline"
-              className="font-mono text-xs border-white/10 hover:bg-white/5 cursor-pointer"
+              className="font-mono text-xs border-white/10 hover:bg-white/5 cursor-pointer h-8 px-2.5"
               onClick={() => setManualOpen(true)}
             >
               <Plus className="h-3.5 w-3.5 mr-1 text-primary" /> Add Position
@@ -338,16 +323,16 @@ export default function Portfolio() {
         </div>
 
         {positions.length === 0 ? (
-          <div className="text-center py-12 space-y-3 font-mono">
+          <div className="text-center py-10 sm:py-12 space-y-3 font-mono">
             <Briefcase className="h-10 w-10 mx-auto text-muted-foreground/40 stroke-1" />
             <p className="text-sm font-semibold text-white">Your portfolio is clean and ready</p>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               No positions loaded. Connect your brokerage account, import a statement CSV, or add lots manually.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
               <Button
                 size="sm"
-                className="text-xs font-mono font-semibold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
+                className="text-xs font-mono font-semibold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer h-9 px-3"
                 onClick={() => fileRef.current?.click()}
                 disabled={importMut.isPending}
               >
@@ -356,7 +341,7 @@ export default function Portfolio() {
               <Button
                 size="sm"
                 variant="outline"
-                className="text-xs font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer"
+                className="text-xs font-mono border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer h-9 px-3"
                 onClick={() => setManualOpen(true)}
               >
                 <Plus className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Manual Entry
@@ -364,16 +349,16 @@ export default function Portfolio() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-xs font-mono text-zinc-400 hover:text-white cursor-pointer"
+                className="text-xs font-mono text-zinc-400 hover:text-white cursor-pointer h-9 px-3"
                 onClick={() => startAppTour()}
               >
-                <Compass className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Product Tour
+                <Compass className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Tour
               </Button>
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm font-mono min-w-[580px]">
               <thead>
                 <tr className="border-b border-white/[0.08] text-muted-foreground text-xs font-mono">
                   <th className="pb-3 font-medium meta-label">Symbol</th>
@@ -412,7 +397,7 @@ export default function Portfolio() {
                         </span>
                       </td>
                       <td className="py-3 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1">
                           {/* Move / Edit Position Dialog Trigger */}
                           <button
                             onClick={() =>
@@ -424,17 +409,17 @@ export default function Portfolio() {
                                 accountId: p.accountId,
                               })
                             }
-                            className="p-1.5 hover:bg-white/10 rounded text-muted-foreground hover:text-white transition-colors cursor-pointer"
+                            className="p-2 hover:bg-white/10 active:bg-white/20 rounded text-muted-foreground hover:text-white transition-colors cursor-pointer"
                             title="Move Account / Edit Position"
                           >
-                            <ArrowRightLeft className="h-3.5 w-3.5 text-primary" />
+                            <ArrowRightLeft className="h-4 w-4 text-primary" />
                           </button>
                           <button
                             onClick={() => removeMut.mutate({ ids: [p.id] })}
-                            className="p-1.5 hover:bg-red-500/10 rounded text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
+                            className="p-2 hover:bg-red-500/10 active:bg-red-500/20 rounded text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
                             title="Remove"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -519,76 +504,14 @@ export default function Portfolio() {
             {importMut.isPending ? "Importing…" : "Import CSV"}
           </Button>
 
-          <Dialog open={manualOpen} onOpenChange={setManualOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" variant="outline" className="text-xs border-white/10 hover:bg-white/5 cursor-pointer">
-                <Plus className="h-3.5 w-3.5 mr-1" /> Manual Entry
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-[#111113] border-white/10 text-white">
-              <DialogHeader>
-                <DialogTitle className="font-semibold text-lg">
-                  Add Position
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-zinc-400">Symbol</Label>
-                  <Input
-                    value={manual.symbol}
-                    onChange={(e) =>
-                      setManual((m) => ({ ...m, symbol: e.target.value.toUpperCase() }))
-                    }
-                    placeholder="AAPL"
-                    className="bg-[#0a0a0b] border-white/10 font-mono"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-zinc-400">Shares</Label>
-                  <Input
-                    type="number"
-                    value={manual.quantity}
-                    onChange={(e) =>
-                      setManual((m) => ({ ...m, quantity: e.target.value }))
-                    }
-                    placeholder="100"
-                    className="bg-[#0a0a0b] border-white/10 font-mono"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-zinc-400">Cost Basis</Label>
-                  <Input
-                    type="number"
-                    value={manual.costBasis}
-                    onChange={(e) =>
-                      setManual((m) => ({ ...m, costBasis: e.target.value }))
-                    }
-                    placeholder="150.00"
-                    className="bg-[#0a0a0b] border-white/10 font-mono"
-                  />
-                </div>
-                <Button
-                  className="w-full text-xs font-semibold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
-                  onClick={() =>
-                    addManualMut.mutate({
-                      symbol: manual.symbol,
-                      quantity: Number(manual.quantity),
-                      costBasis: manual.costBasis
-                        ? Number(manual.costBasis)
-                        : undefined,
-                    })
-                  }
-                  disabled={
-                    !manual.symbol ||
-                    !Number(manual.quantity) ||
-                    addManualMut.isPending
-                  }
-                >
-                  {addManualMut.isPending ? "Adding…" : "Save Position"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs border-white/10 hover:bg-white/5 cursor-pointer"
+            onClick={() => setManualOpen(true)}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1 text-primary" /> Manual Entry
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -728,6 +651,14 @@ export default function Portfolio() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Add Position Modal with Interactive Suggestions & Recommendations */}
+      <AddPositionModal
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        onSuccess={invalidateAll}
+        accounts={accounts}
+      />
     </div>
   );
 }

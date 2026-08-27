@@ -688,7 +688,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <span className="font-bold text-white text-xs tracking-tight flex items-center gap-1.5 uppercase font-sans">
-                      Target Watchlist & Market Intel
+                      Target Watchlist
                     </span>
                   </div>
                 </div>

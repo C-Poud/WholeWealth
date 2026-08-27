@@ -18,8 +18,7 @@ async function ensureTables(db: NonNullable<ReturnType<typeof getDb>>) {
         \`name\` varchar(128) NOT NULL DEFAULT 'My Watchlist',
         \`description\` varchar(255),
         \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (\`id\`),
-        KEY \`watchlists_user_idx\` (\`userId\`)
+        PRIMARY KEY (\`id\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
     await db.execute(sql`
@@ -31,9 +30,7 @@ async function ensureTables(db: NonNullable<ReturnType<typeof getDb>>) {
         \`notes\` varchar(255),
         \`targetStrike\` double,
         \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (\`id\`),
-        KEY \`watchlist_items_wl_idx\` (\`watchlistId\`),
-        KEY \`watchlist_items_user_sym_idx\` (\`watchlistId\`,\`symbol\`)
+        PRIMARY KEY (\`id\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
     tablesEnsured = true;

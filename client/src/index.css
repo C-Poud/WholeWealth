@@ -73,15 +73,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-<<<<<<< Updated upstream
-    background-color: #0b0c10;
-    color: #f3f4f6;
-    overflow-x: hidden;
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-    background-size: 28px 28px;
-=======
     background-color: #08090d;
     color: #f3f4f6;
     overflow-x: hidden;
@@ -89,7 +80,6 @@
       radial-gradient(ellipse 80% 45% at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 65%),
       radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.055) 1px, transparent 0);
     background-size: 100% 100%, 24px 24px;
->>>>>>> Stashed changes
     background-attachment: fixed;
   }
   ::selection {
@@ -102,19 +92,11 @@
 .app-pattern-bg,
 .app-dot-grid,
 .login-animated-bg {
-<<<<<<< Updated upstream
-  background-color: #0b0c10;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 28px 28px;
-=======
   background-color: #08090d;
   background-image: 
     radial-gradient(ellipse 80% 45% at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 65%),
     radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.055) 1px, transparent 0);
   background-size: 100% 100%, 24px 24px;
->>>>>>> Stashed changes
   background-attachment: fixed;
 }
 

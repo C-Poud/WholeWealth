@@ -343,8 +343,11 @@ export default function Dashboard() {
           <div className="text-white text-lg sm:text-2xl mt-1 font-bold font-mono">
             {stats.count}
           </div>
-          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono">
-            {stats.allocation.length} holdings
+          <div className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-mono flex items-center justify-between">
+            <span>{stats.allocation.length} holdings</span>
+            <Link to="/portfolio" className="text-zinc-400 hover:text-white hover:underline shrink-0 ml-1">
+              Manage →
+            </Link>
           </div>
         </div>
 

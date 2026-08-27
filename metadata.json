@@ -1,5 +1,9 @@
 {
+<<<<<<< Updated upstream
   "name": "NetWorth.io",
+=======
+  "name": "WholeWealth",
+>>>>>>> Stashed changes
   "description": "Portfolio and options analytics toolkit with live broker sync, VolatilityBox expected move models, dynamic probability cones, and risk metrics.",
   "requestFramePermissions": [],
   "majorCapabilities": [

@@ -190,7 +190,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   }`}
                 >
                   <span className="font-semibold tracking-tight text-sm text-white">
+<<<<<<< Updated upstream
                     NetWorth<span className="text-zinc-400 font-medium">.io</span>
+=======
+                    Whole<span className="text-emerald-400 font-semibold">Wealth</span>
+>>>>>>> Stashed changes
                   </span>
                 </div>
               </button>

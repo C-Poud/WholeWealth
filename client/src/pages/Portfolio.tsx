@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { toast } from "sonner";
 import { useSearchParams, useNavigate } from "react-router";
@@ -171,6 +171,16 @@ export default function Portfolio() {
   const positions = overview.data?.positions ?? [];
   const accounts = overview.data?.accounts ?? [];
   const _accountMap = new Map(accounts.map((a) => [a.id, a]));
+
+  const greeksPosMap = useMemo(() => {
+    const map = new Map<number, NonNullable<typeof greeksQuery.data>["greeks"]["positions"][0]>();
+    if (greeksQuery.data?.greeks?.positions) {
+      for (const p of greeksQuery.data.greeks.positions) {
+        if (p.id != null) map.set(p.id, p);
+      }
+    }
+    return map;
+  }, [greeksQuery.data]);
 
   const metrics = (() => {
     let stockCostBasis = 0;
@@ -412,6 +422,7 @@ export default function Portfolio() {
                   <th className="pb-3 font-medium meta-label text-right">Last Price</th>
                   <th className="pb-3 font-medium meta-label text-right hidden lg:table-cell">Market Value</th>
                   <th className="pb-3 font-medium meta-label text-right hidden sm:table-cell">Unrealized P&L</th>
+                  <th className="pb-3 font-medium meta-label text-right text-sky-400">SPX Delta</th>
                   <th className="pb-3 font-medium meta-label text-right hidden xl:table-cell">Source</th>
                   <th className="pb-3 font-medium meta-label text-right">Actions</th>
                 </tr>
@@ -424,6 +435,7 @@ export default function Portfolio() {
                   const cb = p.costBasis ?? px;
                   const pnl = p.quantity * (px - cb) * mult;
                   const pnlPct = cb > 0 ? ((px - cb) / cb) * 100 : 0;
+                  const posGreek = p.id ? greeksPosMap.get(p.id) : null;
                   return (
                     <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="py-2.5 sm:py-3 font-mono font-bold text-white">
@@ -462,6 +474,26 @@ export default function Portfolio() {
                             ({pnlPct >= 0 ? "+" : ""}{pnlPct.toFixed(2)}%)
                           </span>
                         </span>
+                      </td>
+                      {/* SPX Beta-Weighted Delta */}
+                      <td className="py-2.5 sm:py-3 text-right font-mono text-xs">
+                        {posGreek ? (
+                          <span
+                            className={`font-semibold ${
+                              posGreek.spxBetaDelta > 0
+                                ? "text-sky-400"
+                                : posGreek.spxBetaDelta < 0
+                                ? "text-rose-400"
+                                : "text-zinc-400"
+                            }`}
+                            title={`Beta: ${posGreek.beta.toFixed(2)}β | Underlying Spot: $${posGreek.spot.toFixed(2)}`}
+                          >
+                            {posGreek.spxBetaDelta >= 0 ? "+" : ""}
+                            {posGreek.spxBetaDelta.toFixed(3)}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-600">—</span>
+                        )}
                       </td>
                       <td className="py-2.5 sm:py-3 text-right hidden xl:table-cell">
                         <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-white/5 text-muted-foreground">

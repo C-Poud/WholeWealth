@@ -911,7 +911,7 @@ export function PortfolioGreeksPanel({ onSelectSymbol }: PortfolioGreeksPanelPro
                     {/* SPX Beta Delta */}
                     <td className="py-3 text-right font-bold text-sky-400">
                       {u.spxBetaDelta >= 0 ? "+" : ""}
-                      {u.spxBetaDelta.toFixed(2)}
+                      {u.spxBetaDelta.toFixed(3)}
                     </td>
 
                     {/* 1% SPX Shock */}
@@ -1027,7 +1027,7 @@ export function PortfolioGreeksPanel({ onSelectSymbol }: PortfolioGreeksPanelPro
                       {/* SPX Beta Delta */}
                       <td className="py-3 text-right font-bold text-sky-400">
                         {p.spxBetaDelta >= 0 ? "+" : ""}
-                        {p.spxBetaDelta.toFixed(2)}
+                        {p.spxBetaDelta.toFixed(3)}
                       </td>
                     </tr>
                   );

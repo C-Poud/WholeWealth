@@ -2,7 +2,7 @@ import { bsCallDelta, bsPutDelta } from "./blackScholes";
 import type { ChainContract } from "./engine";
 
 /**
- * Standard S&P 500 Betas for popular stocks and ETFs.
+ * Standard S&P 500 Betas for popular stocks, ETFs, indices, commodities, and bonds.
  * Beta measures covariance of asset returns relative to SPY / S&P 500.
  */
 export const POPULAR_BETAS: Record<string, number> = {
@@ -10,10 +10,13 @@ export const POPULAR_BETAS: Record<string, number> = {
   SPY: 1.0,
   VOO: 1.0,
   IVV: 1.0,
+  SPLG: 1.0,
   QQQ: 1.18,
+  QQQM: 1.18,
   IWM: 1.15,
   DIA: 0.85,
   VTI: 1.02,
+  VT: 0.95,
   XLK: 1.25,
   XLF: 1.05,
   XLE: 0.82,
@@ -23,9 +26,43 @@ export const POPULAR_BETAS: Record<string, number> = {
   XLP: 0.54,
   XLY: 1.22,
   SMH: 1.65,
+  SOXX: 1.60,
+
+  // Fixed Income & Cash Equivalent ETFs
+  SGOV: 0.0,
+  BIL: 0.0,
+  SHV: 0.0,
+  USFR: 0.0,
+  ICSH: 0.0,
+  TBIL: 0.0,
+  CLIP: 0.0,
+  BOXX: 0.0,
+  MINT: 0.0,
   TLT: -0.32,
-  GLD: 0.08,
-  SLV: 0.45,
+  IEF: -0.15,
+  SHY: 0.02,
+  AGG: 0.08,
+  BND: 0.08,
+  HYG: 0.40,
+  JNK: 0.42,
+
+  // Dividend & Income ETFs
+  SCHD: 0.40,
+  VYM: 0.65,
+  DVY: 0.68,
+  HDV: 0.62,
+  JEPI: 0.60,
+  JEPQ: 0.70,
+  DIVO: 0.65,
+
+  // Commodities & Precious Metals
+  GLD: 0.042,
+  GLDN: 0.042,
+  IAU: 0.042,
+  SGOL: 0.042,
+  SLV: 0.35,
+  USO: 0.52,
+  UNG: 0.38,
 
   // Mega-cap & Tech
   AAPL: 1.12,
@@ -36,7 +73,7 @@ export const POPULAR_BETAS: Record<string, number> = {
   GOOGL: 1.08,
   GOOG: 1.08,
   META: 1.28,
-  NFLX: 1.35,
+  NFLX: 0.61,
   AMD: 1.68,
   AVGO: 1.45,
   INTC: 1.12,
@@ -102,11 +139,38 @@ export const POPULAR_BETAS: Record<string, number> = {
 };
 
 /** Get the beta for a given ticker with intelligent heuristics fallback */
-export function getSymbolBeta(symbol: string, assetType?: string): number {
+export function getSymbolBeta(
+  symbol: string,
+  assetType?: string,
+  customBetas?: Record<string, number>,
+): number {
   const sym = symbol.toUpperCase().trim();
+  if (customBetas && typeof customBetas[sym] === "number" && isFinite(customBetas[sym])) {
+    return +customBetas[sym].toFixed(3);
+  }
   if (POPULAR_BETAS[sym] != null) {
     return POPULAR_BETAS[sym];
   }
+  // Cash / T-Bill ETFs
+  if (
+    sym === "SGOV" ||
+    sym === "BIL" ||
+    sym === "SHV" ||
+    sym === "USFR" ||
+    sym === "TBIL" ||
+    sym === "CLIP" ||
+    sym === "BOXX" ||
+    sym === "ICSH" ||
+    sym === "MINT"
+  ) {
+    return 0.0;
+  }
+  // Gold / Precious Metals
+  if (sym === "GLD" || sym === "GLDN" || sym === "IAU" || sym === "SGOL" || sym === "BAR") {
+    return 0.042;
+  }
+  if (sym === "SLV" || sym === "SIVR") return 0.35;
+  if (sym === "SCHD" || sym === "VYM" || sym === "HDV") return 0.40;
   if (assetType === "etf") return 1.0;
   return 1.0; // Default beta = 1.0
 }
@@ -122,6 +186,7 @@ export interface PositionGreekInput {
   optionType?: "call" | "put" | null;
   strike?: number | null;
   expiry?: string | null; // YYYY-MM-DD
+  rawSymbol?: string | null;
 }
 
 export interface PositionGreekResult {
@@ -217,27 +282,90 @@ function calcDte(expiry: string): number {
   }
 }
 
+/** Helper to extract option details even if only description or rawSymbol was saved */
+function extractOptionParameters(
+  pos: PositionGreekInput,
+  spot: number,
+): {
+  optionType: "call" | "put";
+  strike: number;
+  expiry: string;
+} {
+  let isCall = pos.optionType === "call" || pos.optionType == null;
+  let strike = pos.strike ?? null;
+  let expiry = pos.expiry ?? null;
+
+  const text = `${pos.description ?? ""} ${pos.rawSymbol ?? ""}`.trim();
+  if ((!strike || !expiry) && text) {
+    // OCC format: e.g. NFLX261016C00085000 or NFLX  261016C00085000
+    const occMatch = text.match(/([A-Z]+)\s*(\d{2})(\d{2})(\d{2})([CP])(\d{8})/i);
+    if (occMatch) {
+      const year = 2000 + parseInt(occMatch[2], 10);
+      const month = occMatch[3].padStart(2, "0");
+      const day = occMatch[4].padStart(2, "0");
+      expiry = `${year}-${month}-${day}`;
+      isCall = occMatch[5].toUpperCase() === "C";
+      strike = parseInt(occMatch[6], 10) / 1000;
+    } else {
+      // Human readable format: e.g. "INTC Oct16'26 67.5 Put" or "NFLX Oct16'26 85 Call"
+      const monthMap: Record<string, string> = {
+        JAN: "01", FEB: "02", MAR: "03", APR: "04", MAY: "05", JUN: "06",
+        JUL: "07", AUG: "08", SEP: "09", OCT: "10", NOV: "11", DEC: "12"
+      };
+      const humanMatch = text.match(/([A-Za-z]{3})\s*(\d{1,2})['\s](\d{2,4})\s+([\d.]+)\s+(Call|Put|C|P)/i);
+      if (humanMatch) {
+        const mStr = humanMatch[1].toUpperCase();
+        const m = monthMap[mStr] ?? "01";
+        const d = humanMatch[2].padStart(2, "0");
+        let y = humanMatch[3];
+        if (y.length === 2) y = `20${y}`;
+        expiry = `${y}-${m}-${d}`;
+        strike = parseFloat(humanMatch[4]);
+        isCall = humanMatch[5].toUpperCase().startsWith("C");
+      }
+    }
+  }
+
+  return {
+    optionType: isCall ? "call" : "put",
+    strike: strike && strike > 0 ? strike : spot,
+    expiry: expiry ?? new Date(Date.now() + 30 * DAY_MS).toISOString().split("T")[0],
+  };
+}
+
 /**
  * Calculate full Greeks and Beta-Weighted Delta analysis across a user's positions.
+ *
+ * Broker Beta-Weighted Delta standard formulas:
+ * - Position Delta = Quantity * Contract_Delta * Multiplier
+ *   (Stocks: 1 share = 1.0 delta; Calls: delta in [0.01, 0.99]; Puts: delta in [-0.99, -0.01])
+ * - Dollar Delta = Position Delta * Underlying Spot * Beta
+ * - SPX Beta Delta = (Position Delta * Underlying Spot * Beta) / SPX_Spot
+ * - SPY Beta Delta = (Position Delta * Underlying Spot * Beta) / SPY_Spot
  */
 export function calculatePortfolioGreeks(params: {
   positions: PositionGreekInput[];
   spots: Record<string, number>;
   chains?: Record<string, ChainContract[]>;
   spySpot?: number;
+  spxSpot?: number;
+  customBetas?: Record<string, number>;
 }): PortfolioGreekAnalysis {
   const { positions, spots } = params;
 
   // Resolve Benchmark Prices (SPY and SPX)
   const spySpot = params.spySpot && params.spySpot > 0 ? params.spySpot : (spots["SPY"] ?? 595.0);
-  const spxSpot = spySpot * 10; // Standard SPX Index approximation (10x SPY)
+  const spxSpot =
+    params.spxSpot && params.spxSpot > 0
+      ? params.spxSpot
+      : (spots["^GSPC"] && spots["^GSPC"] > 0 ? spots["^GSPC"] : spySpot * 10);
 
   const analyzedPositions: PositionGreekResult[] = [];
 
   for (const pos of positions) {
     const sym = pos.symbol.toUpperCase().trim();
     const spot = spots[sym] ?? pos.price ?? pos.costBasis ?? 100.0;
-    const beta = getSymbolBeta(sym, pos.assetType);
+    const beta = getSymbolBeta(sym, pos.assetType, params.customBetas);
 
     let contractDelta = 1.0;
     let multiplier = 1;
@@ -247,15 +375,16 @@ export function calculatePortfolioGreeks(params: {
 
     if (pos.assetType === "stock" || pos.assetType === "etf") {
       multiplier = 1;
-      contractDelta = pos.quantity >= 0 ? 1.0 : -1.0;
-      // Stock contribution = shares * 1 * 1
+      contractDelta = 1.0;
+      // Stock contribution = quantity * 1.0 (positive for long, negative for short)
       positionDelta = pos.quantity * contractDelta * multiplier;
       marketValue = pos.quantity * spot;
     } else if (pos.assetType === "option") {
       multiplier = 100;
-      const isCall = pos.optionType === "call" || pos.optionType == null;
-      const strike = pos.strike ?? spot;
-      const expiry = pos.expiry ?? new Date(Date.now() + 30 * DAY_MS).toISOString().split("T")[0];
+      const parsedOpt = extractOptionParameters(pos, spot);
+      const isCall = parsedOpt.optionType === "call";
+      const strike = parsedOpt.strike;
+      const expiry = parsedOpt.expiry;
       const dte = calcDte(expiry);
       const T = Math.max(1, dte) / 365;
 
@@ -277,12 +406,17 @@ export function calculatePortfolioGreeks(params: {
           : bsPutDelta({ spot, strike, yearsToExpiry: T, vol });
       }
 
-      // Ensure reasonable bounds
-      rawDelta = isCall ? Math.max(0.01, Math.min(0.99, rawDelta)) : Math.min(-0.01, Math.max(-0.99, rawDelta));
+      // Calls have delta in [0.01, 0.99]; Puts have delta in [-0.99, -0.01]
+      rawDelta = isCall
+        ? Math.max(0.01, Math.min(0.99, rawDelta))
+        : Math.min(-0.01, Math.max(-0.99, rawDelta));
       contractDelta = rawDelta;
 
       // Option contribution = contracts * option_delta * contract_multiplier (100)
-      // pos.quantity is negative for short positions (e.g. -1 * 0.60 * 100 = -60)
+      // Long Call (+1 * 0.436 * 100) = +43.6 delta
+      // Short Call (-1 * 0.436 * 100) = -43.6 delta
+      // Long Put (+1 * -0.450 * 100) = -45.0 delta
+      // Short Put (-1 * -0.450 * 100) = +45.0 delta (bullish)
       positionDelta = pos.quantity * contractDelta * multiplier;
       marketValue = Math.abs(pos.quantity) * 100 * (pos.price ?? pos.costBasis ?? 2.5);
 
@@ -300,12 +434,13 @@ export function calculatePortfolioGreeks(params: {
       marketValue = pos.quantity * spot;
     }
 
-    // SPY Beta-Weighted Delta = PositionDelta * (Spot / SPY_Spot) * Beta
-    const spyBetaDelta = spot > 0 && spySpot > 0 ? positionDelta * (spot / spySpot) * beta : 0;
-    // SPX Beta-Weighted Delta = PositionDelta * (Spot / SPX_Spot) * Beta
-    const spxBetaDelta = spot > 0 && spxSpot > 0 ? positionDelta * (spot / spxSpot) * beta : 0;
-    // Dollar Delta = PositionDelta * Spot * Beta
+    // Dollar Delta = PositionDelta * UnderlyingSpot * Beta
     const dollarDelta = positionDelta * spot * beta;
+    // SPX Beta-Weighted Delta = (PositionDelta * UnderlyingSpot * Beta) / SPX_Spot
+    const spxBetaDelta = spot > 0 && spxSpot > 0 ? dollarDelta / spxSpot : 0;
+    // SPY Beta-Weighted Delta = (PositionDelta * UnderlyingSpot * Beta) / SPY_Spot
+    const spyBetaDelta = spot > 0 && spySpot > 0 ? dollarDelta / spySpot : 0;
+    // Dollar impact of a +1% S&P 500 move = DollarDelta * 0.01
     const spx1PctDollarImpact = dollarDelta * 0.01;
     // $1.00 Move P&L in the underlying asset itself = positionDelta * $1.00
     const perDollarMoveImpact = positionDelta * 1.0;
@@ -321,10 +456,10 @@ export function calculatePortfolioGreeks(params: {
       beta,
       multiplier,
       contractDelta: +contractDelta.toFixed(3),
-      positionDelta: +positionDelta.toFixed(1),
-      perDollarMoveImpact: +perDollarMoveImpact.toFixed(1),
+      positionDelta: +positionDelta.toFixed(2),
+      perDollarMoveImpact: +perDollarMoveImpact.toFixed(2),
       spyBetaDelta: +spyBetaDelta.toFixed(2),
-      spxBetaDelta: +spxBetaDelta.toFixed(2),
+      spxBetaDelta: +spxBetaDelta.toFixed(3),
       dollarDelta: +dollarDelta.toFixed(2),
       spx1PctDollarImpact: +spx1PctDollarImpact.toFixed(2),
       optionDetails,
@@ -406,7 +541,7 @@ export function calculatePortfolioGreeks(params: {
       coverageRatio,
       portfolioWeight: +weight.toFixed(4),
       spyBetaDelta: +u.spyBetaDelta.toFixed(2),
-      spxBetaDelta: +u.spxBetaDelta.toFixed(2),
+      spxBetaDelta: +u.spxBetaDelta.toFixed(3),
       dollarDelta: +u.dollarDelta.toFixed(2),
       spx1PctDollarImpact: +u.spx1PctDollarImpact.toFixed(2),
       directionalStatus,
@@ -453,7 +588,7 @@ export function calculatePortfolioGreeks(params: {
     totalEquityDelta: +totalEquityDelta.toFixed(1),
     totalOptionDelta: +totalOptionDelta.toFixed(1),
     totalSpyBetaDelta: +totalSpyBetaDelta.toFixed(1),
-    totalSpxBetaDelta: +totalSpxBetaDelta.toFixed(2),
+    totalSpxBetaDelta: +totalSpxBetaDelta.toFixed(3),
     totalDollarDelta: +totalDollarDelta.toFixed(2),
     spx1PctDollarImpact: +spx1PctDollarImpact.toFixed(2),
     effectivePortfolioBeta,

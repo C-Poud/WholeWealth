@@ -8,6 +8,7 @@ import {
   scanCoveredCalls,
 } from "./analytics/engine";
 import { calculatePortfolioGreeks } from "./analytics/betaGreeks";
+import { getYahooBetas } from "./analytics/yahoo";
 
 export const analyticsRouter = createRouter({
   /**
@@ -194,14 +195,22 @@ export const analyticsRouter = createRouter({
       };
     }
 
-    const symbols = [...new Set([...rows.map((p) => p.symbol), "SPY"])];
-    const market = await resolveMarketData(ctx.user.id, symbols);
+    const symbols = [...new Set([...rows.map((p) => p.symbol), "SPY", "^GSPC"])];
+    const [market, liveBetas] = await Promise.all([
+      resolveMarketData(ctx.user.id, symbols),
+      getYahooBetas(symbols).catch(() => ({})),
+    ]);
+
+    const spySpot = market.spots["SPY"] ?? 595.0;
+    const spxSpot = market.spots["^GSPC"] && market.spots["^GSPC"] > 0 ? market.spots["^GSPC"] : spySpot * 10;
 
     const greeks = calculatePortfolioGreeks({
       positions: rows,
       spots: market.spots,
       chains: market.chains,
-      spySpot: market.spots["SPY"],
+      spySpot,
+      spxSpot,
+      customBetas: liveBetas,
     });
 
     return {

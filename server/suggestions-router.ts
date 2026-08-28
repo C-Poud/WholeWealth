@@ -4,6 +4,7 @@ import { authedQuery, createRouter } from "./middleware";
 import { getSetting, listPositions } from "./queries/portfolio";
 import { getYahooBetas } from "./analytics/yahoo";
 import { getSpotsWithFallback } from "./analytics/symbolInfo";
+import { getSymbolBeta } from "./analytics/betaGreeks";
 import {
   bsCallPrice,
   bsCallDelta,
@@ -116,7 +117,7 @@ async function handleSpxDelta({ ctx }: { ctx: { user: { id: number; email?: stri
   const breakdown = positions.map((p) => {
     const sym = p.symbol.toUpperCase();
     const spot = spots[sym] ?? p.price ?? p.costBasis ?? 0;
-    const beta = betas[sym] ?? 1;
+    const beta = getSymbolBeta(sym, p.assetType, betas);
     const mult = p.assetType === "option" ? 100 : 1;
     const posVal = p.quantity * spot * mult;
     portfolioValue += Math.abs(posVal);
@@ -125,8 +126,9 @@ async function handleSpxDelta({ ctx }: { ctx: { user: { id: number; email?: stri
     let rawDelta = 0; // instrument delta (e.g. 100 shares = +100 delta)
 
     if (p.assetType === "option") {
-      const dir = p.optionType === "put" ? -1 : 1;
-      rawDelta = dir * ASSUMED_OPTION_DELTA * 100 * p.quantity;
+      const isCall = p.optionType === "call" || p.optionType == null;
+      const optionDelta = isCall ? ASSUMED_OPTION_DELTA : -ASSUMED_OPTION_DELTA;
+      rawDelta = p.quantity * optionDelta * 100;
       deltaDollars = rawDelta * spot * beta;
     } else {
       rawDelta = p.quantity;
@@ -144,7 +146,7 @@ async function handleSpxDelta({ ctx }: { ctx: { user: { id: number; email?: stri
       beta: round2(beta),
       spxDeltaDollars: round2(deltaDollars),
       spxDelta: round2(deltaDollars),
-      spxBetaDelta: +(spxDecimalDelta.toFixed(2)),
+      spxBetaDelta: +(spxDecimalDelta.toFixed(3)),
     };
   });
 

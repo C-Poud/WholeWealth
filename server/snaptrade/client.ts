@@ -299,11 +299,30 @@ export interface AllPositionsItem {
     strike_price?: string | number;
     expiration_date?: string;
     underlying?: { symbol?: string; raw_symbol?: string } | null;
+    [key: string]: any;
   };
   units?: string | number | null;
   price?: string | number | null;
   cost_basis?: string | number | null;
-  currency?: string | null;
+  average_purchase_price?: string | number | null;
+  avg_cost?: string | number | null;
+  avg_purchase_price?: string | number | null;
+  open_price?: string | number | null;
+  book_value?: string | number | null;
+  book_cost?: string | number | null;
+  total_cost?: string | number | null;
+  tax_lots?: Array<{
+    quantity?: string | number;
+    units?: string | number;
+    purchased_price?: string | number;
+    purchase_price?: string | number;
+    price?: string | number;
+    cost_basis?: string | number;
+    total_cost?: string | number;
+    [key: string]: any;
+  }>;
+  currency?: { code?: string; name?: string } | string | null;
+  [key: string]: any;
 }
 
 /**

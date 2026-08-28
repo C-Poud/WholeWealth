@@ -5,7 +5,7 @@ import './index.css'
 import { TRPCProvider } from "@/providers/trpc"
 import App from './App.tsx'
 
-// NetWorth.io is a dark-first trading UI
+// WholeWealth is a dark-first trading UI
 document.documentElement.classList.add('dark')
 
 createRoot(document.getElementById('root')!).render(

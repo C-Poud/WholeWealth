@@ -71,6 +71,9 @@ export interface YahooSymbolInfo {
   price: number | null;
   currency: string | null;
   instrumentType: string | null; // EQUITY, ETF, INDEX, ...
+  previousClose?: number | null;
+  change?: number | null;
+  changePct?: number | null;
 }
 
 /**
@@ -96,11 +99,35 @@ export async function getYahooSymbolInfo(
     const meta = j?.chart?.result?.[0]?.meta;
     if (!meta) return "not_found";
     const px = meta.regularMarketPrice;
+    const prevClose =
+      (typeof meta.regularMarketPreviousClose === "number" && meta.regularMarketPreviousClose > 0
+        ? meta.regularMarketPreviousClose
+        : null) ??
+      (typeof meta.chartPreviousClose === "number" && meta.chartPreviousClose > 0
+        ? meta.chartPreviousClose
+        : null) ??
+      (typeof meta.previousClose === "number" && meta.previousClose > 0
+        ? meta.previousClose
+        : null) ??
+      null;
+
+    const change =
+      typeof px === "number" && typeof prevClose === "number"
+        ? +(px - prevClose).toFixed(2)
+        : null;
+    const changePct =
+      typeof change === "number" && typeof prevClose === "number" && prevClose > 0
+        ? +((change / prevClose) * 100).toFixed(2)
+        : null;
+
     return {
       name: meta.longName ?? meta.shortName ?? null,
       price: typeof px === "number" && px > 0 ? px : null,
       currency: meta.currency ?? null,
       instrumentType: meta.instrumentType ?? null,
+      previousClose: prevClose ? +prevClose.toFixed(2) : null,
+      change,
+      changePct,
     };
   } catch {
     return null;
@@ -269,12 +296,22 @@ export async function getWatchlistQuotes(
           const meta = j?.chart?.result?.[0]?.meta;
           const px = meta?.regularMarketPrice;
           if (typeof px === "number" && px > 0) {
-            const prevClose = meta?.chartPreviousClose ?? meta?.previousClose ?? px;
-            const change = +(px - prevClose).toFixed(2);
-            const changePct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
-            
             const closePrices: (number | null)[] = j?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
             const timestamps: (number | null)[] = j?.chart?.result?.[0]?.timestamp ?? [];
+            const validCloses = closePrices.filter((c): c is number => typeof c === "number" && isFinite(c) && c > 0);
+
+            // Previous trading day's close price (NOT the 1-year ago chartPreviousClose)
+            const prevClose =
+              (typeof meta?.regularMarketPreviousClose === "number" && meta.regularMarketPreviousClose > 0
+                ? meta.regularMarketPreviousClose
+                : null) ??
+              (typeof meta?.previousClose === "number" && meta.previousClose > 0
+                ? meta.previousClose
+                : null) ??
+              (validCloses.length >= 2 ? validCloses[validCloses.length - 2] : px);
+
+            const change = +(px - prevClose).toFixed(2);
+            const changePct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
 
             // Calculate YTD change % from the first trading day of the current calendar year
             const currentYear = new Date().getFullYear();
@@ -302,7 +339,6 @@ export async function getWatchlistQuotes(
             }
 
             // Compute Tastylive IV Rank & IV Percentile from 1-year historical daily return distribution
-            const validCloses = closePrices.filter((c): c is number => typeof c === "number" && isFinite(c) && c > 0);
             const ivMetrics = calculateTastyIvMetrics(validCloses);
 
             out[sym] = {

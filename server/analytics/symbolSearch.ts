@@ -216,6 +216,9 @@ export async function getSymbolDetailPreview(symbol: string) {
   const price = (info && info !== "not_found" ? info.price : null) ?? null;
   const name = (info && info !== "not_found" ? info.name : null) ?? pop?.name ?? sym;
   const assetType = (info && info !== "not_found" && info.instrumentType === "ETF") || pop?.assetType === "etf" ? "etf" : "stock";
+  const change = info && info !== "not_found" ? info.change ?? null : null;
+  const changePct = info && info !== "not_found" ? info.changePct ?? null : null;
+  const previousClose = info && info !== "not_found" ? info.previousClose ?? null : null;
 
   // Recommendation tips
   let tip = "";
@@ -230,6 +233,9 @@ export async function getSymbolDetailPreview(symbol: string) {
     symbol: sym,
     name,
     price,
+    change,
+    changePct,
+    previousClose,
     currency: (info && info !== "not_found" ? info.currency : "USD") ?? "USD",
     assetType,
     category: pop?.category ?? (assetType === "etf" ? "ETF" : "Equity"),

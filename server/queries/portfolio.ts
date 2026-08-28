@@ -442,6 +442,28 @@ export async function listPositions(userId: number): Promise<Position[]> {
     );
   }
 
+  // Sanitize any historically synced positions where costBasis was stored as total cost basis
+  for (const r of rows) {
+    if (r.costBasis != null && r.costBasis > 0 && r.quantity !== 0) {
+      const absQty = Math.abs(r.quantity);
+      if (r.assetType !== "option") {
+        if (absQty > 1 && r.price != null && r.price > 0) {
+          const perUnit = r.costBasis / absQty;
+          if (r.costBasis > r.price * 1.8 && Math.abs(perUnit - r.price) < Math.abs(r.costBasis - r.price)) {
+            r.costBasis = +perUnit.toFixed(4);
+          }
+        }
+      } else {
+        if (r.costBasis > 40 && r.price != null && r.price < 20) {
+          const perShare = r.costBasis / (absQty * 100);
+          if (Math.abs(perShare - r.price) < Math.abs(r.costBasis - r.price)) {
+            r.costBasis = +perShare.toFixed(4);
+          }
+        }
+      }
+    }
+  }
+
   return rows;
 }
 

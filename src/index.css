@@ -73,21 +73,29 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    background-color: #0c0c0e;
-    color: #f0f0f2;
+    background-color: #08090d;
+    color: #f3f4f6;
     overflow-x: hidden;
+    background-image: 
+      radial-gradient(ellipse 80% 45% at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 65%),
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.055) 1px, transparent 0);
+    background-size: 100% 100%, 24px 24px;
+    background-attachment: fixed;
   }
   ::selection {
-    background: #d4ff00;
-    color: #000000;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
   }
 }
 
 /* Custom design variation classes */
 .app-dot-grid {
-  background-color: #0c0c0e;
-  background-image: radial-gradient(rgba(240, 240, 242, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-color: #08090d;
+  background-image: 
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 65%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.055) 1px, transparent 0);
+  background-size: 100% 100%, 24px 24px;
+  background-attachment: fixed;
 }
 
 .stat-card-border {

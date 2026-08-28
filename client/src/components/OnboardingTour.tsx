@@ -42,10 +42,10 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: "welcome",
     badge: "Step 1 of 6 · Welcome",
-    title: "Welcome to NetWorth.io",
+    title: "Welcome to WholeWealth",
     subtitle: "Institutional-Grade Quantitative Portfolio & Delta-Neutral Terminal",
     description:
-      "You are starting with a clean slate with 0 positions and no preloaded data. NetWorth.io gives you institutional-level quantitative risk analytics, real-time Greek simulations, and mathematical hedging tailored to your actual portfolio.",
+      "You are starting with a clean slate with 0 positions and no preloaded data. WholeWealth gives you institutional-level quantitative risk analytics, real-time Greek simulations, and mathematical hedging tailored to your actual portfolio.",
     icon: Compass,
     visual: "welcome",
   },

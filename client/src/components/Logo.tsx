@@ -31,7 +31,7 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
       {showText && (
         <div className="flex items-baseline gap-1.5 min-w-0">
           <span className="font-sans font-semibold tracking-tight text-sm text-white">
-            NetWorth<span className="text-emerald-400 font-medium">.io</span>
+            Whole<span className="text-emerald-400 font-semibold">Wealth</span>
           </span>
         </div>
       )}

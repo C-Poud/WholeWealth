@@ -410,12 +410,20 @@ export default function Portfolio() {
                   <th className="pb-3 font-medium meta-label text-right">Qty</th>
                   <th className="pb-3 font-medium meta-label text-right hidden md:table-cell">Cost Basis</th>
                   <th className="pb-3 font-medium meta-label text-right">Last Price</th>
-                  <th className="pb-3 font-medium meta-label text-right hidden lg:table-cell">Source</th>
+                  <th className="pb-3 font-medium meta-label text-right hidden lg:table-cell">Market Value</th>
+                  <th className="pb-3 font-medium meta-label text-right hidden sm:table-cell">Unrealized P&L</th>
+                  <th className="pb-3 font-medium meta-label text-right hidden xl:table-cell">Source</th>
                   <th className="pb-3 font-medium meta-label text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.03]">
                 {positions.map((p) => {
+                  const px = p.price ?? p.costBasis ?? 0;
+                  const mult = p.assetType === "option" ? 100 : 1;
+                  const mv = p.quantity * px * mult;
+                  const cb = p.costBasis ?? px;
+                  const pnl = p.quantity * (px - cb) * mult;
+                  const pnlPct = cb > 0 ? ((px - cb) / cb) * 100 : 0;
                   return (
                     <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="py-2.5 sm:py-3 font-mono font-bold text-white">
@@ -440,7 +448,22 @@ export default function Portfolio() {
                       <td className="py-2.5 sm:py-3 text-right font-mono text-white">
                         {fmtMoney(p.price)}
                       </td>
-                      <td className="py-2.5 sm:py-3 text-right hidden lg:table-cell">
+                      <td className="py-2.5 sm:py-3 text-right font-mono font-medium text-white hidden lg:table-cell">
+                        {fmtMoney(mv)}
+                      </td>
+                      <td className="py-2.5 sm:py-3 text-right font-mono text-xs hidden sm:table-cell">
+                        <span
+                          className={`font-semibold ${
+                            pnl >= 0 ? "text-primary" : "text-rose-400"
+                          }`}
+                        >
+                          {pnl >= 0 ? "+" : ""}{fmtMoney(pnl)}
+                          <span className="text-[10px] opacity-75 ml-1">
+                            ({pnlPct >= 0 ? "+" : ""}{pnlPct.toFixed(2)}%)
+                          </span>
+                        </span>
+                      </td>
+                      <td className="py-2.5 sm:py-3 text-right hidden xl:table-cell">
                         <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-white/5 text-muted-foreground">
                           {p.source}
                         </span>

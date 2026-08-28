@@ -55,6 +55,112 @@ export function isAussieBroker(
   return aussieKeywords.some((kw) => text.includes(kw));
 }
 
+/**
+ * Accurately extracts per-unit (per-share or per-contract) cost basis from SnapTrade position payload.
+ * Handles:
+ * 1. average_purchase_price / avg_cost / open_price (direct per-share basis)
+ * 2. tax_lots (lot-weighted purchase price)
+ * 3. cost_basis / book_value (normalizing total dollar cost to per-unit cost when needed)
+ */
+export function extractPositionCostBasis(
+  p: any,
+  units: number,
+  price: number | null,
+  isOption: boolean,
+): number | null {
+  const toNum = (v: unknown): number | null => {
+    if (v === null || v === undefined || v === "") return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  // 1. Direct per-share / per-unit average purchase price fields
+  const directPerUnit = toNum(
+    p.average_purchase_price ??
+      p.avg_cost ??
+      p.avg_purchase_price ??
+      p.open_price ??
+      p.unit_cost,
+  );
+  if (directPerUnit != null && directPerUnit > 0) {
+    if (isOption && price != null && price > 0 && directPerUnit > price * 20) {
+      return +(directPerUnit / 100).toFixed(4);
+    }
+    return +directPerUnit.toFixed(4);
+  }
+
+  // 2. Tax lots weighted average
+  if (Array.isArray(p.tax_lots) && p.tax_lots.length > 0) {
+    let totalQty = 0;
+    let totalDollarCost = 0;
+    for (const lot of p.tax_lots) {
+      const lotQty = Math.abs(toNum(lot.quantity ?? lot.units) ?? 0);
+      const lotPrice = toNum(lot.purchased_price ?? lot.purchase_price ?? lot.price);
+      const lotCost = toNum(lot.cost_basis ?? lot.total_cost);
+      if (lotQty > 0) {
+        if (lotPrice != null && lotPrice > 0) {
+          totalDollarCost += lotQty * lotPrice;
+          totalQty += lotQty;
+        } else if (lotCost != null && lotCost > 0) {
+          totalDollarCost += lotCost;
+          totalQty += lotQty;
+        }
+      }
+    }
+    if (totalQty > 0 && totalDollarCost > 0) {
+      const avg = totalDollarCost / totalQty;
+      if (isOption && price != null && price > 0 && avg > price * 20) {
+        return +(avg / 100).toFixed(4);
+      }
+      return +avg.toFixed(4);
+    }
+  }
+
+  // 3. Fallback to cost_basis / book_value / book_cost / total_cost
+  const rawCostBasis = toNum(
+    p.cost_basis ?? p.book_value ?? p.book_cost ?? p.total_cost,
+  );
+  if (rawCostBasis != null && rawCostBasis > 0) {
+    const absUnits = Math.abs(units);
+    if (!isOption) {
+      if (absUnits > 0) {
+        if (price != null && price > 0) {
+          const perUnit = rawCostBasis / absUnits;
+          if (absUnits > 1 && Math.abs(perUnit - price) < Math.abs(rawCostBasis - price)) {
+            return +perUnit.toFixed(4);
+          }
+          if (rawCostBasis > price * 1.5 && absUnits > 1.2) {
+            return +perUnit.toFixed(4);
+          }
+        } else if (absUnits > 1 && rawCostBasis > 500) {
+          return +(rawCostBasis / absUnits).toFixed(4);
+        }
+      }
+      return +rawCostBasis.toFixed(4);
+    } else {
+      // Option position
+      if (absUnits > 0) {
+        if (price != null && price > 0) {
+          const perShare100 = rawCostBasis / (absUnits * 100);
+          const perContract = rawCostBasis / absUnits;
+          if (Math.abs(perShare100 - price) < Math.abs(rawCostBasis - price)) {
+            return +perShare100.toFixed(4);
+          }
+          if (Math.abs(perContract - price) < Math.abs(rawCostBasis - price)) {
+            return +perContract.toFixed(4);
+          }
+        }
+        if (rawCostBasis > 30) {
+          return +(rawCostBasis / (absUnits * 100)).toFixed(4);
+        }
+      }
+      return +rawCostBasis.toFixed(4);
+    }
+  }
+
+  return null;
+}
+
 export const snaptradeRouter = createRouter({
   /** Integration + connection status for the current user. */
   status: authedQuery.query(async ({ ctx }) => {
@@ -236,11 +342,18 @@ export const snaptradeRouter = createRouter({
       for (const p of items) {
         const units = num(p.units) ?? 0;
         if (!units) continue;
-        const inst = p.instrument ?? {};
+        const inst = (p.instrument ?? {}) as any;
         const kind = (inst.kind ?? "").toLowerCase();
+        const isOption = kind === "option" || !!inst.option_type;
         let price = num(p.price);
-        let costBasis = num(p.cost_basis);
-        let currency = String(p.currency ?? accCurrency ?? "USD").toUpperCase();
+        let costBasis = extractPositionCostBasis(p, units, price, isOption);
+
+        // Extract currency safely (p.currency could be string or object { code: string })
+        const rawCurr =
+          typeof p.currency === "object" && p.currency !== null
+            ? (p.currency.code ?? p.currency.currency ?? "USD")
+            : p.currency;
+        let currency = String(rawCurr ?? accCurrency ?? "USD").toUpperCase();
 
         // If pulling AUD on a US broker, convert position price & costBasis to USD.
         // If it's an Aussie broker pulling AUD, leave it untouched.

@@ -145,7 +145,7 @@ export default function Career() {
           </h2>
 
           <p className="text-sm font-sans text-muted-foreground leading-relaxed mb-6">
-            NetWorth.io was founded on a simple truth: financial freedom is throttled by two major inefficiencies:
+            WholeWealth was founded on a simple truth: financial freedom is throttled by two major inefficiencies:
             <strong className="text-white"> underperforming investment portfolios</strong> and
             <strong className="text-white"> underpaid employees</strong>. Both stem from the exact same flaw — relying on intuition and opaque market quotes rather than transparent quantitative data.
           </p>

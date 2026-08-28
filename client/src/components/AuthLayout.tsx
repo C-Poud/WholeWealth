@@ -39,7 +39,7 @@ const menuItems = [
 
 const adminMenuItem = { icon: Users, label: "Users", path: "/users" };
 
-const PIN_STORAGE_KEY = "networth_sidebar_pinned";
+const PIN_STORAGE_KEY = "wholewealth_sidebar_pinned";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   const { isLoading, user, refresh, logout } = useAuth();
@@ -169,35 +169,41 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             }`}
           >
             {/* Header / Logo - Click to toggle sidebar pin */}
-            <div className="h-14 shrink-0 flex items-center px-2 border-b border-white/[0.06] overflow-hidden">
+            <div
+              id="sidebar-header"
+              className="h-14 shrink-0 flex items-center px-2.5 border-b border-white/[0.07] bg-[#0b0c10]/70 backdrop-blur-sm overflow-hidden"
+            >
               <button
                 type="button"
                 onClick={() => setIsPinned(prev => !prev)}
-                className="flex items-center w-full h-10 px-1 rounded-md hover:bg-white/[0.04] active:scale-[0.98] transition-all cursor-pointer group focus:outline-none text-left"
-                title={isPinned ? "Sidebar pinned. Click logo to unpin (Ctrl+B)" : "Click logo to pin sidebar open (Ctrl+B)"}
+                className="flex items-center w-full h-10 px-1 rounded-lg hover:bg-white/[0.05] active:scale-[0.98] transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/50 text-left"
+                title={isPinned ? "Sidebar pinned. Click to unpin (Ctrl+B)" : "Click to pin sidebar open (Ctrl+B)"}
                 aria-label={isPinned ? "Unpin sidebar" : "Pin sidebar open"}
               >
                 <div className="w-[42px] h-full flex items-center justify-center shrink-0">
-                  <Logo size={32} showText={false} isPinned={isPinned} />
+                  <Logo size={30} showText={false} isPinned={isPinned} />
                 </div>
 
                 {/* Sliding/Fading Text Label */}
                 <div
-                  className={`overflow-hidden whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ml-1 ${
+                  className={`overflow-hidden whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center ml-1 ${
                     isExpanded
                       ? "opacity-100 translate-x-0 max-w-[160px] pointer-events-auto"
                       : "opacity-0 -translate-x-2 max-w-0 pointer-events-none"
                   }`}
                 >
                   <span className="font-semibold tracking-tight text-sm text-white">
-                    NetWorth<span className="text-zinc-400 font-medium">.io</span>
+                    Whole<span className="text-emerald-400 font-semibold">Wealth</span>
                   </span>
                 </div>
               </button>
             </div>
 
             {/* Navigation Menu Links */}
-            <nav className="flex-1 py-2.5 px-2 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-none">
+            <nav
+              id="sidebar-nav"
+              className="flex-1 py-3 px-2 space-y-1.5 overflow-y-auto overflow-x-hidden scrollbar-none"
+            >
               {visibleMenuItems.map(item => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -205,25 +211,25 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     key={item.path}
                     type="button"
                     onClick={() => navigate(item.path)}
-                    className={`relative w-full h-10 rounded-md flex items-center transition-colors duration-100 group cursor-pointer ${
+                    className={`relative w-full h-10 rounded-lg flex items-center transition-all duration-150 group cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/50 ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-medium border border-white/10"
-                        : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                        ? "bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent text-white font-medium border border-emerald-500/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                        : "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05] border border-transparent"
                     }`}
                     title={!isExpanded ? item.label : undefined}
                   >
-                    {/* Active Accent Bar */}
+                    {/* Active Emerald Accent Bar */}
                     {isActive && (
-                      <span className="absolute left-0 inset-y-2 w-0.5 rounded-r bg-white" />
+                      <span className="absolute left-0 inset-y-2 w-1 rounded-r-sm bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
                     )}
 
                     {/* Fixed Icon Container */}
                     <div className="w-[46px] h-full flex items-center justify-center shrink-0">
                       <item.icon
-                        className={`h-4 w-4 transition-transform duration-100 ${
+                        className={`h-4 w-4 transition-all duration-150 ${
                           isActive
-                            ? "text-white"
-                            : "opacity-75 group-hover:opacity-100"
+                            ? "text-emerald-400 scale-105"
+                            : "text-zinc-400 group-hover:text-zinc-200 group-hover:scale-105"
                         }`}
                       />
                     </div>

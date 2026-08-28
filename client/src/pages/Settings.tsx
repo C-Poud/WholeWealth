@@ -277,7 +277,7 @@ export default function Settings() {
       </div>
 
       <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-        Review the NetWorth.io architecture, delta-neutral Greek modeling ($\Delta = 0$), portfolio data integration methods (SnapTrade, CSV, manual entry), and algorithmic hedging engine.
+        Review the WholeWealth architecture, delta-neutral Greek modeling ($\Delta = 0$), portfolio data integration methods (SnapTrade, CSV, manual entry), and algorithmic hedging engine.
       </p>
 
       <div className="flex flex-wrap items-center gap-3 pt-1">

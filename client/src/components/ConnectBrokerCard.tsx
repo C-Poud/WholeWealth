@@ -172,7 +172,7 @@ export function ConnectBrokerCard({
             Connect Your Broker for Real-Time Risk and Hedging
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed max-w-3xl">
-            Connecting your account allows NetWorth.io to automatically import your equities, options, and cash balances to compute your exact portfolio beta-weighted delta, Greek sensitivities, and optimal delta-neutral hedge trades.
+            Connecting your account allows WholeWealth to automatically import your equities, options, and cash balances to compute your exact portfolio beta-weighted delta, Greek sensitivities, and optimal delta-neutral hedge trades.
           </p>
         </div>
 
@@ -214,7 +214,7 @@ export function ConnectBrokerCard({
           </div>
           <div className="text-sm font-semibold text-white font-sans">Bank-Grade Security</div>
           <p className="text-xs text-zinc-400 font-sans leading-normal">
-            Read-only portfolio syncing via official SnapTrade OAuth. Credentials are never stored on NetWorth servers.
+            Read-only portfolio syncing via official SnapTrade OAuth. Credentials are never stored on WholeWealth servers.
           </p>
         </div>
       </div>

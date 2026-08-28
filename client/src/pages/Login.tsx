@@ -56,7 +56,7 @@ export default function Login() {
           </div>
 
           <h1 className="font-semibold text-lg text-white">
-            Sign in to NetWorth.io
+            Sign in to WholeWealth
           </h1>
           <p className="text-xs text-zinc-400 mt-1">
             Portfolio risk & options management
@@ -125,7 +125,7 @@ export default function Login() {
       {/* Footer */}
       <footer className="max-w-[1200px] w-full mx-auto py-3 text-center relative z-10 border-t border-white/[0.04]">
         <p className="text-xs text-zinc-500">
-          NetWorth.io · Secure Portfolio Management
+          WholeWealth · Secure Portfolio Management
         </p>
       </footer>
     </div>

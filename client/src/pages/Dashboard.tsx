@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fmtMoney, fmtNum, fmtPct } from "@/lib/format";
@@ -7,17 +7,17 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import {
   Briefcase,
   Scale,
-  Plus,
-  Trash2,
-  Sparkles,
   ArrowUpRight,
   ArrowDownRight,
-  FolderPlus,
-  X,
   PieChart as PieIcon,
   Compass,
-  Activity,
+  Sparkles,
+  Plus,
+  Trash2,
+  FolderPlus,
   Flame,
+  Activity,
+  X,
 } from "lucide-react";
 import { startAppTour } from "@/components/OnboardingTour";
 import { CompanyLogo } from "@/components/CompanyLogo";
@@ -67,7 +67,7 @@ export default function Dashboard() {
   const { data, isLoading, error, refetch } = trpc.portfolio.overview.useQuery();
   const { data: deltaData } = trpc.suggestions.spxNeutral.useQuery();
 
-  // Watchlist state & queries
+  // Watchlist state & queries (Visible on PC / Tablet, hidden on mobile)
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<number | undefined>(undefined);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isNewListOpen, setIsNewListOpen] = useState(false);
@@ -106,6 +106,15 @@ export default function Dashboard() {
       utils.watchlist.get.invalidate({ watchlistId: activeWlId });
     },
   });
+
+  const handleCreateList = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newListName.trim()) return;
+    createListMut.mutate({
+      name: newListName.trim(),
+      description: newListDesc.trim() || undefined,
+    });
+  };
 
   const stats = useMemo(() => {
     const positions = data?.positions ?? [];
@@ -216,15 +225,6 @@ export default function Dashboard() {
       hasDemo: positions.some((p) => p.source === "demo"),
     };
   }, [data]);
-
-  const handleCreateList = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newListName.trim()) return;
-    createListMut.mutate({
-      name: newListName.trim(),
-      description: newListDesc.trim() || undefined,
-    });
-  };
 
   if (isLoading) {
     return (
@@ -675,179 +675,161 @@ export default function Dashboard() {
         </div>
 
         {/* ========================================================================= */}
-        {/* ROW 2: WATCHLIST (Full Width)                                             */}
+        {/* ROW 2: WATCHLIST (PC ONLY - HIDDEN ON MOBILE)                            */}
         {/* ========================================================================= */}
-        <div className="w-full space-y-4">
-          <div className="panel-box p-4 sm:p-7 overflow-hidden relative bg-gradient-to-b from-[#151720] to-[#101217] border border-white/[0.09] shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
-            {/* Ambient background glow */}
-            <div className="absolute top-0 left-1/4 w-72 h-32 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
-            
-            {/* Header & Watchlist Selector */}
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.07] pb-4 mb-4 sm:mb-5">
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-violet-500/20 via-fuchsia-500/15 to-cyan-500/20 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-[0_0_12px_rgba(139,92,246,0.25)]">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="font-bold text-white text-xs tracking-tight flex items-center gap-1.5 uppercase font-sans">
-                      Target Watchlist
-                    </span>
-                  </div>
-                </div>
+        <div className="hidden md:block w-full space-y-3 font-sans">
+          <div className="panel-box p-4 sm:p-5 relative bg-[#0c0d12] border border-white/[0.08] shadow-sm">
+            {/* Header & Watchlist Selector matching mobile styling */}
+            <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] pb-3 mb-3">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none flex-wrap">
+                <span className="text-sm font-bold tracking-tight text-white font-sans pr-1">
+                  Watchlist
+                </span>
 
-                {/* Watchlist switcher buttons when multiple lists exist */}
-                {watchlists && watchlists.length > 1 && (
-                  <div className="flex items-center gap-1 bg-white/[0.03] p-1 rounded-lg border border-white/[0.08] overflow-x-auto max-w-full">
-                    {watchlists.map((w) => (
+                <div className="h-4 w-[1px] bg-white/20 shrink-0 mx-1" />
+
+                {/* Watchlist switcher buttons */}
+                {watchlists && watchlists.map((w) => (
+                  <div key={w.id} className="flex items-center shrink-0">
+                    <button
+                      onClick={() => setSelectedWatchlistId(w.id)}
+                      className={`px-3 py-1 rounded-lg text-xs font-sans font-medium transition-all cursor-pointer whitespace-nowrap ${
+                        activeWlId === w.id
+                          ? "bg-white/15 text-white font-semibold shadow-sm"
+                          : "text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08]"
+                      }`}
+                    >
+                      {w.name}
+                    </button>
+                    {watchlists.length > 1 && activeWlId === w.id && (
                       <button
-                        key={w.id}
-                        onClick={() => setSelectedWatchlistId(w.id)}
-                        className={`px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
-                          activeWlId === w.id
-                            ? "bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 text-white shadow-[0_0_12px_rgba(139,92,246,0.35)] border border-violet-400/40"
-                            : "text-zinc-400 hover:text-white hover:bg-white/[0.06]"
-                        }`}
+                        onClick={() => {
+                          if (confirm(`Delete watchlist "${w.name}"?`)) {
+                            deleteListMut.mutate({ watchlistId: w.id });
+                          }
+                        }}
+                        disabled={deleteListMut.isPending}
+                        className="ml-1 p-1 rounded hover:bg-red-500/15 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                        title="Delete watchlist"
                       >
-                        {w.name}
+                        <Trash2 className="h-3 w-3" />
                       </button>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
+                ))}
 
-              {/* Action Buttons: New List & Add Ticker */}
-              <div className="flex items-center gap-2 flex-wrap">
                 {/* Create Watchlist Modal */}
                 <Dialog open={isNewListOpen} onOpenChange={setIsNewListOpen}>
                   <DialogTrigger asChild>
-                    <button className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono font-semibold text-zinc-300 hover:text-white uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer">
-                      <FolderPlus className="h-3.5 w-3.5 text-violet-400" />
-                      <span>+ List</span>
+                    <button
+                      type="button"
+                      className="px-3 py-1 rounded-lg text-xs font-sans font-medium text-zinc-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-all cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>Add list</span>
                     </button>
                   </DialogTrigger>
                   <DialogContent className="bg-[#12141a] border-white/10 text-white sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle className="font-display font-bold uppercase tracking-wide">
+                      <DialogTitle className="font-sans font-bold">
                         Create Custom Watchlist
                       </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleCreateList} className="space-y-4 mt-2">
                       <div>
-                        <label className="meta-label block mb-1.5">Watchlist Name</label>
+                        <label className="text-xs font-medium text-zinc-400 block mb-1.5">Watchlist Name</label>
                         <input
                           type="text"
-                          placeholder="e.g. Growth, Tech, Dividend"
+                          placeholder="e.g. High IV, Tech Giants, Growth"
                           value={newListName}
                           onChange={(e) => setNewListName(e.target.value)}
                           required
-                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-muted-foreground focus:outline-none focus:border-violet-400"
+                          className="w-full bg-white/[0.04] border border-white/10 rounded-md px-3 py-2 text-sm text-white font-sans placeholder:text-muted-foreground focus:outline-none focus:border-white/30"
                         />
                       </div>
                       <div>
-                        <label className="meta-label block mb-1.5">Description (Optional)</label>
+                        <label className="text-xs font-medium text-zinc-400 block mb-1.5">Description (Optional)</label>
                         <input
                           type="text"
                           placeholder="e.g. Core tracked tickers"
                           value={newListDesc}
                           onChange={(e) => setNewListDesc(e.target.value)}
-                          className="w-full bg-white/[0.04] border border-white/10 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-muted-foreground focus:outline-none focus:border-violet-400"
+                          className="w-full bg-white/[0.04] border border-white/10 rounded-md px-3 py-2 text-sm text-white font-sans placeholder:text-muted-foreground focus:outline-none focus:border-white/30"
                         />
                       </div>
                       <div className="flex justify-end gap-2 pt-2">
                         <button
                           type="button"
                           onClick={() => setIsNewListOpen(false)}
-                          className="px-4 py-2 rounded bg-white/5 hover:bg-white/10 text-xs font-mono text-muted-foreground uppercase cursor-pointer"
+                          className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-xs font-sans text-muted-foreground cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={createListMut.isPending}
-                          className="px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-mono text-xs font-bold uppercase hover:brightness-110 disabled:opacity-50 cursor-pointer shadow-[0_0_12px_rgba(139,92,246,0.3)]"
+                          className="px-3.5 py-1.5 rounded bg-white text-black font-sans text-xs font-semibold hover:bg-zinc-200 disabled:opacity-50 cursor-pointer"
                         >
-                          {createListMut.isPending ? "Creating..." : "Create Watchlist"}
+                          {createListMut.isPending ? "Creating..." : "Create"}
                         </button>
                       </div>
                     </form>
                   </DialogContent>
                 </Dialog>
-
-                {/* Add Ticker Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsAddOpen(true)}
-                  className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:brightness-110 transition-all cursor-pointer"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>+ Ticker</span>
-                </button>
-
-                {/* Delete List button */}
-                {watchlists && watchlists.length > 1 && activeWlId && (
-                  <button
-                    onClick={() => {
-                      if (confirm("Are you sure you want to delete this watchlist?")) {
-                        deleteListMut.mutate({ watchlistId: activeWlId });
-                      }
-                    }}
-                    disabled={deleteListMut.isPending}
-                    className="p-1.5 rounded-lg hover:bg-red-500/15 text-zinc-400 hover:text-red-400 border border-transparent hover:border-red-500/30 transition-colors cursor-pointer"
-                    title="Delete this watchlist"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                )}
               </div>
+
+              {/* Add Ticker Button */}
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(true)}
+                className="p-1.5 text-zinc-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer shrink-0"
+                title="Add Ticker"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
             </div>
 
             {/* Watchlist Table */}
             {isWatchlistLoading ? (
-              <div className="py-12 space-y-2.5">
-                <Skeleton className="h-9 w-full bg-white/5" />
-                <Skeleton className="h-9 w-full bg-white/5" />
-                <Skeleton className="h-9 w-full bg-white/5" />
+              <div className="py-8 space-y-2">
+                <Skeleton className="h-10 w-full bg-white/5" />
+                <Skeleton className="h-10 w-full bg-white/5" />
+                <Skeleton className="h-10 w-full bg-white/5" />
               </div>
             ) : !watchlistData || watchlistData.items.length === 0 ? (
-              <div className="py-14 text-center space-y-3">
-                <div className="h-12 w-12 mx-auto rounded-xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
-                  <Sparkles className="h-6 w-6" />
-                </div>
+              <div className="py-10 text-center space-y-2 font-sans">
                 <p className="text-sm font-semibold text-white">Watchlist is currently empty</p>
                 <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                  Add high-conviction symbols to stream real-time price quotes, Tastylive IV Rank, YTD trajectory, and 52-week percentile channels.
+                  Add symbols to track real-time price quotes, Tastylive IV Rank, YTD, and 52-week channels.
                 </p>
                 <div className="pt-2">
                   <button
                     type="button"
                     onClick={() => setIsAddOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-mono font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:brightness-110 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-sans font-medium transition-all cursor-pointer"
                   >
                     <Plus className="h-4 w-4" />
-                    <span>+ Add Stock / ETF Ticker</span>
+                    <span>Add Ticker</span>
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 mt-2">
-                <table className="w-full text-left border-collapse text-xs font-mono min-w-full">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse font-sans text-xs min-w-full">
                   <thead>
-                    <tr className="border-b border-white/[0.08] text-zinc-400 text-[11px]">
-                      <th className="pb-3 font-normal meta-label">Ticker</th>
-                      <th className="pb-3 font-normal meta-label text-right">Price</th>
-                      <th className="pb-3 font-normal meta-label text-right">Day Chg</th>
+                    <tr className="border-b border-white/[0.06] text-zinc-400 text-xs">
+                      <th className="pb-2.5 font-medium">Symbol</th>
+                      <th className="pb-2.5 font-medium text-right">Price</th>
+                      <th className="pb-2.5 font-medium text-right">Change</th>
                       <th
-                        className="pb-3 font-normal meta-label text-center hidden md:table-cell cursor-help"
-                        title="Tastylive Implied Volatility Rank (IVR): ((Current IV - 52W Low IV) / (52W High IV - 52W Low IV)) × 100"
+                        className="pb-2.5 font-medium text-center cursor-help"
+                        title="Tastylive Implied Volatility Rank (IVR)"
                       >
                         IVR
                       </th>
-                      <th className="pb-3 font-normal meta-label text-right hidden sm:table-cell">YTD</th>
-                      <th className="pb-3 font-normal meta-label text-right hidden lg:table-cell">52W High</th>
-                      <th className="pb-3 font-normal meta-label text-right hidden lg:table-cell">52W Low</th>
-                      <th className="pb-3 font-normal meta-label text-center hidden md:table-cell min-w-[150px]">52W Channel</th>
-                      <th className="pb-3 font-normal meta-label text-right w-8"></th>
+                      <th className="pb-2.5 font-medium text-right">YTD</th>
+                      <th className="pb-2.5 font-medium text-center min-w-[160px]">52W Channel</th>
+                      <th className="pb-2.5 font-medium text-right w-8"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
@@ -855,28 +837,46 @@ export default function Dashboard() {
                       const iv = item.ivRank ?? 35;
                       const ivStyle =
                         iv >= 60
-                          ? "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                          ? "bg-amber-500/15 text-amber-300 border-amber-500/40"
                           : iv >= 30
-                            ? "bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.15)]"
+                            ? "bg-cyan-500/15 text-cyan-300 border-cyan-500/40"
                             : "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
 
                       const pos52 = item.fiftyTwoWeekPos ?? 50;
                       const ytd = item.ytdChangePct;
+                      const isPositive = (item.change ?? 0) >= 0;
+
+                      const formattedPrice = item.price
+                        ? Number(item.price).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                        : "—";
+
+                      const changeFormatted =
+                        item.change != null
+                          ? `${isPositive ? "+" : ""}${item.change.toFixed(2)}`
+                          : "—";
+
+                      const pctFormatted =
+                        item.changePct != null
+                          ? `${isPositive ? "+" : ""}${item.changePct.toFixed(2)}%`
+                          : "";
 
                       return (
                         <tr
                           key={item.id}
-                          className="hover:bg-white/[0.04] transition-colors group"
+                          className="hover:bg-white/[0.02] transition-colors group"
                         >
-                          {/* Ticker Symbol & Name with Company Logo */}
+                          {/* Symbol + Name & Logo matching mobile typography */}
                           <td className="py-3">
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-3">
                               <CompanyLogo symbol={item.symbol} name={item.name} size="md" />
                               <div className="min-w-0">
-                                <div className="font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
+                                <div className="font-bold text-white text-sm sm:text-base tracking-tight font-sans">
                                   {item.symbol}
                                 </div>
-                                <div className="text-[10px] text-zinc-400 font-sans truncate max-w-[110px] sm:max-w-[150px]">
+                                <div className="text-xs text-zinc-400 font-sans truncate max-w-[160px] leading-tight mt-0.5">
                                   {item.name}
                                 </div>
                               </div>
@@ -884,61 +884,43 @@ export default function Dashboard() {
                           </td>
 
                           {/* Price */}
-                          <td className="py-3 text-right font-bold text-white text-sm font-mono">
-                            {item.price ? fmtMoney(item.price) : "—"}
+                          <td className="py-3 text-right font-semibold text-white text-sm sm:text-base font-sans tracking-tight">
+                            {formattedPrice}
                           </td>
 
-                          {/* Day Change with Dynamic Pill */}
+                          {/* Price Change */}
                           <td className="py-3 text-right">
-                            {item.price ? (
-                              <div className="inline-flex flex-col items-end">
-                                <div
-                                  className={`px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-0.5 border ${
-                                    item.change >= 0
-                                      ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]"
-                                      : "bg-rose-500/15 text-rose-400 border-rose-500/30 shadow-[0_0_8px_rgba(244,63,94,0.15)]"
-                                  }`}
-                                >
-                                  {item.change >= 0 ? (
-                                    <ArrowUpRight className="h-3 w-3 shrink-0" />
-                                  ) : (
-                                    <ArrowDownRight className="h-3 w-3 shrink-0" />
-                                  )}
-                                  <span>{item.change >= 0 ? "+" : ""}{item.change.toFixed(2)}</span>
-                                </div>
-                                <div className={`text-[10px] mt-0.5 font-medium ${item.changePct >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                                  {item.changePct >= 0 ? "+" : ""}{item.changePct.toFixed(2)}%
-                                </div>
-                              </div>
-                            ) : (
-                              <span className="text-zinc-500">—</span>
-                            )}
+                            <div
+                              className={`text-xs sm:text-[13px] font-medium font-sans tracking-tight ${
+                                isPositive ? "text-emerald-400" : "text-rose-500"
+                              }`}
+                            >
+                              {changeFormatted} {pctFormatted}
+                            </div>
                           </td>
 
-                          {/* IVR (Tastylive IV Rank) */}
-                          <td className="py-3 text-center hidden md:table-cell">
+                          {/* IVR */}
+                          <td className="py-3 text-center">
                             {item.ivRank != null ? (
                               <span
-                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono font-bold border ${ivStyle} cursor-help transition-all`}
-                                title={`Tastylive IV Rank: ${item.ivRank}%\nIV Percentile (IVP): ${item.ivPercentile ?? "—"}%\nCurrent 30D IV: ${item.iv30 != null ? (item.iv30 * 100).toFixed(1) + "%" : "—"}\n52W IV Range: ${item.iv52wLow != null ? (item.iv52wLow * 100).toFixed(0) + "%" : "—"} - ${item.iv52wHigh != null ? (item.iv52wHigh * 100).toFixed(0) + "%" : "—"}`}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium font-sans border ${ivStyle}`}
+                                title={`Tastylive IV Rank: ${item.ivRank}%`}
                               >
                                 {item.ivRank >= 60 && <Flame className="h-3 w-3 text-amber-400 shrink-0" />}
                                 {item.ivRank < 60 && item.ivRank >= 30 && <Activity className="h-3 w-3 text-cyan-400 shrink-0" />}
                                 <span>{item.ivRank}%</span>
                               </span>
                             ) : (
-                              <span className="text-zinc-500 text-[10px]">—</span>
+                              <span className="text-zinc-500 text-xs">—</span>
                             )}
                           </td>
 
                           {/* YTD Return */}
-                          <td className="py-3 text-right hidden sm:table-cell">
+                          <td className="py-3 text-right">
                             {ytd != null ? (
                               <span
-                                className={`inline-block px-2 py-0.5 rounded text-xs font-semibold border ${
-                                  ytd >= 0
-                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                className={`text-xs font-medium font-sans ${
+                                  ytd >= 0 ? "text-emerald-400" : "text-rose-500"
                                 }`}
                               >
                                 {ytd >= 0 ? "+" : ""}{ytd.toFixed(2)}%
@@ -948,43 +930,25 @@ export default function Dashboard() {
                             )}
                           </td>
 
-                          {/* 52W High - hidden on mobile */}
-                          <td className="py-3 text-right font-medium text-emerald-400/90 text-xs hidden lg:table-cell">
-                            {item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "—"}
-                          </td>
-
-                          {/* 52W Low - hidden on mobile */}
-                          <td className="py-3 text-right font-medium text-rose-400/80 text-xs hidden lg:table-cell">
-                            {item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "—"}
-                          </td>
-
-                          {/* 52W Range Visual with Multi-stop Gradient */}
-                          <td className="py-3 px-3 hidden md:table-cell">
-                            <div className="w-full flex flex-col items-center gap-1.5">
-                              <div className="w-full bg-white/10 h-2 rounded-full relative overflow-visible shadow-inner">
-                                {/* Gradient track from low (rose) to high (emerald) */}
+                          {/* 52W Range Visual Track (Retained) */}
+                          <td className="py-3 px-3">
+                            <div className="w-full flex flex-col items-center gap-1">
+                              <div className="w-full bg-white/10 h-1.5 rounded-full relative overflow-visible">
                                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-500/80 via-amber-400/80 to-emerald-400/80" />
-                                {/* Current price position marker */}
                                 <div
-                                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-zinc-950 shadow-[0_0_10px_rgba(255,255,255,0.9)] z-10 transition-all"
+                                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border border-zinc-950 shadow-sm z-10 transition-all"
                                   style={{ left: `${Math.min(96, Math.max(4, pos52))}%` }}
                                 />
                               </div>
-                              <div className="w-full flex justify-between items-center text-[10px] font-mono">
-                                <span className="text-rose-400/80 font-medium">
-                                  {item.fiftyTwoWeekLow ? fmtMoney(item.fiftyTwoWeekLow) : "Low"}
-                                </span>
-                                <span className="px-1.5 py-0.2 rounded bg-white/10 text-white font-bold text-[9px]">
-                                  {pos52}%
-                                </span>
-                                <span className="text-emerald-400/80 font-medium">
-                                  {item.fiftyTwoWeekHigh ? fmtMoney(item.fiftyTwoWeekHigh) : "High"}
-                                </span>
+                              <div className="w-full flex justify-between items-center text-[10px] font-sans text-zinc-400">
+                                <span>52W L</span>
+                                <span className="font-semibold text-white">{pos52}%</span>
+                                <span>52W H</span>
                               </div>
                             </div>
                           </td>
 
-                          {/* Remove Action */}
+                          {/* Delete Action */}
                           <td className="py-3 text-right">
                             <button
                               onClick={() =>
@@ -993,10 +957,10 @@ export default function Dashboard() {
                                   symbol: item.symbol,
                                 })
                               }
-                              className="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/15 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-md text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
                               title="Remove from watchlist"
                             >
-                              <X className="h-3.5 w-3.5" />
+                              <X className="h-4 w-4" />
                             </button>
                           </td>
                         </tr>

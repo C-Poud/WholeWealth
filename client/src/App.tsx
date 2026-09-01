@@ -9,6 +9,7 @@ import Settings from "./pages/Settings";
 import Users from "./pages/Users";
 import Suggestions from "./pages/Suggestions";
 import Career from "./pages/Career";
+import Watchlist from "./pages/Watchlist";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/risk" element={<Protected><Risk /></Protected>} />
         <Route path="/suggestions" element={<Protected><Suggestions /></Protected>} />
         <Route path="/career" element={<Protected><Career /></Protected>} />
+        <Route path="/watchlist" element={<Protected><Watchlist /></Protected>} />
         <Route path="/settings" element={<Protected><Settings /></Protected>} />
         <Route path="/users" element={<Protected><Users /></Protected>} />
         <Route path="/login" element={<Login />} />

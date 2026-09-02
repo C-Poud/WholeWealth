@@ -168,21 +168,22 @@ export default function Portfolio() {
   };
 
   const st = status.data;
-  const positions = overview.data?.positions ?? [];
-  const accounts = overview.data?.accounts ?? [];
-  const _accountMap = new Map(accounts.map((a) => [a.id, a]));
+  const positions = useMemo(() => overview.data?.positions ?? [], [overview.data?.positions]);
+  const accounts = useMemo(() => overview.data?.accounts ?? [], [overview.data?.accounts]);
+  const _accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
 
+  const greeksData = greeksQuery.data;
   const greeksPosMap = useMemo(() => {
-    const map = new Map<number, NonNullable<typeof greeksQuery.data>["greeks"]["positions"][0]>();
-    if (greeksQuery.data?.greeks?.positions) {
-      for (const p of greeksQuery.data.greeks.positions) {
+    const map = new Map<number, NonNullable<typeof greeksData>["greeks"]["positions"][0]>();
+    if (greeksData?.greeks?.positions) {
+      for (const p of greeksData.greeks.positions) {
         if (p.id != null) map.set(p.id, p);
       }
     }
     return map;
-  }, [greeksQuery.data]);
+  }, [greeksData]);
 
-  const metrics = (() => {
+  const metrics = useMemo(() => {
     let stockCostBasis = 0;
     let cash = 0;
     let cspCollateral = 0;
@@ -240,7 +241,7 @@ export default function Portfolio() {
       shortCallCount,
       shortPutCount,
     };
-  })();
+  }, [accounts, positions]);
 
   return (
     <div className="p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-8 max-w-[1750px] mx-auto">
@@ -434,7 +435,7 @@ export default function Portfolio() {
                   const mv = p.quantity * px * mult;
                   const cb = p.costBasis ?? px;
                   const pnl = p.quantity * (px - cb) * mult;
-                  const pnlPct = cb > 0 ? ((px - cb) / cb) * 100 : 0;
+                  const pnlPct = cb > 0 ? (p.quantity < 0 ? ((cb - px) / cb) * 100 : ((px - cb) / cb) * 100) : 0;
                   const posGreek = p.id ? greeksPosMap.get(p.id) : null;
                   return (
                     <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">

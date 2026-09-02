@@ -1,6 +1,6 @@
 {
   "name": "WholeWealth",
-  "description": "Portfolio and options analytics toolkit with live broker sync, VolatilityBox expected move models, dynamic probability cones, and risk metrics.",
+  "description": "Portfolio and options analytics toolkit with live broker sync, quantitative portfolio suggestions and health scorecard, VolatilityBox expected move models, dynamic probability cones, and risk metrics.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

@@ -17,7 +17,6 @@ import {
   updatePosition,
 } from "./queries/portfolio";
 import { parsePositionsFile } from "./import/parser";
-import { DEMO_POSITIONS } from "./snaptrade/demo";
 import { getBrokerFiguresForUser } from "./snaptrade/balances";
 
 export const portfolioRouter = createRouter({
@@ -197,8 +196,8 @@ export const portfolioRouter = createRouter({
 
   /** Seed a demo portfolio (uses deterministic synthetic market data). */
   loadDemo: authedQuery.mutation(async ({ ctx }) => {
-    await seedDemoData(ctx.user.id);
-    return { loaded: DEMO_POSITIONS.length };
+    const loaded = await seedDemoData(ctx.user.id);
+    return { loaded };
   }),
 
   /** Clear demo positions & demo accounts. */

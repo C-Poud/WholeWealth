@@ -1,4 +1,9 @@
-import { bsCallDelta, bsCallPrice } from "../analytics/blackScholes";
+import {
+  bsCallDelta,
+  bsCallPrice,
+  bsPutDelta,
+  bsPutPrice,
+} from "../analytics/blackScholes";
 
 export interface DemoChainContract {
   strike: number;
@@ -80,6 +85,7 @@ export function demoChain(symbol: string, spot?: number): {
   // ~8 weekly expiries out to 63 days
   for (let dte = 7; dte <= 63; dte += 7) {
     const expiry = new Date(now.getTime() + dte * 86400000);
+    const expiryStr = toDateStr(expiry);
     const T = dte / 365;
     for (let m = 0.8; m <= 1.2001; m += 0.04) {
       const K = roundStrike(S * m);
@@ -89,37 +95,207 @@ export function demoChain(symbol: string, spot?: number): {
         1.2,
         Math.max(0.08, baseIv * (1 + 0.9 * Math.max(0, 1 - m)) * (1 + 0.15 * Math.sqrt(30 / dte))),
       );
-      const theo = bsCallPrice({ spot: S, strike: K, yearsToExpiry: T, vol: iv });
+
+      // Call Contract
+      const callTheo = bsCallPrice({ spot: S, strike: K, yearsToExpiry: T, vol: iv });
       const spreadPct = 0.04 + 0.1 * Math.abs(1 - m) + rnd() * 0.03;
-      const bid = Math.max(0.01, +(theo * (1 - spreadPct / 2)).toFixed(2));
-      const ask = +(theo * (1 + spreadPct / 2)).toFixed(2);
-      const last = +((bid + ask) / 2).toFixed(2);
+      const callBid = Math.max(0.01, +(callTheo * (1 - spreadPct / 2)).toFixed(2));
+      const callAsk = +(callTheo * (1 + spreadPct / 2)).toFixed(2);
+      const callLast = +((callBid + callAsk) / 2).toFixed(2);
       contracts.push({
         strike: K,
-        expiry: toDateStr(expiry),
+        expiry: expiryStr,
         optionType: "call",
-        bid,
-        ask: Math.max(ask, bid + 0.01),
-        last,
+        bid: callBid,
+        ask: Math.max(callAsk, callBid + 0.01),
+        last: callLast,
         openInterest: Math.floor(500 + rnd() * 9000 * (1.3 - Math.abs(1 - m))),
         iv: +iv.toFixed(4),
         delta: +bsCallDelta({ spot: S, strike: K, yearsToExpiry: T, vol: iv }).toFixed(4),
+      });
+
+      // Put Contract
+      const putTheo = bsPutPrice({ spot: S, strike: K, yearsToExpiry: T, vol: iv });
+      const putBid = Math.max(0.01, +(putTheo * (1 - spreadPct / 2)).toFixed(2));
+      const putAsk = +(putTheo * (1 + spreadPct / 2)).toFixed(2);
+      const putLast = +((putBid + putAsk) / 2).toFixed(2);
+      contracts.push({
+        strike: K,
+        expiry: expiryStr,
+        optionType: "put",
+        bid: putBid,
+        ask: Math.max(putAsk, putBid + 0.01),
+        last: putLast,
+        openInterest: Math.floor(500 + rnd() * 9000 * (1.3 - Math.abs(1 - m))),
+        iv: +iv.toFixed(4),
+        delta: +bsPutDelta({ spot: S, strike: K, yearsToExpiry: T, vol: iv }).toFixed(4),
       });
     }
   }
   return { spot: S, contracts };
 }
 
-/** Demo portfolio mirroring the style of the reference screenshots. */
-export const DEMO_POSITIONS: Array<{
+export interface DemoPositionItem {
   symbol: string;
   description: string;
   quantity: number;
   costBasis: number;
-}> = [
-  { symbol: "NFLX", description: "Netflix Inc.", quantity: 200, costBasis: 1085.4 },
-  { symbol: "AAPL", description: "Apple Inc.", quantity: 150, costBasis: 214.8 },
-  { symbol: "NVDA", description: "NVIDIA Corp.", quantity: 300, costBasis: 152.75 },
-  { symbol: "TSLA", description: "Tesla Inc.", quantity: 100, costBasis: 318.2 },
-  { symbol: "PLTR", description: "Palantir Technologies", quantity: 500, costBasis: 121.6 },
-];
+  price?: number;
+  assetType?: "stock" | "option" | "etf" | "other";
+  optionType?: "call" | "put" | null;
+  strike?: number | null;
+  expiry?: string | null;
+  rawSymbol?: string | null;
+}
+
+function makeOcc(sym: string, expiry: string, type: "C" | "P", strike: number): string {
+  const [y, m, d] = expiry.split("-");
+  const yr = y.slice(2);
+  const strikeStr = Math.round(strike * 1000).toString().padStart(8, "0");
+  return `${sym.toUpperCase().padEnd(6, " ")}${yr}${m}${d}${type}${strikeStr}`;
+}
+
+export function getFreshDemoPositions(): DemoPositionItem[] {
+  const now = Date.now();
+  const getExpiry = (dte: number) => {
+    const d = new Date(now + dte * 86400000);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const aaplExp42 = getExpiry(42);
+  const nvdaExp35 = getExpiry(35);
+  const tslaExp28 = getExpiry(28);
+  const nflxExp17 = getExpiry(17);
+  const spyExp45 = getExpiry(45);
+  const pltrExp60 = getExpiry(60);
+
+  return [
+    // ── Core Equity & ETF Holdings ──
+    {
+      symbol: "NFLX",
+      description: "Netflix Inc.",
+      quantity: 200,
+      costBasis: 1085.4,
+      assetType: "stock",
+    },
+    {
+      symbol: "AAPL",
+      description: "Apple Inc.",
+      quantity: 150,
+      costBasis: 214.8,
+      assetType: "stock",
+    },
+    {
+      symbol: "NVDA",
+      description: "NVIDIA Corp.",
+      quantity: 300,
+      costBasis: 152.75,
+      assetType: "stock",
+    },
+    {
+      symbol: "TSLA",
+      description: "Tesla Inc.",
+      quantity: 100,
+      costBasis: 318.2,
+      assetType: "stock",
+    },
+    {
+      symbol: "PLTR",
+      description: "Palantir Technologies",
+      quantity: 500,
+      costBasis: 121.6,
+      assetType: "stock",
+    },
+    {
+      symbol: "SPY",
+      description: "SPDR S&P 500 ETF Trust",
+      quantity: 100,
+      costBasis: 625.0,
+      assetType: "etf",
+    },
+
+    // ── Options Holdings (Short Covered Calls, Short Puts, Long Options) ──
+    // 1) AAPL 42 DTE Short Covered Call (harvesting theta against long stock)
+    {
+      symbol: "AAPL",
+      description: `AAPL ${aaplExp42} 245.00 Call`,
+      quantity: -1,
+      costBasis: 4.80,
+      price: 3.10,
+      assetType: "option",
+      optionType: "call",
+      strike: 245,
+      expiry: aaplExp42,
+      rawSymbol: makeOcc("AAPL", aaplExp42, "C", 245),
+    },
+    // 2) NVDA 35 DTE Short Covered Call (2 contracts sold against 300 long shares)
+    {
+      symbol: "NVDA",
+      description: `NVDA ${nvdaExp35} 190.00 Call`,
+      quantity: -2,
+      costBasis: 5.60,
+      price: 2.85,
+      assetType: "option",
+      optionType: "call",
+      strike: 190,
+      expiry: nvdaExp35,
+      rawSymbol: makeOcc("NVDA", nvdaExp35, "C", 190),
+    },
+    // 3) TSLA 28 DTE Cash-Secured Put (income harvest on pullbacks)
+    {
+      symbol: "TSLA",
+      description: `TSLA ${tslaExp28} 310.00 Put`,
+      quantity: -1,
+      costBasis: 8.40,
+      price: 4.20,
+      assetType: "option",
+      optionType: "put",
+      strike: 310,
+      expiry: tslaExp28,
+      rawSymbol: makeOcc("TSLA", tslaExp28, "P", 310),
+    },
+    // 4) NFLX 17 DTE Short Call (<=21 DTE management trigger & +60% profit take)
+    {
+      symbol: "NFLX",
+      description: `NFLX ${nflxExp17} 1260.00 Call`,
+      quantity: -1,
+      costBasis: 32.50,
+      price: 12.80,
+      assetType: "option",
+      optionType: "call",
+      strike: 1260,
+      expiry: nflxExp17,
+      rawSymbol: makeOcc("NFLX", nflxExp17, "C", 1260),
+    },
+    // 5) SPY 45 DTE Short Put (broad market index theta collection)
+    {
+      symbol: "SPY",
+      description: `SPY ${spyExp45} 630.00 Put`,
+      quantity: -1,
+      costBasis: 5.80,
+      price: 3.90,
+      assetType: "option",
+      optionType: "put",
+      strike: 630,
+      expiry: spyExp45,
+      rawSymbol: makeOcc("SPY", spyExp45, "P", 630),
+    },
+    // 6) PLTR 60 DTE Long Call (directional growth upside)
+    {
+      symbol: "PLTR",
+      description: `PLTR ${pltrExp60} 165.00 Call`,
+      quantity: 2,
+      costBasis: 8.20,
+      price: 10.40,
+      assetType: "option",
+      optionType: "call",
+      strike: 165,
+      expiry: pltrExp60,
+      rawSymbol: makeOcc("PLTR", pltrExp60, "C", 165),
+    },
+  ];
+}
+
+/** Demo portfolio mirroring realistic blended stock and options holdings. */
+export const DEMO_POSITIONS: DemoPositionItem[] = getFreshDemoPositions();
+

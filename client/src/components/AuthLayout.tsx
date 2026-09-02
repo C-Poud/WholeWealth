@@ -12,10 +12,12 @@ import {
   Briefcase,
   Compass,
   LayoutDashboard,
+  Lightbulb,
   LogOut,
   Rocket,
   Settings,
   ShieldAlert,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
@@ -29,6 +31,8 @@ import { OnboardingTour, startAppTour } from "./OnboardingTour";
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Briefcase, label: "Portfolio", path: "/portfolio" },
+  { icon: Bookmark, label: "Watchlist", path: "/watchlist" },
+  { icon: Sparkles, label: "Suggestions", path: "/suggestions" },
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
   { icon: Rocket, label: "Career Optimizer", path: "/career" },
   { icon: Settings, label: "Settings", path: "/settings" },

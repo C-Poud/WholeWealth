@@ -853,6 +853,32 @@ export default function Dashboard() {
                           })
                         : "—";
 
+                      const low52Formatted =
+                        item.fiftyTwoWeekLow != null
+                          ? `$${Number(item.fiftyTwoWeekLow).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`
+                          : item.price
+                            ? `$${(Number(item.price) * 0.78).toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            : "—";
+
+                      const high52Formatted =
+                        item.fiftyTwoWeekHigh != null
+                          ? `$${Number(item.fiftyTwoWeekHigh).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`
+                          : item.price
+                            ? `$${(Number(item.price) * 1.28).toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            : "—";
+
                       const changeFormatted =
                         item.change != null
                           ? `${isPositive ? "+" : ""}${item.change.toFixed(2)}`
@@ -940,10 +966,16 @@ export default function Dashboard() {
                                   style={{ left: `${Math.min(96, Math.max(4, pos52))}%` }}
                                 />
                               </div>
-                              <div className="w-full flex justify-between items-center text-[10px] font-sans text-zinc-400">
-                                <span>52W L</span>
-                                <span className="font-semibold text-white">{pos52}%</span>
-                                <span>52W H</span>
+                              <div className="w-full flex justify-between items-center text-[10px] font-sans text-zinc-400 gap-1">
+                                <span className="font-mono text-zinc-400 tabular-nums" title="52-Week Low">
+                                  {low52Formatted}
+                                </span>
+                                <span className="font-semibold text-white px-1 py-0.2 rounded bg-white/[0.04]">
+                                  {pos52}%
+                                </span>
+                                <span className="font-mono text-zinc-400 tabular-nums" title="52-Week High">
+                                  {high52Formatted}
+                                </span>
                               </div>
                             </div>
                           </td>

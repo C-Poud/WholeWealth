@@ -10,7 +10,7 @@ import {
   replacePositionsBySource,
 } from "./queries/portfolio";
 import { parsePositionsFile } from "./import/parser";
-import { DEMO_POSITIONS, demoSpot } from "./snaptrade/demo";
+import { DEMO_POSITIONS, demoSpot, getFreshDemoPositions } from "./snaptrade/demo";
 
 export const portfolioRouter = createRouter({
   /** Positions + accounts for the signed-in user. */
@@ -134,20 +134,25 @@ export const portfolioRouter = createRouter({
 
   /** Seed a demo portfolio (uses deterministic synthetic market data). */
   loadDemo: authedQuery.mutation(async ({ ctx }) => {
-    const rows = DEMO_POSITIONS.map((p) => ({
+    const demoList = getFreshDemoPositions();
+    const rows = demoList.map((p) => ({
       userId: ctx.user.id,
       symbol: p.symbol,
       description: p.description,
-      assetType: "stock" as const,
+      assetType: p.assetType ?? ("stock" as const),
       quantity: p.quantity,
       costBasis: p.costBasis,
-      price: demoSpot(p.symbol),
+      price: p.price ?? demoSpot(p.symbol),
       currency: "USD",
       source: "demo" as const,
+      optionType: p.optionType ?? null,
+      strike: p.strike ?? null,
+      expiry: p.expiry ?? null,
+      rawSymbol: p.rawSymbol ?? null,
     }));
     await replacePositionsBySource(ctx.user.id, "demo", rows);
     return { loaded: rows.length };
-    }),
+  }),
 
   /** Clear demo positions. */
   clearDemo: authedQuery.mutation(async ({ ctx }) => {

@@ -15,6 +15,23 @@ const Q2 = "https://query2.finance.yahoo.com";
 // The options endpoint requires a cookie + crumb pair; cache it ~25 min.
 let session: { cookie: string; crumb: string; expiresAt: number } | null = null;
 
+// ---- In-Memory Caches & In-Flight Request Deduplication --------------------
+const symbolInfoCache = new Map<string, { data: YahooSymbolInfo | "not_found" | null; expiresAt: number }>();
+const watchlistQuoteCache = new Map<string, { data: WatchlistQuote; expiresAt: number }>();
+const chainCache = new Map<string, { data: ChainContract[]; expiresAt: number }>();
+const summaryDetailsCache = new Map<string, { data: { beta?: number; fiftyTwoWeekHigh?: number; fiftyTwoWeekLow?: number }; expiresAt: number }>();
+const inFlightRequests = new Map<string, Promise<any>>();
+
+function deduplicate<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const existing = inFlightRequests.get(key);
+  if (existing) return existing;
+  const promise = fetcher().finally(() => {
+    inFlightRequests.delete(key);
+  });
+  inFlightRequests.set(key, promise);
+  return promise;
+}
+
 async function getSession() {
   if (session && session.expiresAt > Date.now()) return session;
 
@@ -85,53 +102,74 @@ export interface YahooSymbolInfo {
 export async function getYahooSymbolInfo(
   symbol: string,
 ): Promise<YahooSymbolInfo | "not_found" | null> {
-  try {
-    const resp = await fetchWithTimeout(
-      `${Q1}/v8/finance/chart/${encodeURIComponent(symbol.toUpperCase())}?range=1d&interval=1d`,
-    );
-    if (resp.status === 404 || resp.status === 422) return "not_found";
-    if (!resp.ok) return null;
-    const j: any = await resp.json();
-    if (j?.chart?.error) {
-      const code = String(j.chart.error.code ?? "");
-      return /not found|no data|invalid/i.test(code) ? "not_found" : null;
-    }
-    const meta = j?.chart?.result?.[0]?.meta;
-    if (!meta) return "not_found";
-    const px = meta.regularMarketPrice;
-    const prevClose =
-      (typeof meta.regularMarketPreviousClose === "number" && meta.regularMarketPreviousClose > 0
-        ? meta.regularMarketPreviousClose
-        : null) ??
-      (typeof meta.chartPreviousClose === "number" && meta.chartPreviousClose > 0
-        ? meta.chartPreviousClose
-        : null) ??
-      (typeof meta.previousClose === "number" && meta.previousClose > 0
-        ? meta.previousClose
-        : null) ??
-      null;
-
-    const change =
-      typeof px === "number" && typeof prevClose === "number"
-        ? +(px - prevClose).toFixed(2)
-        : null;
-    const changePct =
-      typeof change === "number" && typeof prevClose === "number" && prevClose > 0
-        ? +((change / prevClose) * 100).toFixed(2)
-        : null;
-
-    return {
-      name: meta.longName ?? meta.shortName ?? null,
-      price: typeof px === "number" && px > 0 ? px : null,
-      currency: meta.currency ?? null,
-      instrumentType: meta.instrumentType ?? null,
-      previousClose: prevClose ? +prevClose.toFixed(2) : null,
-      change,
-      changePct,
-    };
-  } catch {
-    return null;
+  const symKey = symbol.toUpperCase().trim();
+  const cached = symbolInfoCache.get(symKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
   }
+
+  return deduplicate(`info_${symKey}`, async () => {
+    try {
+      const resp = await fetchWithTimeout(
+        `${Q1}/v8/finance/chart/${encodeURIComponent(symKey)}?range=1d&interval=1d`,
+      );
+      if (resp.status === 404 || resp.status === 422) {
+        symbolInfoCache.set(symKey, { data: "not_found", expiresAt: Date.now() + 5 * 60_000 });
+        return "not_found";
+      }
+      if (!resp.ok) return null;
+      const j: any = await resp.json();
+      if (j?.chart?.error) {
+        const code = String(j.chart.error.code ?? "");
+        const res = /not found|no data|invalid/i.test(code) ? ("not_found" as const) : null;
+        if (res === "not_found") {
+          symbolInfoCache.set(symKey, { data: "not_found", expiresAt: Date.now() + 5 * 60_000 });
+        }
+        return res;
+      }
+      const meta = j?.chart?.result?.[0]?.meta;
+      if (!meta) {
+        symbolInfoCache.set(symKey, { data: "not_found", expiresAt: Date.now() + 5 * 60_000 });
+        return "not_found";
+      }
+      const px = meta.regularMarketPrice;
+      const prevClose =
+        (typeof meta.regularMarketPreviousClose === "number" && meta.regularMarketPreviousClose > 0
+          ? meta.regularMarketPreviousClose
+          : null) ??
+        (typeof meta.chartPreviousClose === "number" && meta.chartPreviousClose > 0
+          ? meta.chartPreviousClose
+          : null) ??
+        (typeof meta.previousClose === "number" && meta.previousClose > 0
+          ? meta.previousClose
+          : null) ??
+        null;
+
+      const change =
+        typeof px === "number" && typeof prevClose === "number"
+          ? +(px - prevClose).toFixed(2)
+          : null;
+      const changePct =
+        typeof change === "number" && typeof prevClose === "number" && prevClose > 0
+          ? +((change / prevClose) * 100).toFixed(2)
+          : null;
+
+      const info: YahooSymbolInfo = {
+        name: meta.longName ?? meta.shortName ?? null,
+        price: typeof px === "number" && px > 0 ? px : null,
+        currency: meta.currency ?? null,
+        instrumentType: meta.instrumentType ?? null,
+        previousClose: prevClose ? +prevClose.toFixed(2) : null,
+        change,
+        changePct,
+      };
+
+      symbolInfoCache.set(symKey, { data: info, expiresAt: Date.now() + 2 * 60_000 });
+      return info;
+    } catch {
+      return null;
+    }
+  });
 }
 
 /** Spot prices for a set of symbols (per-symbol, best effort). */
@@ -282,95 +320,116 @@ export async function getWatchlistQuotes(
   const out: Record<string, WatchlistQuote> = {};
   if (symbols.length === 0) return out;
 
-  // Run quotes and summary details concurrently
+  const now = Date.now();
+  const missingSymbols: string[] = [];
+
+  for (const rawSym of symbols) {
+    const sym = rawSym.toUpperCase().trim();
+    const cached = watchlistQuoteCache.get(sym);
+    if (cached && cached.expiresAt > now) {
+      out[sym] = cached.data;
+    } else {
+      missingSymbols.push(sym);
+    }
+  }
+
+  if (missingSymbols.length === 0) return out;
+
+  // Run quotes and summary details concurrently for missing symbols
   const [details] = await Promise.all([
-    getYahooSummaryDetails(symbols).catch(() => ({})),
+    getYahooSummaryDetails(missingSymbols).catch(() => ({})),
     Promise.all(
-      symbols.map(async (rawSym) => {
-        const sym = rawSym.toUpperCase();
-        try {
-          // Fetch 1 year of daily history to compute exact 52-week price range and Tastylive IV Rank / IV Percentile
-          const j = await fetchJson(
-            `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`,
-          );
-          const meta = j?.chart?.result?.[0]?.meta;
-          const px = meta?.regularMarketPrice;
-          if (typeof px === "number" && px > 0) {
-            const closePrices: (number | null)[] = j?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
-            const timestamps: (number | null)[] = j?.chart?.result?.[0]?.timestamp ?? [];
-            const validCloses = closePrices.filter((c): c is number => typeof c === "number" && isFinite(c) && c > 0);
+      missingSymbols.map(async (sym) => {
+        return deduplicate(`quote_${sym}`, async () => {
+          try {
+            // Fetch 1 year of daily history to compute exact 52-week price range and Tastylive IV Rank / IV Percentile
+            const j = await fetchJson(
+              `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?range=1y&interval=1d`,
+            );
+            const meta = j?.chart?.result?.[0]?.meta;
+            const px = meta?.regularMarketPrice;
+            if (typeof px === "number" && px > 0) {
+              const closePrices: (number | null)[] = j?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
+              const timestamps: (number | null)[] = j?.chart?.result?.[0]?.timestamp ?? [];
+              const validCloses = closePrices.filter((c): c is number => typeof c === "number" && isFinite(c) && c > 0);
 
-            // Previous trading day's close price (NOT the 1-year ago chartPreviousClose)
-            const prevClose =
-              (typeof meta?.regularMarketPreviousClose === "number" && meta.regularMarketPreviousClose > 0
-                ? meta.regularMarketPreviousClose
-                : null) ??
-              (typeof meta?.previousClose === "number" && meta.previousClose > 0
-                ? meta.previousClose
-                : null) ??
-              (validCloses.length >= 2 ? validCloses[validCloses.length - 2] : px);
+              // Previous trading day's close price (NOT the 1-year ago chartPreviousClose)
+              const prevClose =
+                (typeof meta?.regularMarketPreviousClose === "number" && meta.regularMarketPreviousClose > 0
+                  ? meta.regularMarketPreviousClose
+                  : null) ??
+                (typeof meta?.previousClose === "number" && meta.previousClose > 0
+                  ? meta.previousClose
+                  : null) ??
+                (validCloses.length >= 2 ? validCloses[validCloses.length - 2] : px);
 
-            const change = +(px - prevClose).toFixed(2);
-            const changePct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
+              const change = +(px - prevClose).toFixed(2);
+              const changePct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
 
-            // Calculate YTD change % from the first trading day of the current calendar year
-            const currentYear = new Date().getFullYear();
-            const startOfYearTs = new Date(currentYear, 0, 1).getTime() / 1000;
-            let ytdStartClose: number | null = null;
+              // Calculate YTD change % from the first trading day of the current calendar year
+              const currentYear = new Date().getFullYear();
+              const startOfYearTs = new Date(currentYear, 0, 1).getTime() / 1000;
+              let ytdStartClose: number | null = null;
 
-            for (let i = 0; i < timestamps.length; i++) {
-              const ts = timestamps[i];
-              const c = closePrices[i];
-              if (ts && ts >= startOfYearTs && typeof c === "number" && c > 0) {
-                ytdStartClose = c;
-                break;
+              for (let i = 0; i < timestamps.length; i++) {
+                const ts = timestamps[i];
+                const c = closePrices[i];
+                if (ts && ts >= startOfYearTs && typeof c === "number" && c > 0) {
+                  ytdStartClose = c;
+                  break;
+                }
               }
+
+              const ytdChangePct = ytdStartClose
+                ? +(((px - ytdStartClose) / ytdStartClose) * 100).toFixed(2)
+                : changePct;
+
+              const high52 = meta?.fiftyTwoWeekHigh ? +meta.fiftyTwoWeekHigh.toFixed(2) : null;
+              const low52 = meta?.fiftyTwoWeekLow ? +meta.fiftyTwoWeekLow.toFixed(2) : null;
+              let pos52: number | null = null;
+              if (high52 != null && low52 != null && high52 > low52) {
+                pos52 = Math.min(100, Math.max(0, Math.round(((px - low52) / (high52 - low52)) * 100)));
+              }
+
+              // Compute Tastylive IV Rank & IV Percentile from 1-year historical daily return distribution
+              const ivMetrics = calculateTastyIvMetrics(validCloses);
+
+              const quoteObj: WatchlistQuote = {
+                symbol: sym,
+                name: meta.longName ?? meta.shortName ?? sym,
+                price: +px.toFixed(2),
+                change,
+                changePct,
+                ytdChangePct,
+                previousClose: prevClose ? +prevClose.toFixed(2) : null,
+                dayHigh: meta.regularMarketDayHigh ? +meta.regularMarketDayHigh.toFixed(2) : null,
+                dayLow: meta.regularMarketDayLow ? +meta.regularMarketDayLow.toFixed(2) : null,
+                volume: meta.regularMarketVolume ?? null,
+                beta: 1.0,
+                fiftyTwoWeekHigh: high52,
+                fiftyTwoWeekLow: low52,
+                fiftyTwoWeekPos: pos52,
+                ivRank: ivMetrics.ivRank,
+                ivPercentile: ivMetrics.ivPercentile,
+                iv30: ivMetrics.iv30,
+                iv52wHigh: ivMetrics.iv52wHigh,
+                iv52wLow: ivMetrics.iv52wLow,
+              };
+
+              out[sym] = quoteObj;
+              watchlistQuoteCache.set(sym, { data: quoteObj, expiresAt: Date.now() + 45_000 });
             }
-
-            const ytdChangePct = ytdStartClose
-              ? +(((px - ytdStartClose) / ytdStartClose) * 100).toFixed(2)
-              : changePct;
-
-            const high52 = meta?.fiftyTwoWeekHigh ? +meta.fiftyTwoWeekHigh.toFixed(2) : null;
-            const low52 = meta?.fiftyTwoWeekLow ? +meta.fiftyTwoWeekLow.toFixed(2) : null;
-            let pos52: number | null = null;
-            if (high52 != null && low52 != null && high52 > low52) {
-              pos52 = Math.min(100, Math.max(0, Math.round(((px - low52) / (high52 - low52)) * 100)));
-            }
-
-            // Compute Tastylive IV Rank & IV Percentile from 1-year historical daily return distribution
-            const ivMetrics = calculateTastyIvMetrics(validCloses);
-
-            out[sym] = {
-              symbol: sym,
-              name: meta.longName ?? meta.shortName ?? sym,
-              price: +px.toFixed(2),
-              change,
-              changePct,
-              ytdChangePct,
-              previousClose: prevClose ? +prevClose.toFixed(2) : null,
-              dayHigh: meta.regularMarketDayHigh ? +meta.regularMarketDayHigh.toFixed(2) : null,
-              dayLow: meta.regularMarketDayLow ? +meta.regularMarketDayLow.toFixed(2) : null,
-              volume: meta.regularMarketVolume ?? null,
-              beta: 1.0,
-              fiftyTwoWeekHigh: high52,
-              fiftyTwoWeekLow: low52,
-              fiftyTwoWeekPos: pos52,
-              ivRank: ivMetrics.ivRank,
-              ivPercentile: ivMetrics.ivPercentile,
-              iv30: ivMetrics.iv30,
-              iv52wHigh: ivMetrics.iv52wHigh,
-              iv52wLow: ivMetrics.iv52wLow,
-            };
+          } catch {
+            // fallback
           }
-        } catch {
-          // fallback
-        }
+        });
       }),
     ),
   ]);
 
-  for (const [sym, quote] of Object.entries(out)) {
+  for (const sym of missingSymbols) {
+    const quote = out[sym];
+    if (!quote) continue;
     const d = details[sym];
     if (d) {
       if (d.beta != null) quote.beta = +d.beta.toFixed(2);
@@ -386,6 +445,7 @@ export async function getWatchlistQuotes(
           Math.max(0, Math.round(((quote.price - quote.fiftyTwoWeekLow) / (quote.fiftyTwoWeekHigh - quote.fiftyTwoWeekLow)) * 100)),
         );
       }
+      watchlistQuoteCache.set(sym, { data: quote, expiresAt: Date.now() + 45_000 });
     }
   }
 
@@ -398,27 +458,47 @@ export async function getYahooSummaryDetails(
 ): Promise<Record<string, { beta?: number; fiftyTwoWeekHigh?: number; fiftyTwoWeekLow?: number }>> {
   const out: Record<string, { beta?: number; fiftyTwoWeekHigh?: number; fiftyTwoWeekLow?: number }> = {};
   if (symbols.length === 0) return out;
+
+  const now = Date.now();
+  const missing: string[] = [];
+
+  for (const s of symbols) {
+    const sym = s.toUpperCase().trim();
+    const cached = summaryDetailsCache.get(sym);
+    if (cached && cached.expiresAt > now) {
+      out[sym] = cached.data;
+    } else {
+      missing.push(sym);
+    }
+  }
+
+  if (missing.length === 0) return out;
+
   try {
     const s = await getSession();
     await Promise.all(
-      symbols.map(async (sym) => {
-        try {
-          const j = await fetchJson(
-            `${Q2}/v10/finance/quoteSummary/${encodeURIComponent(sym)}?modules=summaryDetail&crumb=${encodeURIComponent(s.crumb)}`,
-            s.cookie,
-          );
-          const detail = j?.quoteSummary?.result?.[0]?.summaryDetail;
-          const beta = detail?.beta?.raw;
-          const high52 = detail?.fiftyTwoWeekHigh?.raw;
-          const low52 = detail?.fiftyTwoWeekLow?.raw;
-          out[sym.toUpperCase()] = {
-            beta: typeof beta === "number" && isFinite(beta) && beta > 0 ? beta : undefined,
-            fiftyTwoWeekHigh: typeof high52 === "number" && isFinite(high52) && high52 > 0 ? high52 : undefined,
-            fiftyTwoWeekLow: typeof low52 === "number" && isFinite(low52) && low52 > 0 ? low52 : undefined,
-          };
-        } catch {
-          /* per-symbol best effort */
-        }
+      missing.map(async (sym) => {
+        return deduplicate(`summary_${sym}`, async () => {
+          try {
+            const j = await fetchJson(
+              `${Q2}/v10/finance/quoteSummary/${encodeURIComponent(sym)}?modules=summaryDetail&crumb=${encodeURIComponent(s.crumb)}`,
+              s.cookie,
+            );
+            const detail = j?.quoteSummary?.result?.[0]?.summaryDetail;
+            const beta = detail?.beta?.raw;
+            const high52 = detail?.fiftyTwoWeekHigh?.raw;
+            const low52 = detail?.fiftyTwoWeekLow?.raw;
+            const val = {
+              beta: typeof beta === "number" && isFinite(beta) && beta > 0 ? beta : undefined,
+              fiftyTwoWeekHigh: typeof high52 === "number" && isFinite(high52) && high52 > 0 ? high52 : undefined,
+              fiftyTwoWeekLow: typeof low52 === "number" && isFinite(low52) && low52 > 0 ? low52 : undefined,
+            };
+            out[sym] = val;
+            summaryDetailsCache.set(sym, { data: val, expiresAt: Date.now() + 10 * 60_000 });
+          } catch {
+            /* per-symbol best effort */
+          }
+        });
       }),
     );
   } catch {
@@ -487,40 +567,49 @@ function pushContracts(
  * expiration within ~95 days (covers the 10–60 DTE suggestion window).
  */
 export async function getYahooChain(symbol: string): Promise<ChainContract[]> {
-  const s = await getSession();
-  const sym = encodeURIComponent(symbol.toUpperCase());
-  const crumb = `crumb=${encodeURIComponent(s.crumb)}`;
+  const symKey = symbol.toUpperCase().trim();
+  const cached = chainCache.get(symKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
 
-  const base = await fetchJson(`${Q2}/v7/finance/options/${sym}?${crumb}`, s.cookie);
-  const result = base?.optionChain?.result?.[0];
-  if (!result) throw new Error(`No option chain for ${symbol}`);
+  return deduplicate(`chain_${symKey}`, async () => {
+    const s = await getSession();
+    const sym = encodeURIComponent(symKey);
+    const crumb = `crumb=${encodeURIComponent(s.crumb)}`;
 
-  const contracts: ChainContract[] = [];
-  const firstPage: YahooOptionsPage | undefined = result.options?.[0];
-  pushContracts(contracts, firstPage);
+    const base = await fetchJson(`${Q2}/v7/finance/options/${sym}?${crumb}`, s.cookie);
+    const result = base?.optionChain?.result?.[0];
+    if (!result) throw new Error(`No option chain for ${symbol}`);
 
-  const nowSec = Date.now() / 1000;
-  const expirations: number[] = result.expirationDates ?? [];
-  const wanted = expirations
-    .filter((e) => e > nowSec - 86_400 && e < nowSec + 95 * 86_400)
-    .filter((e) => e !== firstPage?.expirationDate)
-    .slice(0, 14);
+    const contracts: ChainContract[] = [];
+    const firstPage: YahooOptionsPage | undefined = result.options?.[0];
+    pushContracts(contracts, firstPage);
 
-  const pages = await Promise.all(
-    wanted.map(async (e): Promise<YahooOptionsPage | null> => {
-      try {
-        const j = await fetchJson(
-          `${Q2}/v7/finance/options/${sym}?date=${e}&${crumb}`,
-          s.cookie,
-        );
-        return j?.optionChain?.result?.[0]?.options?.[0] ?? null;
-      } catch {
-        return null;
-      }
-    }),
-  );
-  for (const page of pages) pushContracts(contracts, page);
+    const nowSec = Date.now() / 1000;
+    const expirations: number[] = result.expirationDates ?? [];
+    const wanted = expirations
+      .filter((e) => e > nowSec - 86_400 && e < nowSec + 95 * 86_400)
+      .filter((e) => e !== firstPage?.expirationDate)
+      .slice(0, 14);
 
-  if (contracts.length === 0) throw new Error(`Empty option chain for ${symbol}`);
-  return contracts;
+    const pages = await Promise.all(
+      wanted.map(async (e): Promise<YahooOptionsPage | null> => {
+        try {
+          const j = await fetchJson(
+            `${Q2}/v7/finance/options/${sym}?date=${e}&${crumb}`,
+            s.cookie,
+          );
+          return j?.optionChain?.result?.[0]?.options?.[0] ?? null;
+        } catch {
+          return null;
+        }
+      }),
+    );
+    for (const page of pages) pushContracts(contracts, page);
+
+    if (contracts.length === 0) throw new Error(`Empty option chain for ${symbol}`);
+    chainCache.set(symKey, { data: contracts, expiresAt: Date.now() + 60_000 });
+    return contracts;
+  });
 }

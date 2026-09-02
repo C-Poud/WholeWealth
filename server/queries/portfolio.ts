@@ -10,7 +10,7 @@ import {
   type SnaptradeIdentity,
 } from "@db/schema";
 import { lookupSymbolInfo } from "../analytics/symbolInfo";
-import { DEMO_POSITIONS, demoSpot } from "../snaptrade/demo";
+import { demoSpot, getFreshDemoPositions } from "../snaptrade/demo";
 
 // ---- in-memory fallback stores ---------------------------------------------
 
@@ -677,20 +677,26 @@ export async function seedDemoData(userId: number) {
     }
   }
 
-  const rows = DEMO_POSITIONS.map((p) => ({
+  const demoList = getFreshDemoPositions();
+  const rows = demoList.map((p) => ({
     userId,
     accountId,
     symbol: p.symbol,
     description: p.description,
-    assetType: "stock" as const,
+    assetType: p.assetType ?? ("stock" as const),
     quantity: p.quantity,
     costBasis: p.costBasis,
-    price: demoSpot(p.symbol),
+    price: p.price ?? demoSpot(p.symbol),
     currency: "USD",
     source: "demo" as const,
+    optionType: p.optionType ?? null,
+    strike: p.strike ?? null,
+    expiry: p.expiry ?? null,
+    rawSymbol: p.rawSymbol ?? null,
   }));
 
   await replacePositionsBySource(userId, "demo", rows);
+  return rows.length;
 }
 
 /** Clears all demo positions and demo broker accounts for a user. */

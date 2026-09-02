@@ -31,10 +31,9 @@ import { OnboardingTour, startAppTour } from "./OnboardingTour";
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Briefcase, label: "Portfolio", path: "/portfolio" },
-  { icon: Bookmark, label: "Watchlist", path: "/watchlist" },
   { icon: Sparkles, label: "Suggestions", path: "/suggestions" },
   { icon: ShieldAlert, label: "Risk Analysis", path: "/risk" },
-  { icon: Rocket, label: "Career Optimizer", path: "/career" },
+  { icon: Rocket, label: "Career Optimiser", path: "/career" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
@@ -135,7 +134,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             Preparing your workspace…
           </h1>
           <p className="text-xs font-mono text-muted-foreground text-center max-w-sm">
-            The terminal is initializing market feeds and security session.
+            The terminal is initialising market feeds and security session.
           </p>
           <Button
             onClick={() => refresh()}
@@ -329,22 +328,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {isMobile && (
         <>
           {/* Top Mobile Bar - Clean Logo & Section indicator (no hamburger button) */}
-          <header className="fixed top-0 inset-x-0 h-14 z-30 flex items-center justify-between px-4 bg-[#0c0c0e]/95 border-b border-white/[0.08] backdrop-blur-md">
+          <header className="fixed top-0 inset-x-0 h-14 z-30 flex items-center justify-between px-3.5 sm:px-4 bg-[#0c0c0e]/95 border-b border-white/[0.08] backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
             <div className="flex items-center gap-2.5">
               <Logo size={26} showText={true} />
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => startAppTour()}
-                className="h-8 px-2.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-sans font-medium flex items-center gap-1.5 active:bg-emerald-500/20 transition-colors"
-                title="Open Product Tour"
-              >
-                <Compass className="h-3.5 w-3.5" />
-                <span>Tour</span>
-              </button>
-              <span className="text-xs font-sans font-medium text-zinc-300 px-2.5 py-1 rounded bg-white/5 border border-white/10 truncate max-w-[120px]">
+              <span className="text-xs font-sans font-medium text-zinc-200 px-2.5 py-1 rounded-md bg-white/[0.06] border border-white/10 truncate max-w-[140px] shadow-sm">
                 {activeMenuItem?.label ?? "Terminal"}
               </span>
             </div>

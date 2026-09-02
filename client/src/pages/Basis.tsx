@@ -244,7 +244,7 @@ export default function Basis() {
 
                 <div className="pt-3 border-t border-white/5">
                   <span className="text-xs font-semibold text-zinc-300 block mb-2">
-                    Optimization Rationale
+                    Optimisation Rationale
                   </span>
                   <ul className="space-y-1 list-disc pl-4 text-xs text-zinc-400">
                     {current.best.rationale.map((r, i) => (

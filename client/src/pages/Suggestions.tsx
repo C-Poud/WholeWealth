@@ -75,7 +75,7 @@ export default function Suggestions() {
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-amber-400 shrink-0" />
-              Portfolio Suggestions & Doctor
+              Portfolio Suggestions
             </h1>
             <span className="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
               Quantitative Portfolio Health
@@ -109,7 +109,7 @@ export default function Suggestions() {
       {!data?.hasPositions ? (
         <div className="panel-box py-12 sm:py-16 text-center space-y-3">
           <Lightbulb className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
-          <p className="text-base font-semibold text-white">No positions to analyze</p>
+          <p className="text-base font-semibold text-white">No positions to analyse</p>
           <p className="text-xs text-zinc-400 max-w-sm mx-auto">
             {data?.message ??
               "Add positions via brokerage sync, CSV import, or load demo data in Portfolio."}
@@ -200,7 +200,7 @@ export default function Suggestions() {
                 <div className="mt-4 pt-3.5 border-t border-white/[0.08]">
                   <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-2.5 flex items-center gap-1.5">
                     <Flame className="h-3.5 w-3.5 text-amber-400" />
-                    Top Priority Moves to Optimize Your Portfolio:
+                    Top Priority Moves to Optimise Your Portfolio:
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
                     {scorecard.top3PriorityMoves.map((move) => (
@@ -351,27 +351,6 @@ export default function Suggestions() {
                     </div>
                   </div>
                 ))}
-              </div>
-
-              {/* Axioms Card */}
-              <div className="p-4 sm:p-6 rounded-xl border border-white/[0.08] bg-black/40 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-amber-400" />
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
-                    Core Rules of Quantitative Options Portfolio Management
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {scorecard.axioms.map((axiom, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.05] text-xs text-zinc-300 flex items-start gap-2.5"
-                    >
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>{axiom}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           )}
@@ -530,7 +509,7 @@ export default function Suggestions() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg border border-white/[0.08] bg-white/[0.02]">
                 <div>
                   <div className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                    Macro Delta Neutralization (SPX / SPY):
+                    Macro Delta Neutralisation (SPX / SPY):
                   </div>
                   <p className="text-xs text-zinc-400 mt-0.5">
                     Portfolio Delta: {data.spyBetaDelta >= 0 ? "+" : ""}{data.spyBetaDelta.toFixed(1)} SPY eq. ({fmtMoney(data.totalDelta)})
@@ -636,7 +615,7 @@ export default function Suggestions() {
                           <div className="text-white font-bold">{idea.postHedgeDelta >= 0 ? "+" : ""}{idea.postHedgeDelta.toFixed(1)} SPX eq.</div>
                         </div>
                         <div className="p-2.5 rounded bg-black/40 border border-white/[0.05]">
-                          <div className="text-[10px] text-zinc-500">Neutralization</div>
+                          <div className="text-[10px] text-zinc-500">Neutralisation</div>
                           <div className="text-amber-400 font-bold">{idea.neutralityPct}%</div>
                         </div>
                       </div>

@@ -79,7 +79,7 @@ export default function Risk() {
       {reports.length === 0 ? (
         <div className="panel-card py-20 text-center space-y-4">
           <ShieldAlert className="h-12 w-12 mx-auto text-muted-foreground stroke-1" />
-          <p className="text-xl font-display font-bold">No positions to analyze</p>
+          <p className="text-xl font-display font-bold">No positions to analyse</p>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             Add positions on the Portfolio page to see expected-move and
             outlier-risk analysis.

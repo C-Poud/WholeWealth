@@ -243,7 +243,7 @@ export default function Risk() {
           {reports.length === 0 ? (
             <div className="panel-box py-16 text-center space-y-3">
               <ShieldAlert className="h-10 w-10 mx-auto text-muted-foreground stroke-1" />
-              <p className="text-lg font-display font-bold text-white">No positions to analyze</p>
+              <p className="text-lg font-display font-bold text-white">No positions to analyse</p>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                 Add holdings on the Portfolio page or use the Volatility Box Simulator tab to test any ticker.
               </p>

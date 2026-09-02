@@ -152,7 +152,7 @@ export default function Dashboard() {
 
             <div className="stat-card-border pl-5 py-1">
               <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground block mb-2">
-                Unrealized P&L
+                Unrealised P&L
               </span>
               <div
                 className={`font-mono text-3xl sm:text-4xl font-bold tracking-tight ${

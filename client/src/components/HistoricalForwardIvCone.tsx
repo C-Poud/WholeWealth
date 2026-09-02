@@ -332,7 +332,7 @@ export function HistoricalForwardIvCone({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs bg-zinc-900 border-zinc-700 text-xs text-zinc-200">
-                  Visualizes past realized stock movement inside rolling 1-Sigma volatility cones and projects forward statistical price boundaries (S ± S × IV × √(DTE/365)).
+                  Visualises past realised stock movement inside rolling 1-Sigma volatility cones and projects forward statistical price boundaries (S ± S × IV × √(DTE/365)).
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -469,7 +469,7 @@ export function HistoricalForwardIvCone({
         <div className="flex items-center gap-4 text-[11px] font-mono text-zinc-400 flex-wrap">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-0.5 bg-[#67e8f9] rounded-full inline-block" />
-            <span>Realized close</span>
+            <span>Realised close</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/40 border border-emerald-400 inline-block" />

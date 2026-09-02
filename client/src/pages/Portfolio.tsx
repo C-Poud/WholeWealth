@@ -24,12 +24,10 @@ import {
   Building2,
   Edit2,
   Briefcase,
-  Compass,
   Zap,
   Activity,
   ArrowUpRight,
 } from "lucide-react";
-import { startAppTour } from "@/components/OnboardingTour";
 import { AddPositionModal } from "@/components/AddPositionModal";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { BrokerFiguresCards } from "@/components/BrokerFiguresCards";
@@ -40,6 +38,7 @@ export default function Portfolio() {
   const [searchParams, setSearchParams] = useSearchParams();
   const fileRef = useRef<HTMLInputElement>(null);
   const [manualOpen, setManualOpen] = useState(false);
+  const [prefilledSymbol, setPrefilledSymbol] = useState("");
 
   // Move / Edit position state
   const [editingPos, setEditingPos] = useState<{
@@ -401,14 +400,6 @@ export default function Portfolio() {
               >
                 <Plus className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Manual Entry
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-xs font-mono text-zinc-400 hover:text-white cursor-pointer h-9 px-3"
-                onClick={() => startAppTour()}
-              >
-                <Compass className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Tour
-              </Button>
             </div>
           </div>
         ) : (
@@ -422,7 +413,7 @@ export default function Portfolio() {
                   <th className="pb-3 font-medium meta-label text-right hidden md:table-cell">Cost Basis</th>
                   <th className="pb-3 font-medium meta-label text-right">Last Price</th>
                   <th className="pb-3 font-medium meta-label text-right hidden lg:table-cell">Market Value</th>
-                  <th className="pb-3 font-medium meta-label text-right hidden sm:table-cell">Unrealized P&L</th>
+                  <th className="pb-3 font-medium meta-label text-right hidden sm:table-cell">Unrealised P&L</th>
                   <th className="pb-3 font-medium meta-label text-right text-sky-400">SPX Delta</th>
                   <th className="pb-3 font-medium meta-label text-right hidden xl:table-cell">Source</th>
                   <th className="pb-3 font-medium meta-label text-right">Actions</th>
@@ -785,6 +776,7 @@ export default function Portfolio() {
         onOpenChange={setManualOpen}
         onSuccess={invalidateAll}
         accounts={accounts}
+        initialSymbol={prefilledSymbol}
       />
     </div>
   );

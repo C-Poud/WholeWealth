@@ -10,16 +10,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   PieChart as PieIcon,
-  Compass,
-  Sparkles,
   Plus,
   Trash2,
-  FolderPlus,
   Flame,
   Activity,
   X,
 } from "lucide-react";
-import { startAppTour } from "@/components/OnboardingTour";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { BrokerFiguresCards } from "@/components/BrokerFiguresCards";
 import { AddWatchlistTickerModal } from "@/components/AddWatchlistTickerModal";
@@ -43,31 +39,11 @@ const COLORS = [
   "#6366f1", // Blue-indigo
 ];
 
-const TICKER_ACCENT_COLORS = [
-  { bg: "bg-sky-500/15", border: "border-sky-500/30", text: "text-sky-400" },
-  { bg: "bg-indigo-500/15", border: "border-indigo-500/30", text: "text-indigo-400" },
-  { bg: "bg-purple-500/15", border: "border-purple-500/30", text: "text-purple-400" },
-  { bg: "bg-emerald-500/15", border: "border-emerald-500/30", text: "text-emerald-400" },
-  { bg: "bg-amber-500/15", border: "border-amber-500/30", text: "text-amber-400" },
-  { bg: "bg-pink-500/15", border: "border-pink-500/30", text: "text-pink-400" },
-  { bg: "bg-cyan-500/15", border: "border-cyan-500/30", text: "text-cyan-400" },
-  { bg: "bg-teal-500/15", border: "border-teal-500/30", text: "text-teal-400" },
-];
-
-function _getTickerColor(symbol: string) {
-  let hash = 0;
-  for (let i = 0; i < symbol.length; i++) {
-    hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % TICKER_ACCENT_COLORS.length;
-  return TICKER_ACCENT_COLORS[index];
-}
-
 export default function Dashboard() {
   const { data, isLoading, error, refetch } = trpc.portfolio.overview.useQuery();
   const { data: deltaData } = trpc.suggestions.spxNeutral.useQuery();
 
-  // Watchlist state & queries (Visible on PC / Tablet, hidden on mobile)
+  // Watchlist state & queries
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<number | undefined>(undefined);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isNewListOpen, setIsNewListOpen] = useState(false);
@@ -76,7 +52,7 @@ export default function Dashboard() {
 
   const utils = trpc.useUtils();
   const { data: watchlists } = trpc.watchlist.list.useQuery();
-  
+
   const activeWlId = selectedWatchlistId ?? watchlists?.[0]?.id;
   const { data: watchlistData, isLoading: isWatchlistLoading } =
     trpc.watchlist.get.useQuery(
@@ -351,9 +327,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Unrealized P&L */}
+        {/* Unrealised P&L */}
         <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2">
-          <div className="text-[11px] sm:text-xs text-zinc-400">Unrealized P&L</div>
+          <div className="text-[11px] sm:text-xs text-zinc-400">Unrealised P&L</div>
           <div
             className={`text-lg sm:text-2xl mt-1 font-bold font-mono truncate ${
               stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"
@@ -414,13 +390,6 @@ export default function Dashboard() {
                       >
                         Open Portfolio
                       </Link>
-                      <button
-                        onClick={() => startAppTour()}
-                        className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/5 px-3 py-2 text-xs font-mono text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-                      >
-                        <Compass className="h-3.5 w-3.5 text-emerald-400" />
-                        Take Tour
-                      </button>
                     </div>
                   </div>
                 ) : (
@@ -532,7 +501,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-sm font-semibold text-white">No equity positions charted</p>
                   <p className="text-xs font-mono text-zinc-400 max-w-xs mx-auto">
-                    Add or import stock and option holdings to visualize live capital weighting.
+                    Add or import stock and option holdings to visualise live capital weighting.
                   </p>
                 </div>
               ) : (
@@ -675,11 +644,11 @@ export default function Dashboard() {
         </div>
 
         {/* ========================================================================= */}
-        {/* ROW 2: WATCHLIST (PC ONLY - HIDDEN ON MOBILE)                            */}
+        {/* WATCHLIST SECTION                                                         */}
         {/* ========================================================================= */}
-        <div className="hidden md:block w-full space-y-3 font-sans">
+        <div className="w-full space-y-3 font-sans">
           <div className="panel-box p-4 sm:p-5 relative bg-[#0c0d12] border border-white/[0.08] shadow-sm">
-            {/* Header & Watchlist Selector matching mobile styling */}
+            {/* Header & Watchlist Selector */}
             <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] pb-3 mb-3">
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-none flex-wrap">
                 <span className="text-sm font-bold tracking-tight text-white font-sans pr-1">
@@ -894,7 +863,7 @@ export default function Dashboard() {
                           key={item.id}
                           className="hover:bg-white/[0.02] transition-colors group"
                         >
-                          {/* Symbol + Name & Logo matching mobile typography */}
+                          {/* Symbol + Name & Logo */}
                           <td className="py-3">
                             <div className="flex items-center gap-3">
                               <CompanyLogo symbol={item.symbol} name={item.name} size="md" />
@@ -956,7 +925,7 @@ export default function Dashboard() {
                             )}
                           </td>
 
-                          {/* 52W Range Visual Track (Retained) */}
+                          {/* 52W Range Visual Track */}
                           <td className="py-3 px-3">
                             <div className="w-full flex flex-col items-center gap-1">
                               <div className="w-full bg-white/10 h-1.5 rounded-full relative overflow-visible">
@@ -1004,7 +973,6 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
       </div>
 
       {activeWlId && (

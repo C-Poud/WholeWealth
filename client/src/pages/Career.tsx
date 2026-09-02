@@ -98,7 +98,7 @@ export default function Career() {
             </span>
           </div>
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-[-0.05em] text-[#f0f0f2] leading-none uppercase">
-            Career Optimizer
+            Career Optimiser
           </h1>
           <p className="text-sm font-mono text-muted-foreground mt-3 max-w-3xl leading-relaxed">
             Applying the exact same data-first discipline to human capital as financial capital.
@@ -559,7 +559,7 @@ export default function Career() {
           </div>
           <div className="meta-label mb-1.5 text-white">Confidential Strategy</div>
           <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-            No public profiles, no recruiter tracking. Run private scenarios to maximize your leverage without alerting your employer.
+            No public profiles, no recruiter tracking. Run private scenarios to maximise your leverage without alerting your employer.
           </p>
         </div>
       </div>

@@ -281,7 +281,7 @@ export function OnboardingTour({
               <div className="space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-white/[0.06] text-zinc-400 text-[11px]">
                   <span className="flex items-center gap-1.5 text-white font-semibold">
-                    <Sparkles className="h-3.5 w-3.5 text-zinc-300" /> Clean Terminal Initialization
+                    <Sparkles className="h-3.5 w-3.5 text-zinc-300" /> Clean Terminal Initialisation
                   </span>
                   <span className="text-zinc-500">Status: Active</span>
                 </div>
@@ -422,7 +422,7 @@ export function OnboardingTour({
                 <div className="inline-flex p-3 rounded-full bg-white/10 border border-white/20 text-white mb-1">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
-                <h4 className="text-sm font-semibold text-white">Your Workspace is Initialized & Clean</h4>
+                <h4 className="text-sm font-semibold text-white">Your Workspace is Initialised & Clean</h4>
                 <p className="text-xs text-zinc-400 font-mono max-w-sm mx-auto">
                   0 positions loaded. Connect your brokerage to sync live holdings or explore the terminal.
                 </p>

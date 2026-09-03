@@ -4,11 +4,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Compass, ExternalLink, KeyRound, Smartphone, Trash2, Webhook } from "lucide-react";
+import { Building2, Compass, KeyRound, Trash2, Webhook } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { fmtMoney } from "@/lib/format";
 import { startAppTour, TOUR_STORAGE_KEY } from "@/components/OnboardingTour";
-import { InstallAPKModal } from "@/components/InstallAPKModal";
 
 export default function Settings() {
   const utils = trpc.useUtils();
@@ -18,7 +17,6 @@ export default function Settings() {
     enabled: isAdmin,
   });
   const [form, setForm] = useState({ clientId: "", consumerKey: "" });
-  const [installModalOpen, setInstallModalOpen] = useState(false);
 
   useEffect(() => {
     if (error) toast.error(error.message);
@@ -307,43 +305,7 @@ export default function Settings() {
     </div>
   );
 
-  const apkPanel = (
-    <div className="panel-box p-6 sm:p-8 space-y-6">
-      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
-        <span className="meta-label flex items-center gap-2">
-          <Smartphone className="h-4 w-4 text-emerald-400" /> Android App &amp; APK Distribution
-        </span>
-        <span className="text-xs font-mono text-emerald-400 font-medium px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-          PWA &amp; WebAPK
-        </span>
-      </div>
-
-      <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-        Install WholeWealth directly on Android with 1-tap (generating a system WebAPK with home screen icon and standalone window) or export an installable <code className="text-emerald-400 font-mono">.apk</code> / <code className="text-emerald-400 font-mono">.aab</code> package for distribution.
-      </p>
-
-      <div className="flex flex-wrap items-center gap-3 pt-1">
-        <Button
-          onClick={() => setInstallModalOpen(true)}
-          className="font-mono text-xs font-semibold bg-emerald-500 text-black hover:bg-emerald-400 cursor-pointer"
-        >
-          <Smartphone className="h-3.5 w-3.5 mr-1.5" /> Install Mobile App (APK)
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            const url = `https://www.pwabuilder.com/?url=${encodeURIComponent(window.location.origin)}`;
-            window.open(url, "_blank");
-          }}
-          className="font-mono text-xs border-white/10 hover:bg-white/5 text-zinc-300 cursor-pointer"
-        >
-          <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Generate .APK on PWABuilder
-        </Button>
-      </div>
-    </div>
-  );
-
-  // Normal users: only their broker trade API, APK install, and tour are configurable.
+  // Normal users: only their broker trade API and tour are configurable.
   if (me.data && !isAdmin) {
     return (
       <div className="p-4 sm:p-10 space-y-8 max-w-[1000px] mx-auto">
@@ -355,14 +317,9 @@ export default function Settings() {
             Manage connected accounts, product walkthrough, and broker API.
           </p>
         </header>
-        {apkPanel}
         {tourPanel}
         {accountsPanel}
         {brokerPanel}
-        <InstallAPKModal
-          open={installModalOpen}
-          onOpenChange={setInstallModalOpen}
-        />
       </div>
     );
   }
@@ -378,8 +335,6 @@ export default function Settings() {
           Integrations, walkthrough, and market-data configuration.
         </p>
       </header>
-
-      {apkPanel}
 
       {tourPanel}
 
@@ -470,11 +425,6 @@ export default function Settings() {
           Credentials are verified against the SnapTrade API before saving, then stored securely in the app database. Without credentials the app runs on deterministic demo market data.
         </p>
       </div>
-
-      <InstallAPKModal
-        open={installModalOpen}
-        onOpenChange={setInstallModalOpen}
-      />
     </div>
   );
 }

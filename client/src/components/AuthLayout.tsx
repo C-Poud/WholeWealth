@@ -17,7 +17,6 @@ import {
   Rocket,
   Settings,
   ShieldAlert,
-  Smartphone,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -28,7 +27,6 @@ import { AuthLayoutSkeleton } from "./AuthLayoutSkeleton";
 import { Button } from "./ui/button";
 import { Logo } from "./Logo";
 import { OnboardingTour, startAppTour } from "./OnboardingTour";
-import { InstallAPKModal } from "./InstallAPKModal";
 import { OfflineIndicator } from "./OfflineIndicator";
 
 const menuItems = [
@@ -66,7 +64,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     }
   });
   const [isHovered, setIsHovered] = useState(false);
-  const [installModalOpen, setInstallModalOpen] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const providers = trpc.auth.providers.useQuery(undefined, {
@@ -308,15 +305,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     <div className="text-[11px] text-muted-foreground truncate">{user?.email}</div>
                   </div>
                   <DropdownMenuItem
-                    onClick={() => setInstallModalOpen(true)}
-                    className="cursor-pointer text-emerald-400 hover:text-emerald-300 focus:text-emerald-300 focus:bg-emerald-500/10 text-xs font-mono mt-1"
-                  >
-                    <Smartphone className="mr-2 h-3.5 w-3.5 text-emerald-400" />
-                    <span>Install App / APK</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
                     onClick={() => startAppTour()}
-                    className="cursor-pointer text-zinc-300 hover:text-white focus:text-white focus:bg-white/10 text-xs font-mono mt-0.5"
+                    className="cursor-pointer text-zinc-300 hover:text-white focus:text-white focus:bg-white/10 text-xs font-mono mt-1"
                   >
                     <Compass className="mr-2 h-3.5 w-3.5 text-emerald-400" />
                     <span>Product Tour</span>
@@ -345,15 +335,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setInstallModalOpen(true)}
-                className="h-8 px-2.5 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-sans font-semibold flex items-center gap-1.5 hover:bg-emerald-500/20 active:scale-95 transition-all shadow-sm cursor-pointer"
-                title="Install Android App / APK"
-              >
-                <Smartphone className="h-3.5 w-3.5 text-emerald-400" />
-                <span>APK</span>
-              </button>
               <span className="text-xs font-sans font-medium text-zinc-200 px-2.5 py-1 rounded-md bg-white/[0.06] border border-white/10 truncate max-w-[130px] shadow-sm">
                 {activeMenuItem?.label ?? "Terminal"}
               </span>
@@ -406,12 +387,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
       {/* ── INTERACTIVE ONBOARDING TOUR (Auto-opens on first sign in) ── */}
       <OnboardingTour />
-
-      {/* ── ANDROID APK & PWA INSTALL MODAL ── */}
-      <InstallAPKModal
-        open={installModalOpen}
-        onOpenChange={setInstallModalOpen}
-      />
 
       {/* ── OFFLINE STATUS INDICATOR ── */}
       <OfflineIndicator />

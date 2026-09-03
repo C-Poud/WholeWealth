@@ -1,0 +1,15 @@
+{
+	"appId": "com.wholewealth.terminal",
+	"appName": "WholeWealth",
+	"webDir": "dist/public",
+	"server": {
+		"androidScheme": "https",
+		"cleartext": false
+	},
+	"android": {
+		"allowMixedContent": true,
+		"captureInput": true,
+		"webContentsDebuggingEnabled": true,
+		"backgroundColor": "#0c0c0e"
+	}
+}

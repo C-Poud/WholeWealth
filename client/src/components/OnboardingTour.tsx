@@ -131,6 +131,7 @@ export function OnboardingTour({
   // Check if tour should auto-open on first sign in
   useEffect(() => {
     if (forceOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsOpen(true);
       setCurrentStep(0);
       return;

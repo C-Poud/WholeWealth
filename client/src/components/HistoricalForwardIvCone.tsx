@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { fmtMoney } from "@/lib/format";
-import { Info, HelpCircle } from "lucide-react";
+import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface HistoricalForwardIvConeProps {
@@ -27,7 +27,7 @@ export function HistoricalForwardIvCone({
   const [historyYears, setHistoryYears] = useState<"1Y" | "2Y" | "3Y" | "5Y">("1Y");
   const [horizonDte, setHorizonDte] = useState<number>(30); // 10, 20, 30, 60, 90
   const [scrubDay, setScrubDay] = useState<number>(29); // 1 .. horizonDte
-  const [hoverX, setHoverX] = useState<number | null>(null);
+
 
   // Ensure scrubDay stays clamped to current horizonDte
   const activeScrubDay = Math.min(scrubDay, horizonDte);

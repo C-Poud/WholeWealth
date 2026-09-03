@@ -14,17 +14,9 @@ import { fmtMoney } from "@/lib/format";
 import {
   Search,
   Sparkles,
-  TrendingUp,
-  Layers,
   Plus,
-  Check,
   Building2,
-  Info,
-  DollarSign,
-  ArrowRight,
-  ShieldCheck,
   X,
-  Flame,
 } from "lucide-react";
 
 interface AddPositionModalProps {
@@ -66,6 +58,7 @@ export function AddPositionModal({
 
   useEffect(() => {
     if (open && initialSymbol) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSymbol(initialSymbol.toUpperCase());
       setQuery(initialSymbol.toUpperCase());
     }
@@ -105,8 +98,10 @@ export function AddPositionModal({
   // Auto-fill cost basis when live price preview arrives if costBasis is empty
   useEffect(() => {
     if (previewQuery.data?.price && (!costBasis || costBasis === "0")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCostBasis(previewQuery.data.price.toFixed(2));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewQuery.data?.price]);
 
   const resetForm = () => {

@@ -18,7 +18,6 @@ import {
   X,
   Target,
   FileText,
-  Zap,
 } from "lucide-react";
 
 interface AddWatchlistTickerModalProps {
@@ -50,6 +49,7 @@ export function AddWatchlistTickerModal({
 
   useEffect(() => {
     if (open && initialSymbol) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSymbol(initialSymbol.toUpperCase());
       setQuery(initialSymbol.toUpperCase());
     }

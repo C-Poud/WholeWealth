@@ -5,33 +5,23 @@ import { fmtMoney } from "@/lib/format";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { toast } from "sonner";
 import {
-  ArrowDownRight,
-  ArrowUpRight,
   Lightbulb,
   Scale,
   Send,
-  ShieldCheck,
   AlertTriangle,
   ChevronDown,
   ChevronUp,
-  BarChart3,
-  TrendingDown,
-  TrendingUp,
   Sparkles,
-  ExternalLink,
   Flame,
   CheckCircle2,
   Clock,
   Coins,
-  Percent,
   Layers,
-  HelpCircle,
 } from "lucide-react";
 
 export default function Suggestions() {
   const { data, isLoading, error, refetch } =
     trpc.suggestions.spxNeutral.useQuery();
-  const brokerApi = trpc.settings.getBrokerApi.useQuery();
 
   const [activeTab, setActiveTab] = useState<
     "SCORECARD" | "COVERED_CALLS" | "MACRO_HEDGES" | "SIGNATURE_PLAYS" | "ALERTS"
@@ -58,7 +48,6 @@ export default function Suggestions() {
     );
   }
 
-  const long = (data?.totalDelta ?? 0) >= 0;
   const filteredIdeas = (data?.ideas ?? []).filter((idea) => {
     if (filterRisk === "DEFINED") return idea.riskType === "Defined" || idea.riskType === "Capped";
     if (filterRisk === "UNLIMITED") return idea.riskType === "Unlimited";

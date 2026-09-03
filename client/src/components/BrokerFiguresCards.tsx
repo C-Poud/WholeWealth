@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { trpc } from "@/providers/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RefreshCw, Link2, Upload, CheckCircle2 } from "lucide-react";
+import { RefreshCw, Link2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 

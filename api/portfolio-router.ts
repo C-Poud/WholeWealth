@@ -10,7 +10,7 @@ import {
   replacePositionsBySource,
 } from "./queries/portfolio";
 import { parsePositionsFile } from "./import/parser";
-import { DEMO_POSITIONS, demoSpot, getFreshDemoPositions } from "./snaptrade/demo";
+import { demoSpot, getFreshDemoPositions } from "./snaptrade/demo";
 
 export const portfolioRouter = createRouter({
   /** Positions + accounts for the signed-in user. */

@@ -12,7 +12,6 @@ import {
   Briefcase,
   Compass,
   LayoutDashboard,
-  Lightbulb,
   LogOut,
   Rocket,
   Settings,

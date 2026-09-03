@@ -400,7 +400,7 @@ export default function Dashboard() {
                           <th className="pb-2.5 font-normal meta-label">Symbol</th>
                           <th className="pb-2.5 font-normal meta-label">Type</th>
                           <th className="pb-2.5 font-normal meta-label text-right">Qty</th>
-                          <th className="pb-2.5 font-normal meta-label text-right">Cost</th>
+                          <th className="pb-2.5 font-normal meta-label text-right">Avg Price</th>
                           <th className="pb-2.5 font-normal meta-label text-right">Price</th>
                           <th className="pb-2.5 font-normal meta-label text-right">Value</th>
                           <th className="pb-2.5 font-normal meta-label text-right">P&L</th>

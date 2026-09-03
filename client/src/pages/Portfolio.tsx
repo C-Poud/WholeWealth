@@ -410,7 +410,7 @@ export default function Portfolio() {
                   <th className="pb-3 font-medium meta-label">Symbol</th>
                   <th className="pb-3 font-medium meta-label hidden sm:table-cell">Type</th>
                   <th className="pb-3 font-medium meta-label text-right">Qty</th>
-                  <th className="pb-3 font-medium meta-label text-right hidden md:table-cell">Cost Basis</th>
+                  <th className="pb-3 font-medium meta-label text-right hidden md:table-cell">Avg Price</th>
                   <th className="pb-3 font-medium meta-label text-right">Last Price</th>
                   <th className="pb-3 font-medium meta-label text-right hidden lg:table-cell">Market Value</th>
                   <th className="pb-3 font-medium meta-label text-right hidden sm:table-cell">Unrealised P&L</th>

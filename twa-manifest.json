@@ -1,0 +1,31 @@
+{
+  "packageId": "com.wholewealth.terminal",
+  "host": "ais-dev-zhjs2pyj7hshwy4q5ji6ef-188786387463.asia-east1.run.app",
+  "name": "WholeWealth",
+  "launcherName": "WholeWealth",
+  "display": "standalone",
+  "themeColor": "#0C0C0E",
+  "navigationColor": "#0C0C0E",
+  "backgroundColor": "#0C0C0E",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "/pwa-512x512.png",
+  "maskableIconUrl": "/pwa-maskable-512x512.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  }
+}
